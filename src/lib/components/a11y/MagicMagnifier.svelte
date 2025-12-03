@@ -9,9 +9,6 @@ const LENS_SIZE = 150;
 let lensElement: HTMLElement | null = $state(null);
 let portalContainer: HTMLDivElement | null = $state(null);
 let clonedNode: HTMLElement | null = null;
-// Ajuste visual del puntero (negativo = izquierda / arriba)
-let pointerOffsetX = -8; // px
-let pointerOffsetY = -6; // px
 
 function handleMouseMove(event: MouseEvent) {
 	mouseX = event.clientX;
@@ -82,31 +79,6 @@ $effect(() => {
 $effect(() => {
 	updateTransform();
 });
-
-function propagateEvent(e: MouseEvent, type: string) {
-	// Calcula la posición real del cursor en la página
-	const realX = mouseX;
-	const realY = mouseY;
-	const el = document.elementFromPoint(realX, realY);
-	if (el) {
-		const evt = new MouseEvent(type, {
-			bubbles: true,
-			cancelable: true,
-			clientX: realX,
-			clientY: realY,
-			button: e.button,
-			buttons: e.buttons,
-			ctrlKey: e.ctrlKey,
-			shiftKey: e.shiftKey,
-			altKey: e.altKey,
-			metaKey: e.metaKey
-		});
-		el.dispatchEvent(evt);
-		// Opcional: evitar que el evento se propague en la lupa
-		e.preventDefault();
-		e.stopPropagation();
-	}
-}
 </script>
 
 {#if $settings.magnifierEnabled}
@@ -131,12 +103,6 @@ function propagateEvent(e: MouseEvent, type: string) {
 			overflow: hidden;
 			position: relative;
 		"
-	></div>
-	<!-- Puntero que indica la posición relativa donde se mapeará el clic -->
-	<div
-		class="lens-pointer"
-		style="left: {LENS_SIZE / 2 + pointerOffsetX}px; top: {LENS_SIZE / 2 + pointerOffsetY}px;"
-		aria-hidden="true"
 	></div>
 	<div class="lens-highlight"></div>
 </div>
@@ -173,19 +139,6 @@ function propagateEvent(e: MouseEvent, type: string) {
 	pointer-events: none;
 }
 
-/* Puntero dentro de la lupa - representa la diferencia de coordenadas */
-.lens-pointer {
-	position: absolute;
-	width: 12px;
-	height: 12px;
-	border-radius: 50%;
-	background: rgba(255,255,255,0.95);
-	border: 2px solid rgba(11,110,253,0.95);
-	box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-	transform: translate(-30%, -30%); /* centrar en coordenada */
-	pointer-events: none; /* no bloquear interacciones */
-	z-index: 2;
-}
 @keyframes magnifier-appear {
 	from { opacity: 0; transform: scale(0.8); }
 	to { opacity: 1; transform: scale(1); }

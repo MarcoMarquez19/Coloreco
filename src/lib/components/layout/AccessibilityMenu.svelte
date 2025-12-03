@@ -3,9 +3,48 @@
 	// Este componente permite al usuario personalizar la apariencia de la app en tiempo real
 	
 	import { settings } from '$lib/stores/settings';
+	import { onMount, onDestroy } from 'svelte';
 
 	// Props: recibe el contenido de la página actual para mostrarlo en el preview
 	let { children } = $props();
+	let previewMarcoEl: HTMLElement | null = $state(null);
+	let previewContEl: HTMLElement | null = $state(null);
+	let previewScale = 1;
+
+	// Recompute preview scale when relevant settings change
+	$effect(() => {
+		if (previewMarcoEl && previewContEl) {
+			updatePreviewSize();
+		}
+	});
+
+	$effect(() => {
+		if (previewMarcoEl && previewContEl && ($settings.fontSizeMultiplier || $settings.spacingMultiplier || $settings.magnifierEnabled)) {
+			// When settings affecting layout change, update preview scale
+			updatePreviewSize();
+		}
+	});
+
+	function updatePreviewSize() {
+		const appRoot = document.getElementById('svelte') || document.body;
+		if (!appRoot || !previewMarcoEl || !previewContEl) return;
+
+		const appW = appRoot.scrollWidth;
+		const appH = appRoot.scrollHeight;
+		const marcoRect = previewMarcoEl.getBoundingClientRect();
+		const maxW = marcoRect.width;
+		const maxH = marcoRect.height;
+		const scale = Math.max(0.1, Math.min(maxW / Math.max(1, appW), maxH / Math.max(1, appH)));
+		previewScale = scale;
+
+		// apply size and center the scaled content inside the marco
+		previewContEl.style.width = `${appW}px`;
+		previewContEl.style.height = `${appH}px`;
+		const offsetX = (maxW - appW * scale) / 2;
+		const offsetY = (maxH - appH * scale) / 2;
+		previewContEl.style.transformOrigin = 'top left';
+		previewContEl.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+	}
 
 	// Función para cerrar el menú al hacer clic fuera de él
 	function handleBackdropClick(event: MouseEvent) {
@@ -20,6 +59,25 @@
 			settings.cerrarMenu();
 		}
 	}
+onMount(() => {
+	// Update initially
+	updatePreviewSize();
+	// Resize listener
+	window.addEventListener('resize', updatePreviewSize);
+	window.addEventListener('orientationchange', updatePreviewSize);
+
+	// Observe DOM changes in the app content so the preview can adapt
+	const appRoot = document.getElementById('svelte') || document.body;
+	const observer = new MutationObserver(() => updatePreviewSize());
+	if (appRoot) observer.observe(appRoot, { subtree: true, childList: true, attributes: true, characterData: true });
+
+	return () => {
+		window.removeEventListener('resize', updatePreviewSize);
+		window.removeEventListener('orientationchange', updatePreviewSize);
+		observer.disconnect();
+	};
+});
+
 </script>
 
 <!-- Backdrop (fondo oscuro) que aparece detrás del menú -->
@@ -142,8 +200,8 @@
 					<h3 class="preview-titulo">Vista Previa en Tiempo Real</h3>
 					
 					<!-- Marco tipo "monitor" que contiene el preview escalado -->
-					<div class="preview-marco">
-						<div class="preview-contenedor">
+					<div class="preview-marco" bind:this={previewMarcoEl}>
+						<div class="preview-contenedor" bind:this={previewContEl}>
 							<!-- Aquí se renderiza la página actual que está detrás del menú -->
 							<!-- Los cambios del store se reflejan automáticamente -->
 							{@render children?.()}
@@ -335,15 +393,8 @@
 		position: absolute;
 		top: 0;
 		left: 0;
-		/* Ocupa el tamaño completo antes de escalar */
-		width: 100%;
-		height: 100%;
-		/* Escala el contenido para simular zoom out */
-		transform: scale(0.5);
-		transform-origin: top left;
-		/* Dimensiones reales antes de la escala (el doble para compensar scale 0.5) */
-		width: 200%;
-		height: 200%;
+		/* The size of the contenedor will be set dynamically based on the app root size */
+		/* Transform is applied dynamically using inline style for correct centering and scaling */
 	}
 
 	@media (prefers-reduced-motion: reduce) {
