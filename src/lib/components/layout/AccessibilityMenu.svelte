@@ -51,103 +51,84 @@
 			<div class="menu-contenido">
 				<!-- Sección de Controles -->
 				<section class="controles" aria-label="Controles de personalización">
-					<!-- Control: Tamaño de Fuente -->
-					<div class="control-grupo">
-						<label for="slider-font-size" class="control-label">
-							Tamaño de Fuente
-							<span class="control-valor">{$settings.fontSizeMultiplier.toFixed(1)}×</span>
-						</label>
-						<input 
-							id="slider-font-size"
-							type="range" 
-							min="0.8" 
-							max="2" 
-							step="0.1"
-							value={$settings.fontSizeMultiplier}
-							oninput={(e) => settings.setFontSize(parseFloat(e.currentTarget.value))}
-							class="slider"
-							aria-valuemin="0.8"
-							aria-valuemax="2"
-							aria-valuenow={$settings.fontSizeMultiplier}
-							aria-label="Ajustar tamaño de fuente"
-						/>
-						<div class="control-ayuda">
-							<small>Ajusta el tamaño del texto en toda la aplicación</small>
-						</div>
-					</div>
-
-					<!-- Control: Espaciado -->
-					<div class="control-grupo">
-						<label for="slider-spacing" class="control-label">
-							Espaciado
-							<span class="control-valor">{$settings.spacingMultiplier.toFixed(1)}×</span>
-						</label>
-						<input 
-							id="slider-spacing"
-							type="range" 
-							min="0.8" 
-							max="2" 
-							step="0.1"
-							value={$settings.spacingMultiplier}
-							oninput={(e) => settings.setSpacing(parseFloat(e.currentTarget.value))}
-							class="slider"
-							aria-valuemin="0.8"
-							aria-valuemax="2"
-							aria-valuenow={$settings.spacingMultiplier}
-							aria-label="Ajustar espaciado entre elementos"
-						/>
-						<div class="control-ayuda">
-							<small>Modifica el espacio entre elementos de la interfaz</small>
-						</div>
-					</div>
-
-					<!-- Control: Radio de Bordes -->
-					<div class="control-grupo">
-						<label for="slider-border-radius" class="control-label">
-							Bordes Redondeados
-							<span class="control-valor">{$settings.borderRadius}px</span>
-						</label>
-						<input 
-							id="slider-border-radius"
-							type="range" 
-							min="0" 
-							max="20" 
-							step="2"
-							value={$settings.borderRadius}
-							oninput={(e) => settings.setBorderRadius(parseFloat(e.currentTarget.value))}
-							class="slider"
-							aria-valuemin="0"
-							aria-valuemax="20"
-							aria-valuenow={$settings.borderRadius}
-							aria-label="Ajustar curvatura de bordes"
-						/>
-						<div class="control-ayuda">
-							<small>Controla qué tan redondeados son los bordes de botones y tarjetas</small>
-						</div>
-					</div>
-
+					
 					<!-- Sección: Lupa Mágica -->
-					<div class="control-grupo lupa-seccion">
+					<div class="control-grupo">
 						<h3 class="seccion-titulo">Lupa Mágica</h3>
-						
+                        
 						<!-- Interruptor para activar/desactivar la lupa -->
 						<div class="switch-container">
-							<label for="toggle-magnifier" class="switch-label">
-								Activar lupa
-							</label>
+							<label for="toggle-magnifier" class="switch-label">Activar lupa mágica</label>
 							<button
 								id="toggle-magnifier"
 								type="button"
 								role="switch"
 								aria-checked={$settings.magnifierEnabled}
+								aria-describedby="toggle-magnifier-desc"
 								class="switch-toggle"
 								class:active={$settings.magnifierEnabled}
 								onclick={() => settings.toggleMagnifier()}
-								aria-label="Activar o desactivar la lupa mágica"
+								aria-label={$settings.magnifierEnabled ? 'Desactivar lupa mágica' : 'Activar lupa mágica'}
 							>
 								<span class="switch-knob"></span>
 							</button>
-						</div>						
+						</div>
+						<div class="control-ayuda" id="toggle-magnifier-desc">
+							<small>Muestra una lente que magnifica parte de la pantalla.</small>
+						</div>
+					</div>
+					<!-- Control: Tamaño de Fuente (TOGGLE X2) -->
+					<div class="control-grupo">
+						<div class="control-label" id="font-size-label">
+							<span>Tamaño de Fuente</span>
+							<span class="control-valor">{$settings.fontSizeMultiplier.toFixed(1)}×</span>
+						</div>
+						<div class="switch-container">
+							<label for="toggle-font-size" class="switch-label">Duplicar tamaño de texto</label>
+							<button
+								id="toggle-font-size"
+								type="button"
+								role="switch"
+								aria-checked={$settings.fontSizeMultiplier >= 1.9}
+								aria-describedby="toggle-font-size-desc"
+								class="switch-toggle"
+								class:active={$settings.fontSizeMultiplier >= 1.9}
+								onclick={() => settings.setFontSize($settings.fontSizeMultiplier >= 1.9 ? 1 : 2) }
+								aria-label={$settings.fontSizeMultiplier >= 1.9 ? 'Desactivar tamaño de fuente duplicado' : 'Activar tamaño de fuente duplicado'}
+							>
+								<span class="switch-knob"></span>
+							</button>
+						</div>
+						<div class="control-ayuda" id="toggle-font-size-desc">
+							<small>Activa para duplicar el tamaño del texto en toda la aplicación y mejorar la legibilidad.</small>
+						</div>
+					</div>
+
+					<!-- Control: Espaciado (TOGGLE X2) -->
+					<div class="control-grupo">
+						<div class="control-label" id="spacing-label">
+							<span>Espaciado</span>
+							<span class="control-valor">{$settings.spacingMultiplier.toFixed(1)}×</span>
+						</div>
+						<div class="switch-container">
+							<label for="toggle-spacing" class="switch-label">Duplicar espaciado</label>
+							<button
+								id="toggle-spacing"
+								type="button"
+								role="switch"
+								aria-checked={$settings.spacingMultiplier >= 1.9}
+								aria-describedby="toggle-spacing-desc"
+								class="switch-toggle"
+								class:active={$settings.spacingMultiplier >= 1.9}
+								onclick={() => settings.setSpacing($settings.spacingMultiplier >= 1.9 ? 1 : 2) }
+								aria-label={$settings.spacingMultiplier >= 1.9 ? 'Desactivar espaciado duplicado' : 'Activar espaciado duplicado'}
+							>
+								<span class="switch-knob"></span>
+							</button>
+						</div>
+						<div class="control-ayuda" id="toggle-spacing-desc">
+							<small>Activa para duplicar el espaciado entre elementos y mejorar la lectura visual.</small>
+						</div>
 					</div>
 
 					<!-- Botón para reiniciar valores -->
@@ -282,42 +263,7 @@
 		font-size: calc(var(--font-size-base, 1rem) * 1.1);
 	}
 
-	/* Slider personalizado */
-	.slider {
-		width: 100%;
-		height: 8px;
-		border-radius: 4px;
-		background: #e0e0e0;
-		outline: none;
-		-webkit-appearance: none;
-		appearance: none;
-	}
-
-	.slider::-webkit-slider-thumb {
-		-webkit-appearance: none;
-		appearance: none;
-		width: 20px;
-		height: 20px;
-		border-radius: 50%;
-		background: #0b6efd;
-		cursor: pointer;
-		box-shadow: 0 2px 6px rgba(11, 110, 253, 0.3);
-	}
-
-	.slider::-moz-range-thumb {
-		width: 20px;
-		height: 20px;
-		border-radius: 50%;
-		background: #0b6efd;
-		cursor: pointer;
-		border: none;
-		box-shadow: 0 2px 6px rgba(11, 110, 253, 0.3);
-	}
-
-	.slider:focus {
-		outline: 2px solid #0b6efd;
-		outline-offset: 2px;
-	}
+	/* Nota: sliders reemplazados por toggles en la UI de accesibilidad */
 
 	.control-ayuda {
 		color: #666;
@@ -405,13 +351,7 @@
 		.boton-cerrar, .boton-reset { transition: none; }
 	}
 
-	/* ===== Estilos para la sección Lupa Mágica ===== */
-	
-	.lupa-seccion {
-		border-top: 1px solid #e0e0e0;
-		padding-top: calc(var(--spacing-base, 1rem) * 1.5);
-		margin-top: calc(var(--spacing-base, 1rem) * 0.5);
-	}
+	/* Nota: estilos específicos de Lupa Mágica removidos para que sea consistente con el resto */
 
 	.seccion-titulo {
 		margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0;
