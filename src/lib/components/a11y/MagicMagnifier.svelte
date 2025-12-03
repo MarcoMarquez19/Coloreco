@@ -5,7 +5,7 @@ import { onMount, onDestroy } from 'svelte';
 
 let mouseX = $state(window.innerWidth / 2);
 let mouseY = $state(window.innerHeight / 2);
-const LENS_SIZE = 150;
+const LENS_SIZE = 185;
 let lensElement: HTMLElement | null = $state(null);
 let portalContainer: HTMLDivElement | null = $state(null);
 let clonedNode: HTMLElement | null = null;
@@ -25,8 +25,8 @@ function updateTransform() {
 		const originY = mouseY + scrollY;
 		clonedNode.style.transformOrigin = `${originX}px ${originY}px`;
 		clonedNode.style.transform = `scale(${zoom})`;
-		portalContainer.scrollLeft = originX - LENS_SIZE / (2 * zoom);
-		portalContainer.scrollTop = originY - LENS_SIZE / (2 * zoom);
+		portalContainer.scrollLeft = originX - LENS_SIZE / (0.99 * zoom);
+		portalContainer.scrollTop = originY - LENS_SIZE / (0.99 * zoom);
 	}
 }
 

@@ -89,7 +89,7 @@
 	}
 
 	.boton-principal:focus {
-		outline: 3px solid #fff7a8;
+		outline: 3px solid #000000;
 		outline-offset: 3px;
 	}
 
