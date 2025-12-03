@@ -3,6 +3,7 @@
 	import { onMount } from 'svelte';
 	import { settings } from '$lib/stores/settings';
 	import AccessibilityMenu from '$lib/components/layout/AccessibilityMenu.svelte';
+	import MagicMagnifier from '$lib/components/a11y/MagicMagnifier.svelte';
 
 	// Pequeño helper de accesibilidad: enfocar el contenido principal al navegar
 	let mainEl: HTMLElement | null = null;
@@ -54,6 +55,11 @@
 	<AccessibilityMenu>
 		{@render children()}
 	</AccessibilityMenu>
+
+	<!-- Lupa Mágica: magnificación del contenido de la página -->
+	{#if $settings.magnifierEnabled}
+		<MagicMagnifier />
+	{/if}
 </div>
 
 <style>

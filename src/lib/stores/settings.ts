@@ -5,7 +5,7 @@ import { writable } from 'svelte/store';
 
 // Interfaz que define la estructura de la configuración
 // Define todas las propiedades que controlan la apariencia de la aplicación
-interface ConfiguracionUI {
+export interface ConfiguracionUI {
 	// Controla si el menú de ajustes está visible
 	isMenuOpen: boolean; // menu abierto/cerrado
 	
@@ -20,6 +20,12 @@ interface ConfiguracionUI {
 	
 	// Radio de bordes redondeados en píxeles
 	borderRadius: number; // radio de borde
+	
+	// Lupa Mágica: controla si la lupa está habilitada
+	magnifierEnabled: boolean; // lupa activa/inactiva
+	
+	// Lupa Mágica: nivel de magnificación (1.5, 2, 3)
+	magnifierZoom: number; // nivel de zoom de la lupa
 }
 
 // Valores por defecto para una experiencia estándar
@@ -28,7 +34,9 @@ const valoresPorDefecto: ConfiguracionUI = {
 	fontSizeMultiplier: 1,
 	spacingMultiplier: 1,
 	tema: 'claro',
-	borderRadius: 8
+	borderRadius: 8,
+	magnifierEnabled: false,
+	magnifierZoom: 1.85
 };
 
 // Crear el store reactivo
@@ -77,6 +85,26 @@ function crearStoreSettings() {
 		setBorderRadius: (valor: number) => update(config => ({ 
 			...config, 
 			borderRadius: valor 
+		})),
+		
+		// Activa o desactiva la lupa mágica
+		// @param enabled - true para activar, false para desactivar
+		setMagnifierEnabled: (enabled: boolean) => update(config => ({
+			...config,
+			magnifierEnabled: enabled
+		})),
+		
+		// Alterna el estado de la lupa mágica
+		toggleMagnifier: () => update(config => ({
+			...config,
+			magnifierEnabled: !config.magnifierEnabled
+		})),
+		
+		// Establece el nivel de zoom de la lupa mágica
+		// @param zoom - nivel de magnificación (1.5, 2, 3)
+		setMagnifierZoom: (zoom: number) => update(config => ({
+			...config,
+			magnifierZoom: zoom
 		})),
 		
 		// Reinicia toda la configuración a valores por defecto

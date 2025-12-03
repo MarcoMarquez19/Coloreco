@@ -126,6 +126,30 @@
 						</div>
 					</div>
 
+					<!-- Sección: Lupa Mágica -->
+					<div class="control-grupo lupa-seccion">
+						<h3 class="seccion-titulo">Lupa Mágica</h3>
+						
+						<!-- Interruptor para activar/desactivar la lupa -->
+						<div class="switch-container">
+							<label for="toggle-magnifier" class="switch-label">
+								Activar lupa
+							</label>
+							<button
+								id="toggle-magnifier"
+								type="button"
+								role="switch"
+								aria-checked={$settings.magnifierEnabled}
+								class="switch-toggle"
+								class:active={$settings.magnifierEnabled}
+								onclick={() => settings.toggleMagnifier()}
+								aria-label="Activar o desactivar la lupa mágica"
+							>
+								<span class="switch-knob"></span>
+							</button>
+						</div>						
+					</div>
+
 					<!-- Botón para reiniciar valores -->
 					<button class="boton-reset" onclick={settings.reset}>
 						Restaurar valores por defecto
@@ -135,6 +159,7 @@
 				<!-- Sección de Vista Previa: Muestra la página actual en tiempo real -->
 				<aside class="vista-previa" aria-label="Vista previa de cambios en tiempo real">
 					<h3 class="preview-titulo">Vista Previa en Tiempo Real</h3>
+					
 					<!-- Marco tipo "monitor" que contiene el preview escalado -->
 					<div class="preview-marco">
 						<div class="preview-contenedor">
@@ -378,5 +403,71 @@
 	@media (prefers-reduced-motion: reduce) {
 		.backdrop { backdrop-filter: none; }
 		.boton-cerrar, .boton-reset { transition: none; }
+	}
+
+	/* ===== Estilos para la sección Lupa Mágica ===== */
+	
+	.lupa-seccion {
+		border-top: 1px solid #e0e0e0;
+		padding-top: calc(var(--spacing-base, 1rem) * 1.5);
+		margin-top: calc(var(--spacing-base, 1rem) * 0.5);
+	}
+
+	.seccion-titulo {
+		margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0;
+		font-size: calc(var(--font-size-base, 1rem) * 1.1);
+		font-weight: 600;
+		color: #222;
+	}
+
+	/* Switch toggle */
+	.switch-container {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: calc(var(--spacing-base, 1rem) * 1);
+	}
+
+	.switch-label {
+		font-weight: 500;
+		font-size: calc(var(--font-size-base, 1rem) * 0.95);
+		color: #333;
+	}
+
+	.switch-toggle {
+		position: relative;
+		width: 52px;
+		height: 28px;
+		background: #ccc;
+		border: none;
+		border-radius: 14px;
+		cursor: pointer;
+		transition: background 200ms ease;
+		padding: 0;
+	}
+
+	.switch-toggle.active {
+		background: #0b6efd;
+	}
+
+	.switch-toggle:focus {
+		outline: 2px solid #0b6efd;
+		outline-offset: 2px;
+	}
+
+	.switch-knob {
+		position: absolute;
+		top: 3px;
+		left: 3px;
+		width: 22px;
+		height: 22px;
+		background: white;
+		border-radius: 50%;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		transition: transform 200ms ease;
+	}
+
+	.switch-toggle.active .switch-knob {
+		transform: translateX(24px);
 	}
 </style>
