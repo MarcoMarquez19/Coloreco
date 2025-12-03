@@ -23,7 +23,30 @@
 	</header>
 
 	<div class="bienvenida-acciones">
-		<button class="boton-principal" aria-label="Iniciar aplicación">Iniciar</button>
+		<!-- Añadimos pattern-blue al botón principal para demostrar la textura en controles -->
+		<button class="boton-principal pattern-blue" aria-label="Iniciar aplicación">Iniciar</button>
+	</div>
+
+	<!-- SECCIÓN DEMO: Para visualizar las texturas de accesibilidad -->
+	<div class="demo-accesibilidad">
+		<p class="demo-titulo">Demo de Patrones de Accesibilidad</p>
+		<p class="demo-instruccion"><small>(Abre Ajustes ⚙️ y activa "Texturas de Ayuda")</small></p>
+		
+		<div class="demo-grid">
+			<!-- Cada tarjeta tiene un color de fondo y la clase de patrón correspondiente -->
+			<div class="demo-card bg-red pattern-red">
+				<span>Error / Rojo</span>
+			</div>
+			<div class="demo-card bg-green pattern-green">
+				<span>Éxito / Verde</span>
+			</div>
+			<div class="demo-card bg-blue pattern-blue">
+				<span>Info / Azul</span>
+			</div>
+			<div class="demo-card bg-yellow pattern-yellow">
+				<span>Aviso / Amarillo</span>
+			</div>
+		</div>
 	</div>
 </div>
 
@@ -38,6 +61,7 @@
 		text-align: center;
 		/* Usa var(--spacing-base) para padding adaptativo */
 		padding: calc(var(--spacing-base, 1rem) * 2) var(--spacing-base, 1rem);
+		min-height: 80vh;
 	}
 
 	.bienvenida-cabecera { 
@@ -52,48 +76,90 @@
 	}
 
 	.titulo {
-		margin: calc(var(--spacing-base, 1rem) * 0.25) 0;
-		/* Tamaño de fuente adaptativo basado en --font-size-base */
-		font-size: calc(var(--font-size-base, 1rem) * 2.25);
-		letter-spacing: 0.06em;
+		font-size: calc(var(--font-size-base, 1rem) * 2.5);
+		margin: 0;
+		color: #333;
+		font-weight: 800;
+		letter-spacing: -0.02em;
 	}
 
 	.subtitulo {
-		margin: 0;
-		color: var(--muted, #555);
-		/* Tamaño de fuente adaptativo */
-		font-size: calc(var(--font-size-base, 1rem) * 1);
+		font-size: calc(var(--font-size-base, 1rem) * 1.2);
+		color: #666;
+		margin: 0.5rem 0 0 0;
 	}
 
-	.bienvenida-acciones { 
-		margin-top: calc(var(--spacing-base, 1rem) * 1.75); 
+	.bienvenida-acciones {
+		margin-bottom: 3rem;
 	}
 
 	.boton-principal {
-		background: var(--accent, #0b6efd);
+		background-color: #1890ff;
 		color: white;
 		border: none;
-		/* Usa la variable CSS --button-padding definida en +layout.svelte */
-		padding: var(--button-padding, 0.9rem 1.6rem);
-		/* Tamaño de fuente adaptativo */
-		font-size: calc(var(--font-size-base, 1rem) * 1.05);
-		/* Border radius adaptativo */
+		padding: var(--button-padding, 0.8rem 1.6rem);
+		font-size: calc(var(--font-size-base, 1rem) * 1.1);
 		border-radius: var(--border-radius, 8px);
 		cursor: pointer;
-		box-shadow: 0 8px 20px rgba(11,110,253,0.18);
-		transition: transform 120ms ease;
+		font-weight: 600;
+		transition: transform 0.2s, box-shadow 0.2s;
+		/* Aseguramos que el patrón se vea bien sobre el botón */
+		position: relative;
+		overflow: hidden; 
 	}
 
 	.boton-principal:hover {
 		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
 	}
 
-	.boton-principal:focus {
-		outline: 3px solid #fff7a8;
-		outline-offset: 3px;
+	/* Estilos para la Demo */
+	.demo-accesibilidad {
+		margin-top: 2rem;
+		padding: 1.5rem;
+		background: white;
+		border-radius: var(--border-radius, 8px);
+		box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+		max-width: 600px;
+		width: 100%;
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.boton-principal { transition: none; }
+	.demo-titulo {
+		font-weight: 600;
+		margin: 0 0 0.25rem 0;
+		color: #444;
 	}
+
+	.demo-instruccion {
+		margin: 0 0 1rem 0;
+		color: #888;
+	}
+
+	.demo-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+		gap: 1rem;
+	}
+
+	.demo-card {
+		height: 80px;
+		border-radius: var(--border-radius, 8px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: white;
+		font-weight: 500;
+		font-size: 0.9rem;
+		text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+		/* Importante: position relative para que el pseudo-elemento del patrón se posicione bien */
+		position: relative;
+		overflow: hidden;
+	}
+
+	/* Colores de fondo para la demo */
+	.bg-red { background-color: #ff4d4f; }
+	.bg-green { background-color: #52c41a; }
+	.bg-blue { background-color: #1890ff; }
+	.bg-yellow { background-color: #fadb14; color: #333; text-shadow: none; }
+
 </style>
