@@ -71,7 +71,7 @@
 
 	.boton-principal {
 		background: var(--accent, #0b6efd);
-		color: white;
+		color: var(--color, white);
 		border: none;
 		/* Usa la variable CSS --button-padding definida en +layout.svelte */
 		padding: var(--button-padding, 0.9rem 1.6rem);
@@ -85,11 +85,12 @@
 	}
 
 	.boton-principal:hover {
+		background: var(--accent-hover, #0b5ed7);
 		transform: translateY(-2px);
 	}
 
 	.boton-principal:focus {
-		outline: 3px solid #000000;
+		outline: 3px solid var(--accent, #000000);
 		outline-offset: 3px;
 	}
 

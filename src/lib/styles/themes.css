@@ -1,0 +1,142 @@
+/**
+ * themes.css - Paletas de Color y Temas de Alto Contraste
+ * 
+ * Define las variables CSS globales para los diferentes modos de visualización:
+ * - Tema por defecto (claro)
+ * - Modo Noche (dark) - Alto contraste con fondo oscuro
+ * - Modo Inverso (dark-inverted) - Paleta invertida del modo noche
+ */
+
+/* ========================================
+   TEMA POR DEFECTO (CLARO)
+   ======================================== */
+:root {
+	/* Colores de fondo y texto principales */
+	--bg: #ffffff;
+	--fg: #111111;
+	
+	/* Colores de énfasis y acento */
+	--accent: #0b6efd;
+	--accent-hover: #0958d9;
+	
+	/* Colores de superficie (tarjetas, paneles, etc.) */
+	--surface: #f5f5f5;
+	--surface-hover: #e8e8e8;
+	
+	/* Bordes y divisores */
+	--border: #e0e0e0;
+	--border-strong: #cccccc;
+	
+	/* Texto secundario */
+	--text-secondary: #666666;
+	--text-muted: #999999;
+	
+	/* Estados (éxito, error, advertencia) */
+	--success: #28a745;
+	--error: #dc3545;
+	--warning: #ffc107;
+}
+
+/* ========================================
+   MODO NOCHE (DARK)
+   Alto contraste con fondo oscuro
+   ======================================== */
+[data-theme="dark"] {
+	/* Colores de fondo y texto invertidos para alto contraste */
+	--bg: #0a0a0a;
+	--fg: #f5f5f5;
+	
+	/* Colores de énfasis ajustados para fondo oscuro */
+    --color:#000000;
+	--accent: #ffffff;
+	--accent-hover: #747474;
+	
+	/* Superficies con contraste */
+	--surface: #1a1a1a;
+	--surface-hover: #2a2a2a;
+	
+	/* Bordes más visibles en fondo oscuro */
+	--border: #404040;
+	--border-strong: #606060;
+	
+	/* Texto secundario ajustado */
+	--text-secondary: #b0b0b0;
+	--text-muted: #808080;
+	
+	/* Estados adaptados al tema oscuro */
+	--success: #4ade80;
+	--error: #f87171;
+	--warning: #fbbf24;
+}
+
+/* Aplicar filtro de alto contraste a elementos gráficos en modo noche */
+[data-theme="dark"] img,
+[data-theme="dark"] video,
+[data-theme="dark"] svg {
+	filter: contrast(200%);
+}
+
+/* ========================================
+   MODO INVERSO (DARK-INVERTED)
+   Paleta invertida del modo noche
+   ======================================== */
+[data-theme="dark-inverted"] {
+	/* Inversión completa: texto oscuro sobre fondo claro extremo */
+	--bg: #f5f5f5;
+	--fg: #0a0a0a;
+	
+	/* Acentos invertidos */
+	--accent: #0958d9;
+	--accent-hover: #0b6efd;
+	
+	/* Superficies invertidas */
+	--surface: #e0e0e0;
+	--surface-hover: #d0d0d0;
+	
+	/* Bordes invertidos */
+	--border: #b0b0b0;
+	--border-strong: #909090;
+	
+	/* Texto secundario invertido */
+	--text-secondary: #404040;
+	--text-muted: #707070;
+	
+	/* Estados con paleta inversa */
+	--success: #15803d;
+	--error: #b91c1c;
+	--warning: #d97706;
+}
+
+/* Aplicar filtro de alto contraste a elementos gráficos en modo inverso */
+[data-theme="dark-inverted"] img,
+[data-theme="dark-inverted"] video,
+[data-theme="dark-inverted"] svg {
+	filter: contrast(200%);
+}
+
+/* ========================================
+   APLICACIÓN GLOBAL DE LAS VARIABLES
+   ======================================== */
+
+/* Asegurar que el body use las variables de tema */
+body {
+	background-color: var(--bg);
+	color: var(--fg);
+	transition: background-color 200ms ease, color 200ms ease;
+}
+
+/* Respetar preferencias de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+	body {
+		transition: none;
+	}
+	
+	[data-theme="dark"] img,
+	[data-theme="dark"] video,
+	[data-theme="dark"] svg,
+	[data-theme="dark-inverted"] img,
+	[data-theme="dark-inverted"] video,
+	[data-theme="dark-inverted"] svg {
+		transition: none;
+	}
+}

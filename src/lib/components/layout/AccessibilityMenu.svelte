@@ -189,6 +189,55 @@ onMount(() => {
 						</div>
 					</div>
 
+					<!-- Sección: Modo Noche (Alto Contraste) -->
+					<div class="control-grupo">
+						<h3 class="seccion-titulo">Alto Contraste</h3>
+                        
+						<!-- Interruptor para activar/desactivar el Modo Noche -->
+						<div class="switch-container">
+							<label for="toggle-modo-noche" class="switch-label">Activar Modo Noche</label>
+							<button
+								id="toggle-modo-noche"
+								type="button"
+								role="switch"
+								aria-checked={$settings.modoNoche}
+								aria-describedby="toggle-modo-noche-desc"
+								class="switch-toggle"
+								class:active={$settings.modoNoche}
+								onclick={() => settings.toggleModoNoche()}
+								aria-label={$settings.modoNoche ? 'Desactivar Modo Noche' : 'Activar Modo Noche'}
+							>
+								<span class="switch-knob"></span>
+							</button>
+						</div>
+						<div class="control-ayuda" id="toggle-modo-noche-desc">
+							<small>Activa una paleta de alto contraste con fondo oscuro y texto claro.</small>
+						</div>
+
+						<!-- Interruptor condicional para el Modo Inverso (solo visible si modoNoche está activo) -->
+						{#if $settings.modoNoche}
+							<div class="switch-container">
+								<label for="toggle-modo-inverso" class="switch-label">Activar Modo Inverso</label>
+								<button
+									id="toggle-modo-inverso"
+									type="button"
+									role="switch"
+									aria-checked={$settings.modoInverso}
+									aria-describedby="toggle-modo-inverso-desc"
+									class="switch-toggle"
+									class:active={$settings.modoInverso}
+									onclick={() => settings.toggleModoInverso()}
+									aria-label={$settings.modoInverso ? 'Desactivar Modo Inverso' : 'Activar Modo Inverso'}
+								>
+									<span class="switch-knob"></span>
+								</button>
+							</div>
+							<div class="control-ayuda" id="toggle-modo-inverso-desc">
+								<small>Invierte la paleta del Modo Noche para una experiencia visual alternativa.</small>
+							</div>
+						{/if}
+					</div>
+
 					<!-- Botón para reiniciar valores -->
 					<button class="boton-reset" onclick={settings.reset}>
 						Restaurar valores por defecto

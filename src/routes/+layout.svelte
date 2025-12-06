@@ -4,12 +4,29 @@
 	import { settings } from '$lib/stores/settings';
 	import AccessibilityMenu from '$lib/components/layout/AccessibilityMenu.svelte';
 	import MagicMagnifier from '$lib/components/a11y/MagicMagnifier.svelte';
+	import '../lib/styles/themes.css';
 
 	// Pequeño helper de accesibilidad: enfocar el contenido principal al navegar
 	let mainEl: HTMLElement | null = null;
 
 	// Props para recibir el contenido de las páginas hijas
 	let { children } = $props();
+
+	// Computed theme: determina el valor del atributo data-theme basado en modoNoche y modoInverso
+	let currentTheme = $derived(
+		$settings.modoNoche 
+			? ($settings.modoInverso ? 'dark-inverted' : 'dark')
+			: ''
+	);
+
+	// Efecto para aplicar el atributo data-theme al body
+	$effect(() => {
+		if (currentTheme) {
+			document.body.setAttribute('data-theme', currentTheme);
+		} else {
+			document.body.removeAttribute('data-theme');
+		}
+	});
 
 	onMount(() => {
 		// sin operación por ahora; mantiene la variable disponible para futura gestión de foco
@@ -98,7 +115,7 @@
 		align-items: center;
 		justify-content: center;
 		background: var(--accent, #0b6efd);
-		color: white;
+		color: var(--color,rgb(255, 255, 255));
 		border: none;
 		box-shadow: 0 6px 18px rgba(11,110,253,0.18);
 		cursor: pointer;

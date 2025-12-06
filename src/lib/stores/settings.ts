@@ -26,6 +26,12 @@ export interface ConfiguracionUI {
 	
 	// Lupa Mágica: nivel de magnificación (1.5, 2, 3)
 	magnifierZoom: number; // nivel de zoom de la lupa
+	
+	// Modo Noche: activa paleta de alto contraste con fondo oscuro
+	modoNoche?: boolean;
+	
+	// Modo Inverso: invierte la paleta del modo noche (solo disponible si modoNoche está activo)
+	modoInverso?: boolean;
 }
 
 // Valores por defecto para una experiencia estándar
@@ -36,7 +42,9 @@ const valoresPorDefecto: ConfiguracionUI = {
 	tema: 'claro',
 	borderRadius: 8,
 	magnifierEnabled: false,
-	magnifierZoom: 1.85
+	magnifierZoom: 1.85,
+	modoNoche: false,
+	modoInverso: false
 };
 
 // Crear el store reactivo
@@ -105,6 +113,21 @@ function crearStoreSettings() {
 		setMagnifierZoom: (zoom: number) => update(config => ({
 			...config,
 			magnifierZoom: zoom
+		})),
+		
+		// Alterna el modo noche (alto contraste con fondo oscuro)
+		// Si se desactiva el modo noche, también se desactiva el modo inverso automáticamente
+		toggleModoNoche: () => update(config => ({
+			...config,
+			modoNoche: !config.modoNoche,
+			// Si modoNoche pasa a false, modoInverso también debe ser false
+			modoInverso: !config.modoNoche ? false : config.modoInverso
+		})),
+		
+		// Alterna el modo inverso (invierte la paleta del modo noche)
+		toggleModoInverso: () => update(config => ({
+			...config,
+			modoInverso: !config.modoInverso
 		})),
 		
 		// Reinicia toda la configuración a valores por defecto
