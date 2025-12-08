@@ -1,29 +1,32 @@
 <script lang="ts">
 	// Página de bienvenida para la aplicación COLORECO
-	// Aquí colocamos placeholders para las imágenes SVG del logo y del icono de la app.
-	// Ruta recomendada para las imágenes: `src/lib/assets/`
-	// - `logo-coloreco.svg`  -> logo grande para la pantalla de bienvenida
-	// - `icon-coloreco.svg`  -> icono de la aplicación (pequeño)
-
-	// Importar imágenes desde assets (mejor práctica en SvelteKit)
-	import logoColoreco from '$lib/assets/logo-coloreco.svg';
+	// Importar imágenes desde assets 
 	import iconColoreco from '$lib/assets/icon-coloreco.svg';
+	import logoColoreco from '$lib/assets/Logo_coloreco.png';
+	import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
+	import {configuraciones} from '$lib/stores/settings';
 </script>
 
-<div class="bienvenida" aria-labelledby="titulo-coloreco">
-	<header class="bienvenida-cabecera">
-		<!-- Logo: reemplaza el archivo en src/lib/assets/logo-coloreco.svg -->
-		<img src={logoColoreco} alt="Logo COLORECO" class="logo" width="260" height="120" />
+<FondoManchas />
 
-		<!-- Título textual accesible -->
+<div class="bienvenida" aria-labelledby="titulo-coloreco" style="padding-top: {$configuraciones.multiplicadorTamanioFuente === 1 ? '10%' : '0'}">
+	<header class="bienvenida-cabecera" data-magnificable>
+
 		<h1 id="titulo-coloreco" class="titulo">COLORECO</h1>
 
-		<!-- Subtítulo / lema -->
+		<div class="logo-ovalo">
+			<img src={logoColoreco} alt="Logo COLORECO" class="logo" width="260" height="120" />
+		</div>
+
 		<p class="subtitulo">Tu estudio de pinturas e historias</p>
 	</header>
 
 	<div class="bienvenida-acciones">
-		<button class="boton-principal" aria-label="Iniciar aplicación">Iniciar</button>
+		<button class="boton-principal" 
+			aria-label="Iniciar aplicación" 
+			title="Iniciar">
+			Iniciar
+		</button>
 	</div>
 </div>
 
@@ -36,65 +39,74 @@
 		align-items: center;
 		justify-content: center;
 		text-align: center;
-		/* Usa var(--spacing-base) para padding adaptativo */
-		padding: calc(var(--spacing-base, 1rem) * 2) var(--spacing-base, 1rem);
 	}
 
-	.bienvenida-cabecera { 
+	.bienvenida-cabecera {
 		margin-bottom: calc(var(--spacing-base, 1rem) * 1.5); 
+	}
+	
+	.titulo {
+		padding-left: 2rem;
+		margin: calc(var(--spacing-base, 1rem) * 0.25) 0;
+		font-size: calc(var(--font-size-base, 1rem) * 6.5);
+		letter-spacing: 0.26em;
+	}
+
+	.logo-ovalo {
+		margin: calc(var(--spacing-base, 1rem) * 1.8) auto calc(var(--spacing-base, 1rem) * 1.8);
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		border: 4px solid #000;      
+		border-radius: 9px;       
+		background: white;           
+		box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 	}
 
 	.logo {
 		display: block;
-		margin: 0 auto calc(var(--spacing-base, 1rem) * 0.5);
 		max-width: 90%;
 		height: auto;
 	}
 
-	.titulo {
-		margin: calc(var(--spacing-base, 1rem) * 0.25) 0;
-		/* Tamaño de fuente adaptativo basado en --font-size-base */
-		font-size: calc(var(--font-size-base, 1rem) * 2.25);
-		letter-spacing: 0.06em;
-	}
-
 	.subtitulo {
 		margin: 0;
-		color: var(--muted, #555);
-		/* Tamaño de fuente adaptativo */
-		font-size: calc(var(--font-size-base, 1rem) * 1);
+		color: var(--color-texto, #535353);
+		font-size: calc(var(--font-size-base, 1rem) * 1.5);
+		font-weight: 500;
 	}
 
 	.bienvenida-acciones { 
-		margin-top: calc(var(--spacing-base, 1rem) * 1.75); 
+		margin-top: calc(var(--spacing-base, 1rem) * 3); 
 	}
 
 	.boton-principal {
-		background: var(--accent, #0b6efd);
-		color: var(--color, white);
+		background: var(--fondo-botones, #ffca00);
+		color: var(--icono-color-relleno, black);
 		border: none;
 		/* Usa la variable CSS --button-padding definida en +layout.svelte */
-		padding: var(--button-padding, 0.9rem 1.6rem);
-		/* Tamaño de fuente adaptativo */
-		font-size: calc(var(--font-size-base, 1rem) * 1.05);
-		/* Border radius adaptativo */
+		padding: 1rem 10rem;
+		font-size: calc(var(--font-size-base, 1rem) * 3.8);
+		font-weight: 600;
+		letter-spacing: 0.05em;
 		border-radius: var(--border-radius, 8px);
 		cursor: pointer;
-		box-shadow: 0 8px 20px rgba(11,110,253,0.18);
-		transition: transform 120ms ease;
+		box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
+		transition: transform 120ms ease, box-shadow 120ms ease;
 	}
 
 	.boton-principal:hover {
-		background: var(--accent-hover, #0b5ed7);
+		background: var(--fondo-botones-hover, #d1a700);
 		transform: translateY(-2px);
 	}
 
-	.boton-principal:focus {
-		outline: 3px solid var(--accent, #000000);
-		outline-offset: 3px;
+	.boton-principal:active {
+		transform: translateY(0);
 	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.boton-principal { transition: none; }
+	.boton-principal:focus {
+		outline: var(--borde-botones, 4px solid #000000);
+		background: var(--fondo-botones-hover, #d1a700);
+		outline-offset: 7px;
 	}
 </style>

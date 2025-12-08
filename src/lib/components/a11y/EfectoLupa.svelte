@@ -10,7 +10,7 @@ let isOverZone = $state(false);
 const LENS_SIZE = 185;
 let lensX = $state(0);
 let lensY = $state(0);
-const OFFSET_DISTANCE = 20;
+const OFFSET_DISTANCE = 40;
 // Agrega esto junto a tus otras declaraciones 'let'
 let observer: MutationObserver | null = null;
 let debounceTimer: ReturnType<typeof setTimeout>;

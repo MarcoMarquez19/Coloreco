@@ -83,7 +83,9 @@
 
 	<!-- Lupa Mágica: magnificación del contenido de la página -->
 	{#if $configuraciones.lupaActivada}
+	<div inert tabindex="-1">
 		<EfectoLupa />
+	</div>
 	{/if}
 
 	<!-- Botón de volver fijo en la esquina inferior izquierda (oculto en página inicial) -->
@@ -131,15 +133,15 @@
 </div>
 
 <style>
+	
 	:global(html, body, #svelte) {
-		height: 100%;
+		height: 95%;
 	}
 
 	.app-layout {
-		min-height: 100vh;
 		display: flex;
 		flex-direction: column;
-		background: var(--bg, #fff);
+		background: transparent;
 		color: var(--fg, #111);
 		font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
 		/* Variables CSS base ahora se inyectan dinámicamente desde el store */
@@ -148,6 +150,7 @@
 
 	.app-main {
 		flex: 1 1 auto;
+		overflow-x: hidden;
 		width: 100%;
 		max-width: 1100px;
 		margin: var(--spacing-base, 1rem) auto;
@@ -220,7 +223,7 @@
 		transform: translateY(0);
 	}
 	.boton-volver:focus, .boton-configuracion:focus{
-		outline: var(--borde-botones, 3px solid #000000);
+		outline: var(--borde-botones, 4px solid #000000);
 		background: var(--fondo-botones-hover, #d1a700);
 		outline-offset: 7px;
 	}
