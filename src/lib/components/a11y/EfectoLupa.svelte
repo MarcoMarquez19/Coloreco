@@ -1,6 +1,6 @@
 <script lang="ts">
 // Componente Lupa Mágica - Magnificación en vivo
-import { settings } from '$lib/stores/settings';
+import { configuraciones } from '$lib/stores/settings';
 import { onMount, onDestroy } from 'svelte';
 
 let mouseX = $state(window.innerWidth / 2);
@@ -44,7 +44,7 @@ function handleMouseMove(event: MouseEvent) {
 
 function updateTransform() {
 	if (portalContainer && clonedNode) {
-		const zoom = $settings.magnifierZoom;
+		const zoom = $configuraciones.nivelMagnificacion;
 		const scrollX = window.scrollX;
 		const scrollY = window.scrollY;
 		const originX = mouseX + scrollX;
@@ -93,7 +93,7 @@ onMount(() => {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 // Solo recreamos si la lupa está activa
-                if ($settings.lupaActivada) {
+                if ($configuraciones.lupaActivada) {
                     recreateClone();
                 }
             }, 100); // 100ms de espera es suficiente
@@ -125,7 +125,7 @@ onDestroy(() => {
 
 $effect(() => {
 	// Recrear el clon cada vez que se activa la lupa o cambia el menú
-	if ($settings.lupaActivada && portalContainer) {
+	if ($configuraciones.lupaActivada && portalContainer) {
 		recreateClone();
 	}
 });
@@ -135,7 +135,7 @@ $effect(() => {
 });
 </script>
 
-{#if $settings.lupaActivada}
+{#if $configuraciones.lupaActivada}
 <div
 	bind:this={lensElement}
 	class="magic-magnifier"

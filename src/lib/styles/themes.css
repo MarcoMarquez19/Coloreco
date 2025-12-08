@@ -48,32 +48,16 @@
 	--fondo-botones-hover: #808080;
 	--sombra-botones: 0 6px 18px rgba(240, 227, 227, 0.3);
 	--borde-botones: 3px solid #f5f5f5;
+	--color-texto: #ffffff;
 	
 	/* Colores de fondo y texto invertidos para alto contraste */
 	--bg: #0a0a0a;
 	--fg: #f5f5f5;
 	
-	/* Colores de énfasis ajustados para fondo oscuro */
-    --color:#000000;
-	--accent: #ffffff;
-	--accent-hover: #747474;
-	
-	/* Superficies con contraste */
-	--surface: #1a1a1a;
-	--surface-hover: #2a2a2a;
-	
-	/* Bordes más visibles en fondo oscuro */
-	--border: #404040;
-	--border-strong: #606060;
-	
-	/* Texto secundario ajustado */
-	--text-secondary: #b0b0b0;
-	--text-muted: #808080;
-	
 	/* Estados adaptados al tema oscuro */
-	--success: #4ade80;
+	--exito: #4ade80;
 	--error: #f87171;
-	--warning: #fbbf24;
+	--advertencia: #fbbf24;
 }
 
 /* Aplicar filtro de alto contraste a elementos gráficos en modo noche */
@@ -90,31 +74,20 @@
 [data-theme="dark-inverted"] {
 	--icono-color-borde: #000000;
 	--icono-color-relleno: #ffffff;
+	--fondo-botones: #000000;
+	--fondo-botones-hover: #808080;
+	--sombra-botones: 0 6px 18px rgba(0, 0, 0, 0.3);
+	--borde-botones: 3px solid #000000;
+	--color-texto: #000000;
 
 	/* Inversión completa: texto oscuro sobre fondo claro extremo */
 	--bg: #f5f5f5;
 	--fg: #0a0a0a;
 	
-	/* Acentos invertidos */
-	--accent: #0958d9;
-	--accent-hover: #0b6efd;
-	
-	/* Superficies invertidas */
-	--surface: #e0e0e0;
-	--surface-hover: #d0d0d0;
-	
-	/* Bordes invertidos */
-	--border: #b0b0b0;
-	--border-strong: #909090;
-	
-	/* Texto secundario invertido */
-	--text-secondary: #404040;
-	--text-muted: #707070;
-	
 	/* Estados con paleta inversa */
-	--success: #15803d;
+	--exito: #15803d;
 	--error: #b91c1c;
-	--warning: #d97706;
+	--advertencia: #d97706;
 }
 
 /* Aplicar filtro de alto contraste a elementos gráficos en modo inverso */

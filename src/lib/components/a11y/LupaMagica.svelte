@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { settings } from '$lib/stores/settings';
+	import { configuraciones } from '$lib/stores/settings';
 	import { onDestroy, onMount } from 'svelte';
 
 	let mouseX = $state(0);
@@ -57,12 +57,12 @@
 
 			track.onended = () => {
 				stopCapture();
-				$settings.lupaActivada = false;
+				$configuraciones.lupaActivada = false;
 			};
 
 		} catch (err) {
 			console.error("Error al iniciar lupa:", err);
-			$settings.lupaActivada = false;
+			$configuraciones.lupaActivada = false;
 		}
 	}
 
@@ -104,7 +104,7 @@
 		});
 		if (!ctx) return;
 
-		const zoom = $settings.magnifierZoom || 2;
+		const zoom = $configuraciones.nivelMagnificacion || 2;
 		
 		// CONFIGURACIÓN DE NITIDEZ
 		// 'high' intenta usar mejores algoritmos de escalado
@@ -138,9 +138,9 @@
 	}
 
 	$effect(() => {
-		if ($settings.lupaActivada && !stream) {
+		if ($configuraciones.lupaActivada && !stream) {
 			startCapture();
-		} else if (!$settings.lupaActivada && stream) {
+		} else if (!$configuraciones.lupaActivada && stream) {
 			stopCapture();
 		}
 	});
@@ -160,7 +160,7 @@
 	});
 </script>
 
-{#if $settings.lupaActivada}
+{#if $configuraciones.lupaActivada}
 	<video bind:this={videoElement} style="display: none;" playsinline muted></video>
 
 	<div

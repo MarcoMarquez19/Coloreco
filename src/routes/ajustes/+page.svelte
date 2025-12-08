@@ -3,7 +3,7 @@
 	// Este componente permite al usuario personalizar la apariencia de la app.
 	// Se ha transformado de modal a página independiente.
 	
-	import { settings } from '$lib/stores/settings';
+	import { configuraciones } from '$lib/stores/settings';
 	import { onMount } from 'svelte';
 
 	// Nota: En una 'page.svelte' normal no recibimos 'children' como snippet de contenido principal,
@@ -22,7 +22,7 @@
 	});
 
 	$effect(() => {
-		if (previewMarcoEl && previewContEl && ($settings.fontSizeMultiplier || $settings.spacingMultiplier || $settings.lupaActivada)) {
+		if (previewMarcoEl && previewContEl && ($configuraciones.multiplicadorTamanioFuente || $configuraciones.multiplicadorEspaciado || $configuraciones.lupaActivada)) {
 			// Cuando cambian los ajustes que afectan al diseño, actualizar la escala de la vista previa
 			updatePreviewSize();
 		}
@@ -99,12 +99,12 @@
 							id="toggle-magnifier"
 							type="button"
 							role="switch"
-							aria-checked={$settings.lupaActivada}
+							aria-checked={$configuraciones.lupaActivada}
 							aria-describedby="toggle-magnifier-desc"
 							class="switch-toggle"
-							class:active={$settings.lupaActivada}
-							onclick={() => settings.toggleMagnifier()}
-							aria-label={$settings.lupaActivada ? 'Desactivar lupa mágica' : 'Activar lupa mágica'}
+							class:active={$configuraciones.lupaActivada}
+							onclick={() => configuraciones.toggleMagnifier()}
+							aria-label={$configuraciones.lupaActivada ? 'Desactivar lupa mágica' : 'Activar lupa mágica'}
 						>
 							<span class="switch-knob"></span>
 						</button>
@@ -118,7 +118,7 @@
 				<div class="control-grupo">
 					<div class="control-label" id="font-size-label">
 						<span>Tamaño de Fuente</span>
-						<span class="control-valor">{$settings.fontSizeMultiplier.toFixed(1)}×</span>
+						<span class="control-valor">{$configuraciones.multiplicadorTamanioFuente.toFixed(1)}×</span>
 					</div>
 					<div class="switch-container">
 						<label for="toggle-font-size" class="switch-label">Duplicar tamaño de texto</label>
@@ -126,12 +126,12 @@
 							id="toggle-font-size"
 							type="button"
 							role="switch"
-							aria-checked={$settings.fontSizeMultiplier >= 1.9}
+							aria-checked={$configuraciones.multiplicadorTamanioFuente >= 1.2}
 							aria-describedby="toggle-font-size-desc"
 							class="switch-toggle"
-							class:active={$settings.fontSizeMultiplier >= 1.9}
-							onclick={() => settings.setFontSize($settings.fontSizeMultiplier >= 1.9 ? 1 : 2) }
-							aria-label={$settings.fontSizeMultiplier >= 1.9 ? 'Desactivar tamaño de fuente duplicado' : 'Activar tamaño de fuente duplicado'}
+							class:active={$configuraciones.multiplicadorTamanioFuente >= 1.2}
+							onclick={() => configuraciones.setFontSize($configuraciones.multiplicadorTamanioFuente >= 1.2 ? 1 : 1.5) }
+							aria-label={$configuraciones.multiplicadorTamanioFuente >= 1.2 ? 'Desactivar tamaño de fuente duplicado' : 'Activar tamaño de fuente duplicado'}
 						>
 							<span class="switch-knob"></span>
 						</button>
@@ -145,7 +145,7 @@
 				<div class="control-grupo">
 					<div class="control-label" id="spacing-label">
 						<span>Espaciado</span>
-						<span class="control-valor">{$settings.spacingMultiplier.toFixed(1)}×</span>
+						<span class="control-valor">{$configuraciones.multiplicadorEspaciado.toFixed(1)}×</span>
 					</div>
 					<div class="switch-container">
 						<label for="toggle-spacing" class="switch-label">Duplicar espaciado</label>
@@ -153,12 +153,12 @@
 							id="toggle-spacing"
 							type="button"
 							role="switch"
-							aria-checked={$settings.spacingMultiplier >= 1.9}
+							aria-checked={$configuraciones.multiplicadorEspaciado >= 1.2}
 							aria-describedby="toggle-spacing-desc"
 							class="switch-toggle"
-							class:active={$settings.spacingMultiplier >= 1.9}
-							onclick={() => settings.setSpacing($settings.spacingMultiplier >= 1.9 ? 1 : 2) }
-							aria-label={$settings.spacingMultiplier >= 1.9 ? 'Desactivar espaciado duplicado' : 'Activar espaciado duplicado'}
+							class:active={$configuraciones.multiplicadorEspaciado >= 1.2}
+							onclick={() => configuraciones.setSpacing($configuraciones.multiplicadorEspaciado >= 1.2 ? 1 : 1.5) }
+							aria-label={$configuraciones.multiplicadorEspaciado >= 1.2 ? 'Desactivar espaciado duplicado' : 'Activar espaciado duplicado'}
 						>
 							<span class="switch-knob"></span>
 						</button>
@@ -179,12 +179,12 @@
 							id="toggle-modo-noche"
 							type="button"
 							role="switch"
-							aria-checked={$settings.modoNoche}
+							aria-checked={$configuraciones.modoNoche}
 							aria-describedby="toggle-modo-noche-desc"
 							class="switch-toggle"
-							class:active={$settings.modoNoche}
-							onclick={() => settings.toggleModoNoche()}
-							aria-label={$settings.modoNoche ? 'Desactivar Modo Noche' : 'Activar Modo Noche'}
+							class:active={$configuraciones.modoNoche}
+							onclick={() => configuraciones.toggleModoNoche()}
+							aria-label={$configuraciones.modoNoche ? 'Desactivar Modo Noche' : 'Activar Modo Noche'}
 						>
 							<span class="switch-knob"></span>
 						</button>
@@ -194,19 +194,19 @@
 					</div>
 
 					<!-- Interruptor condicional para el Modo Inverso (solo visible si modoNoche está activo) -->
-					{#if $settings.modoNoche}
+					{#if $configuraciones.modoNoche}
 						<div class="switch-container">
 							<label for="toggle-modo-inverso" class="switch-label">Activar Modo Inverso</label>
 							<button
 								id="toggle-modo-inverso"
 								type="button"
 								role="switch"
-								aria-checked={$settings.modoInverso}
+								aria-checked={$configuraciones.modoInverso}
 								aria-describedby="toggle-modo-inverso-desc"
 								class="switch-toggle"
-								class:active={$settings.modoInverso}
-								onclick={() => settings.toggleModoInverso()}
-								aria-label={$settings.modoInverso ? 'Desactivar Modo Inverso' : 'Activar Modo Inverso'}
+								class:active={$configuraciones.modoInverso}
+								onclick={() => configuraciones.toggleModoInverso()}
+								aria-label={$configuraciones.modoInverso ? 'Desactivar Modo Inverso' : 'Activar Modo Inverso'}
 							>
 								<span class="switch-knob"></span>
 							</button>
@@ -218,7 +218,7 @@
 				</div>
 
 				<!-- Botón para reiniciar valores -->
-				<button class="boton-reset" onclick={settings.reset}>
+				<button class="boton-reset" onclick={configuraciones.reset}>
 					Restaurar valores por defecto
 				</button>
 			</section>
