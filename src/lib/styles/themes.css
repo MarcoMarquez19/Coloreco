@@ -1,0 +1,125 @@
+/**
+ * themes.css - Paletas de Color y Temas de Alto Contraste
+ * 
+ * Define las variables CSS globales para los diferentes modos de visualización:
+ * - Tema por defecto (claro)
+ * - Modo Noche (dark) - Alto contraste con fondo oscuro
+ * - Modo Inverso (dark-inverted) - Paleta invertida del modo noche
+ */
+
+/* ========================================
+   TEMA POR DEFECTO (CLARO)
+   ======================================== */
+:root {
+	/* Colores de fondo y texto principales */
+	--bg: #ffffff;
+	--fg: #111111;
+	
+	/* Colores de énfasis y acento */
+	--accent: #0b6efd;
+	--accent-hover: #0958d9;
+	
+	/* Colores de superficie (tarjetas, paneles, etc.) */
+	--surface: #f5f5f5;
+	--surface-hover: #e8e8e8;
+	
+	/* Bordes y divisores */
+	--border: #e0e0e0;
+	--border-strong: #cccccc;
+	
+	/* Texto secundario */
+	--text-secondary: #666666;
+	--text-muted: #999999;
+	
+	/* Estados (éxito, error, advertencia) */
+	--success: #28a745;
+	--error: #dc3545;
+	--warning: #ffc107;
+}
+
+/* ========================================
+   MODO NOCHE (DARK)
+   Alto contraste con fondo oscuro
+   ======================================== */
+[data-theme="dark"] {
+	--icono-color-borde: #f5f5f5;
+	--icono-color-relleno: #0a0a0a;
+	--fondo-botones: #ffffff;
+	--fondo-botones-hover: #808080;
+	--sombra-botones: 0 6px 18px rgba(240, 227, 227, 0.3);
+	--borde-botones: 3px solid #f5f5f5;
+	--color-texto: #ffffff;
+	
+	/* Colores de fondo y texto invertidos para alto contraste */
+	--bg: #0a0a0a;
+	--fg: #f5f5f5;
+	
+	/* Estados adaptados al tema oscuro */
+	--exito: #4ade80;
+	--error: #f87171;
+	--advertencia: #fbbf24;
+}
+
+/* Aplicar filtro de alto contraste a elementos gráficos en modo noche */
+[data-theme="dark"] img,
+[data-theme="dark"] video,
+[data-theme="dark"] svg {
+	filter: contrast(200%);
+}
+
+/* ========================================
+   MODO INVERSO (DARK-INVERTED)
+   Paleta invertida del modo noche
+   ======================================== */
+[data-theme="dark-inverted"] {
+	--icono-color-borde: #000000;
+	--icono-color-relleno: #ffffff;
+	--fondo-botones: #000000;
+	--fondo-botones-hover: #808080;
+	--sombra-botones: 0 6px 18px rgba(0, 0, 0, 0.3);
+	--borde-botones: 3px solid #000000;
+	--color-texto: #000000;
+
+	/* Inversión completa: texto oscuro sobre fondo claro extremo */
+	--bg: #f5f5f5;
+	--fg: #0a0a0a;
+	
+	/* Estados con paleta inversa */
+	--exito: #15803d;
+	--error: #b91c1c;
+	--advertencia: #d97706;
+}
+
+/* Aplicar filtro de alto contraste a elementos gráficos en modo inverso */
+[data-theme="dark-inverted"] img,
+[data-theme="dark-inverted"] video,
+[data-theme="dark-inverted"] svg {
+	filter: contrast(200%);
+}
+
+/* ========================================
+   APLICACIÓN GLOBAL DE LAS VARIABLES
+   ======================================== */
+
+/* Asegurar que el body use las variables de tema */
+body {
+	background-color: var(--bg);
+	color: var(--fg);
+	transition: background-color 200ms ease, color 200ms ease;
+}
+
+/* Respetar preferencias de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+	body {
+		transition: none;
+	}
+	
+	[data-theme="dark"] img,
+	[data-theme="dark"] video,
+	[data-theme="dark"] svg,
+	[data-theme="dark-inverted"] img,
+	[data-theme="dark-inverted"] video,
+	[data-theme="dark-inverted"] svg {
+		transition: none;
+	}
+}
