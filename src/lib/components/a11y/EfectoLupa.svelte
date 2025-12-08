@@ -93,7 +93,7 @@ onMount(() => {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 // Solo recreamos si la lupa está activa
-                if ($settings.magnifierEnabled) {
+                if ($settings.lupaActivada) {
                     recreateClone();
                 }
             }, 100); // 100ms de espera es suficiente
@@ -125,7 +125,7 @@ onDestroy(() => {
 
 $effect(() => {
 	// Recrear el clon cada vez que se activa la lupa o cambia el menú
-	if ($settings.magnifierEnabled && portalContainer) {
+	if ($settings.lupaActivada && portalContainer) {
 		recreateClone();
 	}
 });
@@ -135,7 +135,7 @@ $effect(() => {
 });
 </script>
 
-{#if $settings.magnifierEnabled}
+{#if $settings.lupaActivada}
 <div
 	bind:this={lensElement}
 	class="magic-magnifier"

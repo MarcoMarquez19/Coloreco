@@ -19,7 +19,7 @@
 	});
 
 	$effect(() => {
-		if (previewMarcoEl && previewContEl && ($settings.fontSizeMultiplier || $settings.spacingMultiplier || $settings.magnifierEnabled)) {
+		if (previewMarcoEl && previewContEl && ($settings.fontSizeMultiplier || $settings.spacingMultiplier || $settings.lupaActivada)) {
 			// When settings affecting layout change, update preview scale
 			updatePreviewSize();
 		}
@@ -121,12 +121,12 @@ onMount(() => {
 								id="toggle-magnifier"
 								type="button"
 								role="switch"
-								aria-checked={$settings.magnifierEnabled}
+								aria-checked={$settings.lupaActivada}
 								aria-describedby="toggle-magnifier-desc"
 								class="switch-toggle"
-								class:active={$settings.magnifierEnabled}
+								class:active={$settings.lupaActivada}
 								onclick={() => settings.toggleMagnifier()}
-								aria-label={$settings.magnifierEnabled ? 'Desactivar lupa mágica' : 'Activar lupa mágica'}
+								aria-label={$settings.lupaActivada ? 'Desactivar lupa mágica' : 'Activar lupa mágica'}
 							>
 								<span class="switch-knob"></span>
 							</button>

@@ -1,12 +1,12 @@
 <script lang="ts">
-	import favicon from '$lib/assets/favicon.svg';
-	import { onMount } from 'svelte';
+	import logoColoreco from '$lib/assets/Logo_coloreco.png';
 	import { settings } from '$lib/stores/settings';
 	import LupaMagica from '$lib/components/a11y/LupaMagica.svelte';
 	import EfectoLupa from '$lib/components/a11y/EfectoLupa.svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import '../lib/styles/themes.css';
+	import IconoVolver from '$lib/components/iconos/IconoVolver.svelte';
 
 	// Pequeño helper de accesibilidad: enfocar el contenido principal al navegar
 	let mainEl: HTMLElement | null = null;
@@ -15,22 +15,21 @@
 	let { children } = $props();
 
 	// Computed theme: determina el valor del atributo data-theme basado en modoNoche y modoInverso
-	let currentTheme = $derived(
+	let modoActual = $derived(
 		$settings.modoNoche 
 			? ($settings.modoInverso ? 'dark-inverted' : 'dark')
 			: ''
 	);
 
 	// Detectar si estamos en la página de ajustes o en la página inicial
-	let isSettingsPage = $derived($page.url.pathname === '/ajustes');
-	let isHomePage = $derived($page.url.pathname === '/');
+	let estaEnConfiguracion = $derived($page.url.pathname === '/ajustes');
+	let estaEnInicio = $derived($page.url.pathname === '/');
 
 	// Funciones de navegación
-	function goToSettings() {
+	function abrirConfiguracion() {
 		goto('/ajustes');
 	}
-
-	function goBack() {
+	function volver() {
 		if (window.history.length > 1) {
 			window.history.back();
 		} else {
@@ -40,20 +39,17 @@
 
 	// Efecto para aplicar el atributo data-theme al body
 	$effect(() => {
-		if (currentTheme) {
-			document.body.setAttribute('data-theme', currentTheme);
+		if (modoActual) {
+			document.body.setAttribute('data-theme', modoActual);
 		} else {
 			document.body.removeAttribute('data-theme');
 		}
 	});
-
-	onMount(() => {
-		// sin operación por ahora; mantiene la variable disponible para futura gestión de foco
-	});
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<title>Coloreco - Tu estudio de pinturas e historias</title>
+	<link rel="icon" href={logoColoreco} />
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
 </svelte:head>
 
@@ -72,39 +68,34 @@
 	</main>
 
 	<!-- Lupa Mágica: magnificación del contenido de la página -->
-	{#if $settings.magnifierEnabled}
+	{#if $settings.lupaActivada}
 		<EfectoLupa />
 	{/if}
 
 	<!-- Botón de volver fijo en la esquina inferior izquierda (oculto en página inicial) -->
-	{#if !isHomePage}
+	{#if !estaEnInicio}
 		<button 
-			class="back-button" 
-			aria-label="Volver" 
+			class="boton-volver" 
+			aria-label="Volver a la página anterior" 
 			title="Volver" 
 			type="button"
-			onclick={goBack}
-			data-keep-fixed
-			data-magnificable
+			onclick={volver}
 		>
-			<span class="sr-only">Volver</span>
-			<!-- Icono SVG de flecha hacia atrás -->
-			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-				<path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-			</svg>
+			<span class="solo-lectores">Volver a la página anterior</span>
+			
+			<!-- 2. Usamos el componente. No necesita src -->
+			<IconoVolver />
 		</button>
 	{/if}
 	
 	<!-- Botón de ajustes fijo en la esquina inferior derecha (oculto en /ajustes) -->
-	{#if !isSettingsPage}
+	{#if !estaEnConfiguracion}
 		<button 
 			class="settings-button" 
 			aria-label="Abrir ajustes" 
 			title="Ajustes" 
 			type="button"
-			onclick={goToSettings}
-			data-keep-fixed
-			data-magnificable
+			onclick={abrirConfiguracion}
 		>
 			<span class="sr-only">Abrir ajustes</span>
 			<!-- Icono SVG de engranaje incrustado -->
@@ -145,8 +136,8 @@
 		position: fixed;
 		right: var(--spacing-base, 1rem);
 		bottom: var(--spacing-base, 1rem);
-		width: 48px;
-		height: 48px;
+		width: 68px;
+		height: 68px;
 		border-radius: var(--border-radius, 8px);
 		display: inline-flex;
 		align-items: center;
@@ -173,38 +164,39 @@
 	}
 
 	/* Botón de volver en esquina inferior izquierda */
-	.back-button {
+	.boton-volver {
 		position: fixed;
 		left: var(--spacing-base, 1rem);
 		bottom: var(--spacing-base, 1rem);
-		width: 48px;
-		height: 48px;
+		width: 68px;
+		height: 68px;
 		border-radius: var(--border-radius, 8px);
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		background: var(--accent, #0b6efd);
-		color: var(--color,rgb(255, 255, 255));
+		background: var(--fondo-botones, #e49124);
+		color: var(--color, #000000);
 		border: none;
-		box-shadow: 0 6px 18px rgba(11,110,253,0.18);
+		box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
 		cursor: pointer;
 		transition: transform 120ms ease, box-shadow 120ms ease;
+		z-index: 100;
 	}
-
-	.back-button:hover {
+	.boton-volver:hover {
 		transform: translateY(-2px);
+		background: var(--fondo-botones-hover, #7c4b0c);
 	}
 
-	.back-button:active {
+	.boton-volver:active {
 		transform: translateY(0);
 	}
 
-	.back-button:focus {
-		outline: 3px solid #000000;
+	.boton-volver:focus{
+		outline: var(--borde-botones, 3px solid #000000);
 		outline-offset: 3px;
 	}
 
-	.sr-only {
+	.solo-lectores {
 		position: absolute !important;
 		height: 1px;
 		width: 1px;
@@ -217,6 +209,6 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.settings-button, .back-button { transition: none; }
+		.settings-button, .boton-volver { transition: none; }
 	}
 </style>

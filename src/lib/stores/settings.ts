@@ -22,7 +22,7 @@ export interface ConfiguracionUI {
 	borderRadius: number; // radio de borde
 	
 	// Lupa Mágica: controla si la lupa está habilitada
-	magnifierEnabled: boolean; // lupa activa/inactiva
+	lupaActivada: boolean; // lupa activa/inactiva
 	
 	// Lupa Mágica: nivel de magnificación (1.5, 2, 3)
 	magnifierZoom: number; // nivel de zoom de la lupa
@@ -41,7 +41,7 @@ const valoresPorDefecto: ConfiguracionUI = {
 	spacingMultiplier: 1,
 	tema: 'claro',
 	borderRadius: 8,
-	magnifierEnabled: false,
+	lupaActivada: false,
 	magnifierZoom: 2,
 	modoNoche: false,
 	modoInverso: false
@@ -99,13 +99,13 @@ function crearStoreSettings() {
 		// @param enabled - true para activar, false para desactivar
 		setMagnifierEnabled: (enabled: boolean) => update(config => ({
 			...config,
-			magnifierEnabled: enabled
+			lupaActivada: enabled
 		})),
 		
 		// Alterna el estado de la lupa mágica
 		toggleMagnifier: () => update(config => ({
 			...config,
-			magnifierEnabled: !config.magnifierEnabled
+			lupaActivada: !config.lupaActivada
 		})),
 		
 		// Establece el nivel de zoom de la lupa mágica

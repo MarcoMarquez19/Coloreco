@@ -57,12 +57,12 @@
 
 			track.onended = () => {
 				stopCapture();
-				$settings.magnifierEnabled = false;
+				$settings.lupaActivada = false;
 			};
 
 		} catch (err) {
 			console.error("Error al iniciar lupa:", err);
-			$settings.magnifierEnabled = false;
+			$settings.lupaActivada = false;
 		}
 	}
 
@@ -138,9 +138,9 @@
 	}
 
 	$effect(() => {
-		if ($settings.magnifierEnabled && !stream) {
+		if ($settings.lupaActivada && !stream) {
 			startCapture();
-		} else if (!$settings.magnifierEnabled && stream) {
+		} else if (!$settings.lupaActivada && stream) {
 			stopCapture();
 		}
 	});
@@ -160,7 +160,7 @@
 	});
 </script>
 
-{#if $settings.magnifierEnabled}
+{#if $settings.lupaActivada}
 	<video bind:this={videoElement} style="display: none;" playsinline muted></video>
 
 	<div
