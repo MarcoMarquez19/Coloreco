@@ -2,8 +2,10 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { onMount } from 'svelte';
 	import { settings } from '$lib/stores/settings';
-	import AccessibilityMenu from '$lib/components/layout/AccessibilityMenu.svelte';
-	import MagicMagnifier from '$lib/components/a11y/MagicMagnifier.svelte';
+	import LupaMagica from '$lib/components/a11y/LupaMagica.svelte';
+	import EfectoLupa from '$lib/components/a11y/EfectoLupa.svelte';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import '../lib/styles/themes.css';
 
 	// Pequeño helper de accesibilidad: enfocar el contenido principal al navegar
@@ -18,6 +20,23 @@
 			? ($settings.modoInverso ? 'dark-inverted' : 'dark')
 			: ''
 	);
+
+	// Detectar si estamos en la página de ajustes o en la página inicial
+	let isSettingsPage = $derived($page.url.pathname === '/ajustes');
+	let isHomePage = $derived($page.url.pathname === '/');
+
+	// Funciones de navegación
+	function goToSettings() {
+		goto('/ajustes');
+	}
+
+	function goBack() {
+		if (window.history.length > 1) {
+			window.history.back();
+		} else {
+			goto('/');
+		}
+	}
 
 	// Efecto para aplicar el atributo data-theme al body
 	$effect(() => {
@@ -52,30 +71,48 @@
 		{@render children()}
 	</main>
 
-	<!-- Botón de ajustes fijo en la esquina inferior derecha -->
-	<button 
-		class="settings-button" 
-		aria-label="Abrir ajustes" 
-		title="Ajustes" 
-		type="button"
-		onclick={settings.toggleMenu}
-	>
-		<span class="sr-only">Abrir ajustes</span>
-		<!-- Icono SVG de engranaje incrustado -->
-		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-			<path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z" fill="currentColor"/>
-			<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 1 1 2.28 17.88l.06-.06c.4-.4.5-1.03.33-1.57A1.65 1.65 0 0 0 1.17 14H1a2 2 0 1 1 0-4h.17c.7 0 1.3-.45 1.57-1.08.17-.54.07-1.17-.33-1.57L1.88 6.12A2 2 0 1 1 4.71 3.29l.06.06c.4.4 1.03.5 1.57.33.63-.27 1.08-.87 1.08-1.57V1a2 2 0 1 1 4 0v.17c0 .7.45 1.3 1.08 1.57.54.17 1.17.07 1.57-.33l.06-.06A2 2 0 1 1 19.4 4.71l-.06.06c-.4.4-.5 1.03-.33 1.57.27.63.87 1.08 1.57 1.08H23a2 2 0 1 1 0 4h-.17c-.7 0-1.3.45-1.57 1.08-.17.54-.07 1.17.33 1.57l.06.06A2 2 0 1 1 19.4 15z" fill="currentColor" opacity="0.9"/>
-		</svg>
-	</button>
-
-	<!-- Menú de accesibilidad: recibe el contenido de la página para mostrarlo en el preview -->
-	<AccessibilityMenu>
-		{@render children()}
-	</AccessibilityMenu>
-
 	<!-- Lupa Mágica: magnificación del contenido de la página -->
 	{#if $settings.magnifierEnabled}
-		<MagicMagnifier />
+		<EfectoLupa />
+	{/if}
+
+	<!-- Botón de volver fijo en la esquina inferior izquierda (oculto en página inicial) -->
+	{#if !isHomePage}
+		<button 
+			class="back-button" 
+			aria-label="Volver" 
+			title="Volver" 
+			type="button"
+			onclick={goBack}
+			data-keep-fixed
+			data-magnificable
+		>
+			<span class="sr-only">Volver</span>
+			<!-- Icono SVG de flecha hacia atrás -->
+			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+				<path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+			</svg>
+		</button>
+	{/if}
+	
+	<!-- Botón de ajustes fijo en la esquina inferior derecha (oculto en /ajustes) -->
+	{#if !isSettingsPage}
+		<button 
+			class="settings-button" 
+			aria-label="Abrir ajustes" 
+			title="Ajustes" 
+			type="button"
+			onclick={goToSettings}
+			data-keep-fixed
+			data-magnificable
+		>
+			<span class="sr-only">Abrir ajustes</span>
+			<!-- Icono SVG de engranaje incrustado -->
+			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+				<path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z" fill="currentColor"/>
+				<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 1 1 2.28 17.88l.06-.06c.4-.4.5-1.03.33-1.57A1.65 1.65 0 0 0 1.17 14H1a2 2 0 1 1 0-4h.17c.7 0 1.3-.45 1.57-1.08.17-.54.07-1.17-.33-1.57L1.88 6.12A2 2 0 1 1 4.71 3.29l.06.06c.4.4 1.03.5 1.57.33.63-.27 1.08-.87 1.08-1.57V1a2 2 0 1 1 4 0v.17c0 .7.45 1.3 1.08 1.57.54.17 1.17.07 1.57-.33l.06-.06A2 2 0 1 1 19.4 4.71l-.06.06c-.4.4-.5 1.03-.33 1.57.27.63.87 1.08 1.57 1.08H23a2 2 0 1 1 0 4h-.17c-.7 0-1.3.45-1.57 1.08-.17.54-.07 1.17.33 1.57l.06.06A2 2 0 1 1 19.4 15z" fill="currentColor" opacity="0.9"/>
+			</svg>
+		</button>
 	{/if}
 </div>
 
@@ -135,6 +172,38 @@
 		outline-offset: 3px;
 	}
 
+	/* Botón de volver en esquina inferior izquierda */
+	.back-button {
+		position: fixed;
+		left: var(--spacing-base, 1rem);
+		bottom: var(--spacing-base, 1rem);
+		width: 48px;
+		height: 48px;
+		border-radius: var(--border-radius, 8px);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--accent, #0b6efd);
+		color: var(--color,rgb(255, 255, 255));
+		border: none;
+		box-shadow: 0 6px 18px rgba(11,110,253,0.18);
+		cursor: pointer;
+		transition: transform 120ms ease, box-shadow 120ms ease;
+	}
+
+	.back-button:hover {
+		transform: translateY(-2px);
+	}
+
+	.back-button:active {
+		transform: translateY(0);
+	}
+
+	.back-button:focus {
+		outline: 3px solid #000000;
+		outline-offset: 3px;
+	}
+
 	.sr-only {
 		position: absolute !important;
 		height: 1px;
@@ -148,6 +217,6 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.settings-button { transition: none; }
+		.settings-button, .back-button { transition: none; }
 	}
 </style>

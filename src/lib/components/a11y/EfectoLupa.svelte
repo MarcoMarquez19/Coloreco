@@ -5,7 +5,15 @@ import { onMount, onDestroy } from 'svelte';
 
 let mouseX = $state(window.innerWidth / 2);
 let mouseY = $state(window.innerHeight / 2);
+// NUEVO ESTADO: ¿El mouse está sobre una zona permitida?
+let isOverZone = $state(false); 
 const LENS_SIZE = 185;
+let lensX = $state(0);
+let lensY = $state(0);
+const OFFSET_DISTANCE = 20;
+// Agrega esto junto a tus otras declaraciones 'let'
+let observer: MutationObserver | null = null;
+let debounceTimer: ReturnType<typeof setTimeout>;
 let lensElement: HTMLElement | null = $state(null);
 let portalContainer: HTMLDivElement | null = $state(null);
 let clonedNode: HTMLElement | null = null;
@@ -13,6 +21,24 @@ let clonedNode: HTMLElement | null = null;
 function handleMouseMove(event: MouseEvent) {
 	mouseX = event.clientX;
 	mouseY = event.clientY;
+
+	// Lógica de offset inteligente (misma que antes)
+	let targetX = mouseX + OFFSET_DISTANCE;
+	let targetY = mouseY + OFFSET_DISTANCE;
+
+	if (targetX + LENS_SIZE > window.innerWidth) {
+		targetX = mouseX - LENS_SIZE - OFFSET_DISTANCE;
+	}
+	if (targetY + LENS_SIZE > window.innerHeight) {
+		targetY = mouseY - LENS_SIZE - OFFSET_DISTANCE;
+	}
+	lensX = targetX;
+	lensY = targetY;
+
+	// Verificamos si el elemento bajo el mouse (o alguno de sus padres) tiene el atributo 'data-magnificable'
+	const target = event.target as HTMLElement;
+	// .closest() busca hacia arriba en el árbol DOM de forma muy eficiente
+	isOverZone = !!target.closest('[data-magnificable]');
 	updateTransform();
 }
 
@@ -54,19 +80,47 @@ function recreateClone() {
 	}
 }
 
-
-
 onMount(() => {
 	document.addEventListener('mousemove', handleMouseMove);
 	window.addEventListener('scroll', updateTransform, true);
+	 // --- NUEVA LÓGICA: MutationObserver ---
+    const appRoot = document.getElementById('svelte') ?? document.body;
+	
+	if (appRoot) {
+        observer = new MutationObserver((mutations) => {
+            // Usamos 'debounce' para esperar a que terminen los cambios
+            // antes de volver a clonar. Esto evita parpadeos y lentitud.
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                // Solo recreamos si la lupa está activa
+                if ($settings.magnifierEnabled) {
+                    recreateClone();
+                }
+            }, 100); // 100ms de espera es suficiente
+        });
+
+        // Configuración: vigilar cambios en hijos (childList), 
+        // en profundidad (subtree) y cambios de atributos (como clases que ocultan cosas)
+        observer.observe(appRoot, {
+            childList: true, // Detecta si se agregó el botón
+            subtree: true,   // Detecta cambios profundos
+            attributes: true // Detecta cambios de clase (visible/oculto)
+        });
+    }
 });
 
 onDestroy(() => {
 	document.removeEventListener('mousemove', handleMouseMove);
 	window.removeEventListener('scroll', updateTransform, true);
-	if (portalContainer && clonedNode) {
-		portalContainer.removeChild(clonedNode);
-	}
+	// --- NUEVA LÓGICA: Limpieza ---
+    if (observer) {
+        observer.disconnect();
+    }
+    clearTimeout(debounceTimer);
+
+    if (portalContainer && clonedNode) {
+        portalContainer.removeChild(clonedNode);
+    }
 });
 
 $effect(() => {
@@ -86,10 +140,14 @@ $effect(() => {
 	bind:this={lensElement}
 	class="magic-magnifier"
 	style="
-		left: {mouseX - LENS_SIZE / 2}px;
-		top: {mouseY - LENS_SIZE / 2}px;
+		left: {lensX}px;
+		top: {lensY}px;
 		width: {LENS_SIZE}px;
 		height: {LENS_SIZE}px;
+		/* CAMBIO AQUÍ: Si está sobre una zona, opacidad 1, si no, opacidad 0 */
+		opacity: {isOverZone ? 1 : 0};
+		/* Si no es visible, lo hacemos más pequeño para una transición suave */
+		transform: {isOverZone ? 'scale(1)' : 'scale(0.8)'};
 	"
 	aria-hidden="true"
 	role="presentation"
@@ -121,6 +179,7 @@ $effect(() => {
 	transition: transform 0.05s ease-out;
 	backdrop-filter: contrast(1.05) saturate(1.1);
 	overflow: hidden;
+	transition: opacity 0.2s ease, transform 0.2s ease;
 }
 .magnifier-portal {
 	width: 100%;

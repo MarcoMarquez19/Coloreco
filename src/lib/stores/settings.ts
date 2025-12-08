@@ -42,7 +42,7 @@ const valoresPorDefecto: ConfiguracionUI = {
 	tema: 'claro',
 	borderRadius: 8,
 	magnifierEnabled: false,
-	magnifierZoom: 1.85,
+	magnifierZoom: 2,
 	modoNoche: false,
 	modoInverso: false
 };
