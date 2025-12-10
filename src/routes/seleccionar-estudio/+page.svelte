@@ -1,8 +1,12 @@
 <script>
 	import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
+    import RegistrarArtista from '$lib/components/modales/RegistrarArtista.svelte';
+
+
+    let mostrarRegistrarArtista = false;
 
     function crearEstudio() {
-        // Lógica para crear un nuevo estudio
+        mostrarRegistrarArtista = true;
     }
 
     // Simulación de artistas cargados desde la base de datos
@@ -15,6 +19,11 @@
 </script>
 
 <FondoManchas />
+
+{#if mostrarRegistrarArtista}
+    <!-- Agregamos on:close para cambiar la variable a false -->
+    <RegistrarArtista on:close={() => mostrarRegistrarArtista = false} />
+{/if}
 
 <div class="seleccionar-estudio-contenedor" aria-label="Contenedor para seleccionar el estudio del artista" data-magnificable>
     <h1 data-magnificable>Bienvenido artista</h1>
