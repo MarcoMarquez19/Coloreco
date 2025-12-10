@@ -35,6 +35,48 @@
 	--success: #28a745;
 	--error: #dc3545;
 	--warning: #ffc107;
+
+	/* ========================================
+	   VARIABLES DE ACCESIBILIDAD (HU-01 a HU-08)
+	   ======================================== */
+	
+	/* HU-01: Tipografía */
+	--font-family: 'Arial', sans-serif;
+	--font-size: 16px;
+	--letter-spacing: 0em;
+	--line-height: 1.5;
+	
+	/* HU-02: Lectura biónica */
+	--bionic-highlight-color: #0b6efd;
+	--bionic-rest-opacity: 0.8;
+	
+	/* HU-03: Narración auditiva */
+	--narration-highlight-bg: #FFE66D;
+	--narration-highlight-shadow: 0 2px 8px rgba(255, 230, 109, 0.4);
+	
+	/* HU-04: Rimas y sílabas */
+	--rhyme-opacity: 0.9;
+	--syllable-opacity: 0.85;
+	
+	/* HU-05: Pictogramas */
+	--pictogram-bg: #f5f5f5;
+	--pictogram-hover-bg: #e8e8e8;
+	
+	/* HU-06: Contraste y fondo */
+	--background-color: #ffffff;
+	--text-color: #111111;
+	--contrast-high: 4.5; /* ratio WCAG AA */
+	--contrast-maximum: 7; /* ratio WCAG AAA */
+	
+	/* HU-07 y HU-08: Gamificación y retroalimentación */
+	--reward-gradient-start: #667eea;
+	--reward-gradient-end: #764ba2;
+	--feedback-success: #28a745;
+	--feedback-error: #dc3545;
+	--feedback-info: #17a2b8;
+	
+	/* Zoom y magnificación */
+	--zoom-level: 1;
 }
 
 /* ========================================
@@ -58,6 +100,14 @@
 	--exito: #4ade80;
 	--error: #f87171;
 	--advertencia: #fbbf24;
+
+	/* Variables de accesibilidad adaptadas */
+	--background-color: #0a0a0a;
+	--text-color: #f5f5f5;
+	--bionic-highlight-color: #60a5fa;
+	--narration-highlight-bg: #fbbf24;
+	--pictogram-bg: #1a1a1a;
+	--pictogram-hover-bg: #2a2a2a;
 }
 
 /* Aplicar filtro de alto contraste a elementos gráficos en modo noche */
@@ -88,6 +138,14 @@
 	--exito: #15803d;
 	--error: #b91c1c;
 	--advertencia: #d97706;
+
+	/* Variables de accesibilidad adaptadas */
+	--background-color: #f5f5f5;
+	--text-color: #0a0a0a;
+	--bionic-highlight-color: #0958d9;
+	--narration-highlight-bg: #fbbf24;
+	--pictogram-bg: #e0e0e0;
+	--pictogram-hover-bg: #d0d0d0;
 }
 
 /* Aplicar filtro de alto contraste a elementos gráficos en modo inverso */
@@ -123,3 +181,206 @@ body {
 		transition: none;
 	}
 }
+
+/* ========================================
+   MODOS DE ACCESIBILIDAD (CSS PURO)
+   ======================================== */
+
+/* MODO BIÓNICO: Resalta las primeras sílabas de cada palabra */
+[data-bionic="true"] .bionic-highlight {
+	font-weight: 700;
+	color: var(--bionic-highlight-color);
+}
+
+[data-bionic="true"] .bionic-rest {
+	font-weight: 400;
+	color: inherit;
+}
+
+/* MODO PICTOGRAMAS: Agrega indicadores visuales específicos por contexto */
+/* Solo aplicar a elementos que NO tienen contenido SVG o iconos */
+[data-pictogram="true"] h1:not(:has(svg)):not(:has(img))::before {
+	content: "👋 ";
+	margin-right: 0.5rem;
+	font-size: 1.2em;
+}
+
+[data-pictogram="true"] h2:not(:has(svg)):not(:has(img))::before {
+	content: "🎨 ";
+	margin-right: 0.5rem;
+	font-size: 1.2em;
+}
+
+[data-pictogram="true"] h3:not(:has(svg)):not(:has(img))::before {
+	content: "📝 ";
+	margin-right: 0.5rem;
+	font-size: 1em;
+}
+
+/* No aplicar a botones con clase específica (botones de control que ya tienen iconos) */
+[data-pictogram="true"] button:not(.boton-volver):not(.boton-configuracion):not(.control-button):not(.switch-toggle):not(:has(svg))::before {
+	content: "▶️ ";
+	margin-right: 0.5rem;
+	font-size: 1.2em;
+}
+
+/* Labels específicos con pictogramas personalizados según su contenido */
+/* Lupa Mágica */
+[data-pictogram="true"] label.switch-label[for="toggle-magnifier"]::before {
+	content: "🔍 ";
+	margin-right: 0.3rem;
+	font-size: 1em;
+}
+
+/* Tamaño de fuente */
+[data-pictogram="true"] label.switch-label[for="toggle-font-size"]::before {
+	content: "🔤 ";
+	margin-right: 0.3rem;
+	font-size: 1em;
+}
+
+/* Espaciado */
+[data-pictogram="true"] label.switch-label[for="toggle-spacing"]::before {
+	content: "↔️ ";
+	margin-right: 0.3rem;
+	font-size: 1em;
+}
+
+/* Modo Noche */
+[data-pictogram="true"] label.switch-label[for="toggle-modo-noche"]::before {
+	content: "🌙 ";
+	margin-right: 0.3rem;
+	font-size: 1em;
+}
+
+/* Modo Inverso */
+[data-pictogram="true"] label.switch-label[for="toggle-modo-inverso"]::before {
+	content: "🔄 ";
+	margin-right: 0.3rem;
+	font-size: 1em;
+}
+
+/* Modo Biónico */
+[data-pictogram="true"] label.switch-label[for="toggle-bionic"]::before {
+	content: "🧠 ";
+	margin-right: 0.3rem;
+	font-size: 1em;
+}
+
+/* Modo Rima */
+[data-pictogram="true"] label.switch-label[for="toggle-rhyme"]::before {
+	content: "🎵 ";
+	margin-right: 0.3rem;
+	font-size: 1em;
+}
+
+/* Modo Pictograma */
+[data-pictogram="true"] label.switch-label[for="toggle-pictogram"]::before {
+	content: "🖼️ ";
+	margin-right: 0.3rem;
+	font-size: 1em;
+}
+
+/* Narración */
+[data-pictogram="true"] label.switch-label[for="toggle-narration"]::before {
+	content: "🔊 ";
+	margin-right: 0.3rem;
+	font-size: 1em;
+}
+
+/* Fallback para otros labels */
+[data-pictogram="true"] label.switch-label:not([for])::before {
+	content: "⚙️ ";
+	margin-right: 0.3rem;
+	font-size: 1em;
+}
+
+/* Fondo sutil para elementos en modo pictograma */
+[data-pictogram="true"] h1:not(:has(svg)),
+[data-pictogram="true"] h2:not(:has(svg)),
+[data-pictogram="true"] h3:not(:has(svg)) {
+	background: var(--pictogram-bg);
+	padding: 0.4rem 0.8rem;
+	border-radius: 8px;
+	transition: all 0.2s ease;
+}
+
+[data-pictogram="true"] h1:not(:has(svg)):hover,
+[data-pictogram="true"] h2:not(:has(svg)):hover,
+[data-pictogram="true"] h3:not(:has(svg)):hover {
+	background: var(--pictogram-hover-bg, #e0e0e0);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* MODO RIMA: Colorea el fondo de palabras que riman */
+[data-rhyme="true"] .rhyme-word {
+	padding: 0.2rem 0.4rem;
+	border-radius: 4px;
+	margin: 0 0.1rem;
+	display: inline-block;
+	font-weight: 600;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Colores diferentes para grupos de rimas */
+[data-rhyme="true"] .rhyme-word[data-rhyme-group="0"] {
+	background: #FFE66D;
+	color: #333;
+}
+
+[data-rhyme="true"] .rhyme-word[data-rhyme-group="1"] {
+	background: #FF6B6B;
+	color: #fff;
+}
+
+[data-rhyme="true"] .rhyme-word[data-rhyme-group="2"] {
+	background: #4ECDC4;
+	color: #fff;
+}
+
+[data-rhyme="true"] .rhyme-word[data-rhyme-group="3"] {
+	background: #95E1D3;
+	color: #333;
+}
+
+[data-rhyme="true"] .rhyme-word[data-rhyme-group="4"] {
+	background: #A8E6CF;
+	color: #333;
+}
+
+/* Cuando ambos modos están activos: el biónico se mantiene dentro del rhyme-word */
+[data-bionic="true"][data-rhyme="true"] .rhyme-word .bionic-highlight {
+	font-weight: 700;
+	/* El color se hereda del rhyme-word para mejor legibilidad */
+}
+
+[data-bionic="true"][data-rhyme="true"] .rhyme-word .bionic-rest {
+	font-weight: 400;
+	opacity: 0.8;
+}
+
+[data-rhyme="true"] .rhyme-word[data-rhyme-group="4"] {
+	background: #A8E6CF;
+	color: #333;
+}
+
+/* MODO NARRACIÓN: Indicador visual de que está activo */
+[data-narration="true"] body {
+	border-left: 4px solid var(--narration-highlight-bg);
+}
+
+[data-narration="true"] h1,
+[data-narration="true"] h2,
+[data-narration="true"] p {
+	transition: background 0.3s ease;
+}
+
+[data-narration="true"] h1:hover,
+[data-narration="true"] h2:hover,
+[data-narration="true"] p:hover {
+	background: var(--narration-highlight-bg);
+	padding: 0.2rem 0.4rem;
+	border-radius: 4px;
+}
+

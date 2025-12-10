@@ -238,6 +238,142 @@ onMount(() => {
 						{/if}
 					</div>
 
+					<!-- Sección: Modos de Lectura -->
+					<div class="control-grupo">
+						<h3 class="seccion-titulo">Modos de Lectura</h3>
+                        
+						<!-- Modo Biónico -->
+						<div class="switch-container">
+							<label for="toggle-bionic" class="switch-label">Modo biónico</label>
+							<button
+								id="toggle-bionic"
+								type="button"
+								role="switch"
+								aria-checked={$configuraciones.bionicMode}
+								aria-describedby="toggle-bionic-desc"
+								class="switch-toggle"
+								class:active={$configuraciones.bionicMode}
+								onclick={() => configuraciones.toggleBionicMode()}
+								aria-label={$configuraciones.bionicMode ? 'Desactivar modo biónico' : 'Activar modo biónico'}
+							>
+								<span class="switch-knob"></span>
+							</button>
+						</div>
+						<div class="control-ayuda" id="toggle-bionic-desc">
+							<small>Resalta las primeras sílabas de cada palabra para facilitar la lectura rápida.</small>
+						</div>
+
+						<!-- Modo Rima -->
+						<div class="switch-container">
+							<label for="toggle-rhyme" class="switch-label">Modo rima</label>
+							<button
+								id="toggle-rhyme"
+								type="button"
+								role="switch"
+								aria-checked={$configuraciones.rhymeMode}
+								aria-describedby="toggle-rhyme-desc"
+								class="switch-toggle"
+								class:active={$configuraciones.rhymeMode}
+								onclick={() => configuraciones.toggleRhymeMode()}
+								aria-label={$configuraciones.rhymeMode ? 'Desactivar modo rima' : 'Activar modo rima'}
+							>
+								<span class="switch-knob"></span>
+							</button>
+						</div>
+						<div class="control-ayuda" id="toggle-rhyme-desc">
+							<small>Colorea las rimas y sílabas para mejorar la comprensión de patrones.</small>
+						</div>
+
+						<!-- Modo Pictográfico -->
+						<div class="switch-container">
+							<label for="toggle-pictogram" class="switch-label">Modo pictográfico</label>
+							<button
+								id="toggle-pictogram"
+								type="button"
+								role="switch"
+								aria-checked={$configuraciones.pictogramMode}
+								aria-describedby="toggle-pictogram-desc"
+								class="switch-toggle"
+								class:active={$configuraciones.pictogramMode}
+								onclick={() => configuraciones.togglePictogramMode()}
+								aria-label={$configuraciones.pictogramMode ? 'Desactivar modo pictográfico' : 'Activar modo pictográfico'}
+							>
+								<span class="switch-knob"></span>
+							</button>
+						</div>
+						<div class="control-ayuda" id="toggle-pictogram-desc">
+							<small>Muestra iconos junto a palabras clave para facilitar la comprensión visual.</small>
+						</div>
+
+						<!-- Modo Dislexia -->
+						<div class="switch-container">
+							<label for="toggle-dyslexia" class="switch-label">Fuente para dislexia</label>
+							<button
+								id="toggle-dyslexia"
+								type="button"
+								role="switch"
+								aria-checked={$configuraciones.dyslexiaMode}
+								aria-describedby="toggle-dyslexia-desc"
+								class="switch-toggle"
+								class:active={$configuraciones.dyslexiaMode}
+								onclick={() => configuraciones.toggleDyslexiaMode()}
+								aria-label={$configuraciones.dyslexiaMode ? 'Desactivar fuente para dislexia' : 'Activar fuente para dislexia'}
+							>
+								<span class="switch-knob"></span>
+							</button>
+						</div>
+						<div class="control-ayuda" id="toggle-dyslexia-desc">
+							<small>Usa una tipografía diseñada especialmente para personas con dislexia.</small>
+						</div>
+					</div>
+
+					<!-- Sección: Narración Auditiva -->
+					<div class="control-grupo">
+						<h3 class="seccion-titulo">Narración</h3>
+                        
+						<!-- Activar Narración -->
+						<div class="switch-container">
+							<label for="toggle-narration" class="switch-label">Activar narración de voz</label>
+							<button
+								id="toggle-narration"
+								type="button"
+								role="switch"
+								aria-checked={$configuraciones.narrationEnabled}
+								aria-describedby="toggle-narration-desc"
+								class="switch-toggle"
+								class:active={$configuraciones.narrationEnabled}
+								onclick={() => configuraciones.toggleNarration()}
+								aria-label={$configuraciones.narrationEnabled ? 'Desactivar narración' : 'Activar narración'}
+							>
+								<span class="switch-knob"></span>
+							</button>
+						</div>
+						<div class="control-ayuda" id="toggle-narration-desc">
+							<small>Lee el texto en voz alta con resaltado palabra por palabra.</small>
+						</div>
+
+						<!-- Velocidad de Narración (solo visible si está activada) -->
+						{#if $configuraciones.narrationEnabled}
+							<div class="control-label">
+								<span>Velocidad de narración</span>
+								<span class="control-valor">{$configuraciones.ttsSpeed?.toFixed(1) || '1.0'}×</span>
+							</div>
+							<input
+								type="range"
+								min="0.5"
+								max="2"
+								step="0.1"
+								value={$configuraciones.ttsSpeed || 1}
+								oninput={(e) => configuraciones.setTTSSpeed(parseFloat((e.target as HTMLInputElement).value))}
+								aria-label="Velocidad de narración"
+								class="slider"
+							/>
+							<div class="control-ayuda">
+								<small>Ajusta qué tan rápido se lee el texto (0.5× lento - 2× rápido).</small>
+							</div>
+						{/if}
+					</div>
+
 					<!-- Botón para reiniciar valores -->
 					<button class="boton-reset" onclick={configuraciones.reset}>
 						Restaurar valores por defecto
@@ -375,6 +511,55 @@ onMount(() => {
 	.control-ayuda {
 		color: #666;
 		font-size: calc(var(--font-size-base, 1rem) * 0.85);
+	}
+
+	/* Slider para controles con rango (como velocidad de narración) */
+	.slider {
+		width: 100%;
+		height: 6px;
+		border-radius: 3px;
+		background: #e0e0e0;
+		outline: none;
+		-webkit-appearance: none;
+		appearance: none;
+		cursor: pointer;
+		margin: calc(var(--spacing-base, 1rem) * 0.5) 0;
+	}
+
+	.slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		background: #0b6efd;
+		cursor: pointer;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		transition: background 150ms ease;
+	}
+
+	.slider::-moz-range-thumb {
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		background: #0b6efd;
+		cursor: pointer;
+		border: none;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		transition: background 150ms ease;
+	}
+
+	.slider:hover::-webkit-slider-thumb {
+		background: #0958d9;
+	}
+
+	.slider:hover::-moz-range-thumb {
+		background: #0958d9;
+	}
+
+	.slider:focus {
+		outline: 2px solid #0b6efd;
+		outline-offset: 2px;
 	}
 
 	/* Botón de reset */

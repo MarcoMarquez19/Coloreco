@@ -3,6 +3,7 @@
 	import { configuraciones } from '$lib/stores/settings';
 	import LupaMagica from '$lib/components/a11y/LupaMagica.svelte';
 	import EfectoLupa from '$lib/components/a11y/EfectoLupa.svelte';
+	import NarrationControl from '$lib/components/a11y/NarrationControl.svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import '../lib/styles/themes.css';
@@ -63,6 +64,156 @@
 		const esPaginaConBarra = $page.url.pathname === '/ajustes' || $page.url.pathname === '/seleccionar-estudio';
 		document.body.style.setProperty('--body-display', esPaginaConBarra ? 'block' : 'flex');
 	});
+
+	// Efecto para aplicar configuraciones de tipografía
+	$effect(() => {
+		const root = document.documentElement;
+		
+		// Aplicar familia de fuente
+		if ($configuraciones.fontFamily) {
+			root.style.setProperty('--font-family', $configuraciones.fontFamily);
+		}
+		
+		// Aplicar tamaño de fuente
+		if ($configuraciones.fontSize) {
+			root.style.setProperty('--font-size', `${$configuraciones.fontSize}px`);
+		}
+		
+		// Aplicar espaciado entre letras
+		if ($configuraciones.letterSpacing !== undefined) {
+			root.style.setProperty('--letter-spacing', `${$configuraciones.letterSpacing}em`);
+		}
+		
+		// Aplicar altura de línea
+		if ($configuraciones.lineHeight) {
+			root.style.setProperty('--line-height', `${$configuraciones.lineHeight}`);
+		}
+	});
+
+	// Efecto para aplicar color de fondo y contraste
+	$effect(() => {
+		const root = document.documentElement;
+		
+		if ($configuraciones.backgroundColor) {
+			root.style.setProperty('--background-color', $configuraciones.backgroundColor);
+		}
+		
+		if ($configuraciones.contrastLevel) {
+			root.setAttribute('data-contrast', $configuraciones.contrastLevel);
+		}
+	});
+
+	// Efecto para aplicar atributos data según modos activos
+	$effect(() => {
+		const root = document.documentElement;
+		
+		// Modo biónico
+		if ($configuraciones.bionicMode) {
+			root.setAttribute('data-bionic', 'true');
+		} else {
+			root.removeAttribute('data-bionic');
+		}
+		
+		// Modo rima
+		if ($configuraciones.rhymeMode) {
+			root.setAttribute('data-rhyme', 'true');
+		} else {
+			root.removeAttribute('data-rhyme');
+		}
+		
+		// Modo pictograma
+		if ($configuraciones.pictogramMode) {
+			root.setAttribute('data-pictogram', 'true');
+		} else {
+			root.removeAttribute('data-pictogram');
+		}
+		
+		// Modo narración
+		if ($configuraciones.narrationEnabled) {
+			root.setAttribute('data-narration', 'true');
+		} else {
+			root.removeAttribute('data-narration');
+		}
+
+		// Aplicar efectos combinados
+		setTimeout(() => applyAccessibilityModes(), 100);
+	});
+
+	// Efecto para reaplicar los modos cuando cambia la página
+	$effect(() => {
+		// Escuchar cambios en la ruta
+		const currentPath = $page.url.pathname;
+		
+		// Reaplicar modos después de que el DOM se actualice
+		setTimeout(() => {
+			if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+				applyAccessibilityModes();
+			}
+		}, 200);
+	});
+
+	// Función para aplicar todos los modos activos de forma combinada
+	function applyAccessibilityModes() {
+		if (!mainEl) return;
+		
+		// Restaurar primero
+		restoreOriginalText();
+		
+		const elements = mainEl.querySelectorAll('h1, h2, h3, h4, h5, h6, p, button:not(.control-button):not(.boton-volver):not(.boton-configuracion), label, span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-word)');
+		
+		elements.forEach((element) => {
+			// Evitar procesar elementos ya procesados
+			if (element.querySelector('.bionic-highlight') || element.querySelector('.rhyme-word')) return;
+			
+			const text = element.textContent?.trim();
+			if (!text) return;
+			
+			// Guardar texto original
+			element.setAttribute('data-original-text', text);
+			
+			// Procesar palabra por palabra
+			const words = text.split(/\s+/);
+			const processedWords = words.map((word, index) => {
+				let processedWord = word;
+				
+				// Aplicar modo biónico si está activo
+				if ($configuraciones.bionicMode) {
+					if (word.length <= 2) {
+						processedWord = `<span class="bionic-highlight">${word}</span>`;
+					} else {
+						const highlightLength = Math.ceil(word.length * 0.45);
+						const highlighted = word.slice(0, highlightLength);
+						const rest = word.slice(highlightLength);
+						processedWord = `<span class="bionic-highlight">${highlighted}</span><span class="bionic-rest">${rest}</span>`;
+					}
+				}
+				
+				// Aplicar modo rima si está activo (envolver el resultado del biónico)
+				if ($configuraciones.rhymeMode) {
+					const rhymeGroup = index % 5;
+					processedWord = `<span class="rhyme-word" data-rhyme-group="${rhymeGroup}">${processedWord}</span>`;
+				}
+				
+				return processedWord;
+			});
+			
+			(element as HTMLElement).innerHTML = processedWords.join(' ');
+		});
+	}
+
+	// Función para restaurar texto original
+	function restoreOriginalText() {
+		if (!mainEl) return;
+		
+		const elements = mainEl.querySelectorAll('[data-original-text]');
+		elements.forEach((element) => {
+			const originalText = element.getAttribute('data-original-text');
+			if (originalText) {
+				(element as HTMLElement).textContent = originalText;
+				element.removeAttribute('data-original-text');
+			}
+		});
+	}
 </script>
 
 <!-- Escuchamos el evento de teclado en toda la ventana -->
@@ -94,6 +245,9 @@
 		<EfectoLupa />
 	</div>
 	{/if}
+
+	<!-- Control de narración -->
+	<NarrationControl />
 
 	<!-- Botón de volver fijo en la esquina inferior izquierda (oculto en página inicial) -->
 	{#if !estaEnInicio}

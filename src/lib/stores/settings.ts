@@ -29,6 +29,30 @@ export interface ConfiguracionUI {
 	
 	// Modo Inverso: invierte la paleta del modo noche (solo disponible si modoNoche está activo)
 	modoInverso?: boolean;
+
+	// === HU-01: Accesibilidad tipográfica ===
+	fontFamily?: string; // familia de fuente
+	fontSize?: number; // tamaño de fuente en px
+	letterSpacing?: number; // espaciado entre letras en em
+	lineHeight?: number; // altura de línea
+	dyslexiaMode?: boolean; // modo dislexia (OpenDyslexic)
+
+	// === HU-02: Lectura biónica ===
+	bionicMode?: boolean; // activar lectura biónica
+
+	// === HU-03: Narración auditiva ===
+	narrationEnabled?: boolean; // activar narración TTS
+	ttsSpeed?: number; // velocidad de narración (0.1 - 10)
+
+	// === HU-04: Resaltado de rimas ===
+	rhymeMode?: boolean; // resaltar rimas
+
+	// === HU-05: Pictogramas ===
+	pictogramMode?: boolean; // mostrar pictogramas
+
+	// === HU-06: Contraste y fondo ===
+	backgroundColor?: string; // color de fondo personalizado
+	contrastLevel?: 'normal' | 'high' | 'maximum'; // nivel de contraste WCAG
 }
 
 // Valores por defecto para una experiencia estándar
@@ -40,7 +64,20 @@ const valoresPorDefecto: ConfiguracionUI = {
 	lupaActivada: false,
 	nivelMagnificacion: 2,
 	modoNoche: false,
-	modoInverso: false
+	modoInverso: false,
+	// Nuevos valores por defecto
+	fontFamily: 'Arial, sans-serif',
+	fontSize: 16,
+	letterSpacing: 0,
+	lineHeight: 1.5,
+	dyslexiaMode: false,
+	bionicMode: false,
+	narrationEnabled: false,
+	ttsSpeed: 1,
+	rhymeMode: false,
+	pictogramMode: false,
+	backgroundColor: '#ffffff',
+	contrastLevel: 'normal'
 };
 
 // Crear el store reactivo
@@ -117,6 +154,74 @@ function crearEstadoConfiguraciones() {
 		toggleModoInverso: () => update(config => ({
 			...config,
 			modoInverso: !config.modoInverso
+		})),
+
+		// === Nuevos métodos para historias de usuario ===
+		
+		// HU-01: Tipografía
+		setFontFamily: (family: string) => update(config => ({ 
+			...config, 
+			fontFamily: family 
+		})),
+		
+		setFontSizeValue: (size: number) => update(config => ({ 
+			...config, 
+			fontSize: size 
+		})),
+		
+		setLetterSpacing: (spacing: number) => update(config => ({ 
+			...config, 
+			letterSpacing: spacing 
+		})),
+		
+		setLineHeight: (height: number) => update(config => ({ 
+			...config, 
+			lineHeight: height 
+		})),
+		
+		toggleDyslexiaMode: () => update(config => ({
+			...config,
+			dyslexiaMode: !config.dyslexiaMode
+		})),
+		
+		// HU-02: Lectura biónica
+		toggleBionicMode: () => update(config => ({
+			...config,
+			bionicMode: !config.bionicMode
+		})),
+		
+		// HU-03: Narración auditiva
+		toggleNarration: () => update(config => ({
+			...config,
+			narrationEnabled: !config.narrationEnabled
+		})),
+		
+		setTTSSpeed: (speed: number) => update(config => ({
+			...config,
+			ttsSpeed: speed
+		})),
+		
+		// HU-04: Rimas
+		toggleRhymeMode: () => update(config => ({
+			...config,
+			rhymeMode: !config.rhymeMode
+		})),
+		
+		// HU-05: Pictogramas
+		togglePictogramMode: () => update(config => ({
+			...config,
+			pictogramMode: !config.pictogramMode
+		})),
+		
+		// HU-06: Contraste y fondo
+		setBackgroundColor: (color: string) => update(config => ({
+			...config,
+			backgroundColor: color
+		})),
+		
+		setContrastLevel: (level: 'normal' | 'high' | 'maximum') => update(config => ({
+			...config,
+			contrastLevel: level
 		})),
 		
 		// Reinicia toda la configuración a valores por defecto
