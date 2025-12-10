@@ -7,6 +7,7 @@
 	import { goto } from '$app/navigation';
 	import '../lib/styles/themes.css';
 	import IconoVolver from '$lib/components/iconos/IconoVolver.svelte';
+	import IconoAccesibilidad from '$lib/components/iconos/Accesibilidad.svelte';
 
 	// Pequeño helper de accesibilidad: enfocar el contenido principal al navegar
 	let mainEl: HTMLElement | null = null;
@@ -55,6 +56,12 @@
 		} else {
 			document.body.removeAttribute('data-theme');
 		}
+	});
+
+	$effect(() => {
+		// Detecta si estás en /ajustes
+		const esPaginaConBarra = $page.url.pathname === '/ajustes' || $page.url.pathname === '/seleccionar-estudio';
+		document.body.style.setProperty('--body-display', esPaginaConBarra ? 'block' : 'flex');
 	});
 </script>
 
@@ -120,10 +127,7 @@
 				onclick={abrirConfiguracion}
 			>
 				<span class="solo-lectores">Abrir los ajustes</span>
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-					<path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z" fill="currentColor"/>
-					<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 1 1 2.28 17.88l.06-.06c.4-.4.5-1.03.33-1.57A1.65 1.65 0 0 0 1.17 14H1a2 2 0 1 1 0-4h.17c.7 0 1.3-.45 1.57-1.08.17-.54.07-1.17-.33-1.57L1.88 6.12A2 2 0 1 1 4.71 3.29l.06.06c.4.4 1.03.5 1.57.33.63-.27 1.08-.87 1.08-1.57V1a2 2 0 1 1 4 0v.17c0 .7.45 1.3 1.08 1.57.54.17 1.17.07 1.57-.33l.06-.06A2 2 0 1 1 19.4 4.71l-.06.06c-.4.4-.5 1.03-.33 1.57.27.63.87 1.08 1.57 1.08H23a2 2 0 1 1 0 4h-.17c-.7 0-1.3.45-1.57 1.08-.17.54-.07 1.17.33 1.57l.06.06A2 2 0 1 1 19.4 15z" fill="currentColor" opacity="0.9"/>
-				</svg>
+				<IconoAccesibilidad />
 			</button>
 			
 			<!-- Texto visual indicativo -->
@@ -135,7 +139,12 @@
 <style>
 	
 	:global(html, body, #svelte) {
-		height: 95%;
+		min-height: 100vh;
+		height: 100vh;
+		display: var(--body-display, flex);
+		flex-direction: column;
+		align-content: center;
+		justify-content: center;
 	}
 
 	.app-layout {
@@ -152,7 +161,6 @@
 		flex: 1 1 auto;
 		overflow-x: hidden;
 		width: 100%;
-		max-width: 1100px;
 		margin: var(--spacing-base, 1rem) auto;
 		padding: 0 var(--spacing-base, 1rem) calc(var(--spacing-base, 1rem) * 2);
 		box-sizing: border-box;

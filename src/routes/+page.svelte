@@ -1,15 +1,19 @@
 <script lang="ts">
 	// Página de bienvenida para la aplicación COLORECO
 	// Importar imágenes desde assets 
-	import iconColoreco from '$lib/assets/icon-coloreco.svg';
 	import logoColoreco from '$lib/assets/Logo_coloreco.png';
 	import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
 	import {configuraciones} from '$lib/stores/settings';
+	import { goto } from '$app/navigation';
+
+	function iniciar() {
+		goto('/seleccionar-estudio');
+	}
 </script>
 
 <FondoManchas />
 
-<div class="bienvenida" aria-labelledby="titulo-coloreco" style="padding-top: {$configuraciones.multiplicadorTamanioFuente === 1 ? '10%' : '0'}">
+<div class="bienvenida" aria-labelledby="titulo-coloreco">
 	<header class="bienvenida-cabecera" data-magnificable>
 
 		<h1 id="titulo-coloreco" class="titulo">COLORECO</h1>
@@ -24,7 +28,9 @@
 	<div class="bienvenida-acciones">
 		<button class="boton-principal" 
 			aria-label="Iniciar aplicación" 
-			title="Iniciar">
+			title="Iniciar"
+			onclick={iniciar}
+			>
 			Iniciar
 		</button>
 	</div>
@@ -32,7 +38,6 @@
 
 <style>
 	/* Estilos adaptativos que responden a las variables CSS dinámicas del store */
-	
 	.bienvenida {
 		display: flex;
 		flex-direction: column;
