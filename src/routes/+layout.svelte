@@ -164,10 +164,12 @@
 		// Importar funciones de rima si es necesario
 		let detectRhymes: ((text: string) => any[]) | undefined;
 		let applyRhymeHighlight: ((text: string, patterns: any[], backgroundColor?: string) => string) | undefined;
-		if ($configuraciones.rhymeMode) {
+		let splitIntoSyllables: ((word: string) => string[]) | undefined;
+		if ($configuraciones.rhymeMode || $configuraciones.bionicMode) {
 			const rhymeModule = await import('$lib/a11y/rhyme');
 			detectRhymes = rhymeModule.detectRhymes;
 			applyRhymeHighlight = rhymeModule.applyRhymeHighlight;
+			splitIntoSyllables = rhymeModule.splitIntoSyllables;
 		}
 		
 		elements.forEach((element) => {
@@ -198,8 +200,8 @@
 					const tempDiv = document.createElement('div');
 					tempDiv.innerHTML = processedHTML;
 					
-					// Importar función de separación de sílabas
-					const { splitIntoSyllables } = await import('$lib/a11y/rhyme');
+					// Usar función de separación de sílabas importada
+					if (!splitIntoSyllables) return;
 					
 					// Procesar todos los textos, tanto dentro como fuera de spans de rima
 					const processTextNode = (node: Node) => {
@@ -266,7 +268,7 @@
 					processedHTML = tempDiv.innerHTML;
 				} else {
 					// Aplicar biónico simple sin rima
-					const { splitIntoSyllables } = await import('$lib/a11y/rhyme');
+					if (!splitIntoSyllables) return;
 					const words = text.split(/(\s+)/);
 					
 					const processedWords = words.map((word) => {
