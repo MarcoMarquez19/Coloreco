@@ -106,26 +106,22 @@ class TTSService {
 	 * @param newRate Nueva velocidad (0.75 - 1.75)
 	 */
 	changeSpeed(newRate: number): void {
-		if (!this.synthesis || !this.utterance || !this.isSpeaking()) {
+		if (!this.synthesis) {
 			return;
 		}
 
 		const clampedRate = this.clampRate(newRate);
 		
+		// Actualizar las opciones guardadas para futuras reproducciones
+		this.currentOptions.rate = clampedRate;
+		
 		// Si está hablando, cambiar la velocidad dinámicamente
-		if (this.synthesis.speaking && !this.isPaused) {
-			// Guardar estado actual
-			const wasPlaying = !this.isPaused;
-			
+		if (this.synthesis.speaking && !this.isPaused && this.currentText) {
 			// Cancelar y reiniciar con nueva velocidad
 			// Nota: Web Speech API no soporta cambio de velocidad sin reiniciar
 			// Esta es la mejor aproximación posible
 			this.synthesis.cancel();
-			
-			if (wasPlaying && this.currentText) {
-				this.currentOptions.rate = clampedRate;
-				this.speak(this.currentText, this.currentOptions);
-			}
+			this.speak(this.currentText, this.currentOptions);
 		}
 	}
 
@@ -207,6 +203,7 @@ class TTSService {
 	 */
 	stop(): void {
 		if (this.synthesis) {
+			// Cancelar TODO lo que está en la cola de síntesis
 			this.synthesis.cancel();
 			this.cleanup();
 		}

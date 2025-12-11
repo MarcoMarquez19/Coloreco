@@ -10,6 +10,7 @@
 	let previewMarcoEl: HTMLElement | null = $state(null);
 	let previewContEl: HTMLElement | null = $state(null);
 	let previewScale = 1;
+	let speedDisplay = $state(($configuraciones.ttsSpeed || 1).toFixed(2));
 
 	// Recompute preview scale when relevant settings change
 	$effect(() => {
@@ -356,15 +357,28 @@ onMount(() => {
 						{#if $configuraciones.narrationEnabled}
 							<div class="control-label">
 								<span>Velocidad de narración</span>
-								<span class="control-valor">{$configuraciones.ttsSpeed?.toFixed(1) || '1.0'}×</span>
+								<span class="control-valor">{speedDisplay}×</span>
 							</div>
 							<input
 								type="range"
 								min="0.5"
 								max="2"
 								step="0.1"
-								value={$configuraciones.ttsSpeed || 1}
-								oninput={(e) => configuraciones.setTTSSpeed(parseFloat((e.target as HTMLInputElement).value))}
+								bind:value={speedDisplay}
+								oninput={(e) => {
+									const val = (e.target as HTMLInputElement).value;
+									speedDisplay = parseFloat(val).toFixed(2);
+									configuraciones.setTTSSpeed(parseFloat(val));
+									
+									// Leer la velocidad actual
+									if (typeof window !== 'undefined' && window.speechSynthesis) {
+										window.speechSynthesis.cancel();
+										const utterance = new SpeechSynthesisUtterance(`Velocidad ${speedDisplay}`);
+										utterance.lang = 'es-ES';
+										utterance.rate = parseFloat(val);
+										window.speechSynthesis.speak(utterance);
+									}
+								}}
 								aria-label="Velocidad de narración"
 								class="slider"
 							/>

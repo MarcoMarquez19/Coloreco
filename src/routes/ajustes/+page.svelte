@@ -13,6 +13,7 @@
 	let previewMarcoEl: HTMLElement | null = $state(null);
 	let previewContEl: HTMLElement | null = $state(null);
 	let previewScale = 1;
+	let speedDisplay = $state(($configuraciones.ttsSpeed || 1).toFixed(2));
 
 	// Recalcular la escala de la vista previa cuando cambian los ajustes relevantes
 	$effect(() => {
@@ -310,26 +311,49 @@
 						<small>Lee el texto en voz alta con resaltado palabra por palabra.</small>
 					</div>
 
-					<!-- Velocidad de Narración (solo visible si está activada) -->
-					{#if $configuraciones.narrationEnabled}
-						<div class="control-label">
-							<span>Velocidad de narración</span>
-							<span class="control-valor">{$configuraciones.ttsSpeed?.toFixed(1) || '1.0'}×</span>
-						</div>
-						<input
-							type="range"
-							min="0.5"
-							max="2"
-							step="0.1"
-							value={$configuraciones.ttsSpeed || 1}
-							oninput={(e) => configuraciones.setTTSSpeed(parseFloat((e.target as HTMLInputElement).value))}
-							aria-label="Velocidad de narración"
-							class="slider"
-						/>
-						<div class="control-ayuda">
-							<small>Ajusta qué tan rápido se lee el texto (0.5× lento - 2× rápido).</small>
-						</div>
-					{/if}
+				<!-- Velocidad de Narración (solo visible si está activada) -->
+				{#if $configuraciones.narrationEnabled}
+					<div class="control-label">
+						<span>Velocidad de narración</span>
+						<span class="control-valor">{speedDisplay}×</span>
+					</div>
+					<input
+						type="range"
+						min="0.75"
+						max="1.75"
+						step="0.25"
+						bind:value={speedDisplay}
+						oninput={(e) => {
+							const val = (e.target as HTMLInputElement).value;
+							speedDisplay = parseFloat(val).toFixed(2);
+							configuraciones.setTTSSpeed(parseFloat(val));
+							
+							// Leer la velocidad actual
+							if (typeof window !== 'undefined' && window.speechSynthesis) {
+								window.speechSynthesis.cancel();
+								const utterance = new SpeechSynthesisUtterance(`Velocidad ${speedDisplay}`);
+								utterance.lang = 'es-ES';
+								utterance.rate = parseFloat(val);
+								window.speechSynthesis.speak(utterance);
+							}
+							
+							if (typeof window !== 'undefined') {
+								import('$lib/audio/tts.service').then(({ ttsService }) => {
+									ttsService.changeSpeed(parseFloat(val));
+								});
+							}
+						}}
+						aria-label="Velocidad de narración"
+						aria-valuemin="0.75"
+						aria-valuemax="1.75"
+						aria-valuenow={parseFloat(speedDisplay)}
+						aria-valuetext="{speedDisplay} veces la velocidad normal"
+						class="slider"
+					/>
+					<div class="control-ayuda">
+						<small>0.75× (muy lento) - 1× (normal) - 1.25× (rápido) - 1.5× (muy rápido) - 1.75× (máximo)</small>
+					</div>
+				{/if}
 				</div>
 
 				<!-- Botón para reiniciar valores -->

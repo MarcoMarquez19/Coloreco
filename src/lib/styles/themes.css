@@ -192,9 +192,20 @@ body {
 	color: var(--bionic-highlight-color);
 }
 
+/* Cuando biónico está dentro de rima, heredar el color blanco */
+[data-bionic="true"] .rhyme-highlight .bionic-highlight {
+	font-weight: 700;
+	color: inherit !important;
+}
+
 [data-bionic="true"] .bionic-rest {
 	font-weight: 400;
 	color: inherit;
+}
+
+[data-bionic="true"] .rhyme-highlight .bionic-rest {
+	font-weight: 400;
+	color: inherit !important;
 }
 
 /* MODO PICTOGRAMAS: Agrega indicadores visuales específicos por contexto */

@@ -153,17 +153,26 @@
 	});
 
 	// Función para aplicar todos los modos activos de forma combinada
-	function applyAccessibilityModes() {
+	async function applyAccessibilityModes() {
 		if (!mainEl) return;
 		
 		// Restaurar primero
 		restoreOriginalText();
 		
-		const elements = mainEl.querySelectorAll('h1, h2, h3, h4, h5, h6, p, button:not(.control-button):not(.boton-volver):not(.boton-configuracion), label, span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-word)');
+		const elements = mainEl.querySelectorAll('h1, h2, h3, h4, h5, h6, .seccion-titulo, p, button:not(.control-button):not(.boton-volver):not(.boton-configuracion):not(.switch-toggle), label:not(.switch-knob), .switch-label, span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-highlight):not(.switch-knob):not(.control-valor), small, div.control-ayuda, .control-label span');
+		
+		// Importar funciones de rima si es necesario
+		let detectRhymes: ((text: string) => any[]) | undefined;
+		let applyRhymeHighlight: ((text: string, patterns: any[], backgroundColor?: string) => string) | undefined;
+		if ($configuraciones.rhymeMode) {
+			const rhymeModule = await import('$lib/a11y/rhyme');
+			detectRhymes = rhymeModule.detectRhymes;
+			applyRhymeHighlight = rhymeModule.applyRhymeHighlight;
+		}
 		
 		elements.forEach((element) => {
 			// Evitar procesar elementos ya procesados
-			if (element.querySelector('.bionic-highlight') || element.querySelector('.rhyme-word')) return;
+			if (element.querySelector('.bionic-highlight') || element.querySelector('.rhyme-highlight')) return;
 			
 			const text = element.textContent?.trim();
 			if (!text) return;
@@ -171,33 +180,122 @@
 			// Guardar texto original
 			element.setAttribute('data-original-text', text);
 			
-			// Procesar palabra por palabra
-			const words = text.split(/\s+/);
-			const processedWords = words.map((word, index) => {
-				let processedWord = word;
-				
-				// Aplicar modo biónico si está activo
-				if ($configuraciones.bionicMode) {
-					if (word.length <= 2) {
-						processedWord = `<span class="bionic-highlight">${word}</span>`;
-					} else {
-						const highlightLength = Math.ceil(word.length * 0.45);
-						const highlighted = word.slice(0, highlightLength);
-						const rest = word.slice(highlightLength);
-						processedWord = `<span class="bionic-highlight">${highlighted}</span><span class="bionic-rest">${rest}</span>`;
-					}
-				}
-				
-				// Aplicar modo rima si está activo (envolver el resultado del biónico)
-				if ($configuraciones.rhymeMode) {
-					const rhymeGroup = index % 5;
-					processedWord = `<span class="rhyme-word" data-rhyme-group="${rhymeGroup}">${processedWord}</span>`;
-				}
-				
-				return processedWord;
-			});
+			let processedHTML = text;
 			
-			(element as HTMLElement).innerHTML = processedWords.join(' ');
+			// Aplicar modo rima primero si está activo
+			if ($configuraciones.rhymeMode && detectRhymes && applyRhymeHighlight) {
+				const patterns = detectRhymes(text);
+				const backgroundColor = $configuraciones.modoNoche 
+					? ($configuraciones.modoInverso ? '#ffffff' : '#121212')
+					: '#ffffff';
+				processedHTML = applyRhymeHighlight(text, patterns, backgroundColor);
+			}
+			
+			// Aplicar modo biónico después si está activo
+			if ($configuraciones.bionicMode) {
+				// Si ya hay HTML del modo rima, procesar respetando los spans de rima
+				if ($configuraciones.rhymeMode) {
+					const tempDiv = document.createElement('div');
+					tempDiv.innerHTML = processedHTML;
+					
+					// Importar función de separación de sílabas
+					const { splitIntoSyllables } = await import('$lib/a11y/rhyme');
+					
+					// Procesar todos los textos, tanto dentro como fuera de spans de rima
+					const processTextNode = (node: Node) => {
+						if (node.nodeType === Node.TEXT_NODE) {
+							const text = node.textContent || '';
+							if (!text.trim()) return;
+							
+							// Dividir en palabras
+							const words = text.split(/(\s+)/);
+							const container = document.createElement('span');
+							
+							words.forEach(word => {
+								if (/^\s+$/.test(word)) {
+									// Es espacio, mantenerlo
+									container.appendChild(document.createTextNode(word));
+								} else if (word.length > 0) {
+									// Es palabra, aplicar formato biónico por sílabas
+									const syllables = splitIntoSyllables(word);
+									
+									if (syllables.length === 0) {
+										container.appendChild(document.createTextNode(word));
+									} else if (syllables.length === 1 && word.length <= 3) {
+										// Palabra corta, resaltar completa
+										const span = document.createElement('span');
+										span.className = 'bionic-highlight';
+										span.style.cssText = 'color: inherit; font-weight: 700;';
+										span.textContent = word;
+										container.appendChild(span);
+									} else {
+										// Resaltar primera sílaba
+										const firstSyllable = syllables[0];
+										const rest = word.slice(firstSyllable.length);
+										
+										const highlightSpan = document.createElement('span');
+										highlightSpan.className = 'bionic-highlight';
+										highlightSpan.style.cssText = 'color: inherit; font-weight: 700;';
+										highlightSpan.textContent = firstSyllable;
+										container.appendChild(highlightSpan);
+										
+										if (rest) {
+											const restSpan = document.createElement('span');
+											restSpan.className = 'bionic-rest';
+											restSpan.style.cssText = 'color: inherit; font-weight: 400;';
+											restSpan.textContent = rest;
+											container.appendChild(restSpan);
+										}
+									}
+								}
+							});
+							
+							if (node.parentNode) {
+								node.parentNode.replaceChild(container, node);
+							}
+						} else if (node.nodeType === Node.ELEMENT_NODE && (node as Element).classList.contains('rhyme-highlight')) {
+							// Procesar texto dentro de spans de rima sin destruir el span
+							Array.from(node.childNodes).forEach(processTextNode);
+						} else if (node.childNodes.length > 0) {
+							// Recursivamente procesar hijos
+							Array.from(node.childNodes).forEach(processTextNode);
+						}
+					};
+					
+					processTextNode(tempDiv);
+					processedHTML = tempDiv.innerHTML;
+				} else {
+					// Aplicar biónico simple sin rima
+					const { splitIntoSyllables } = await import('$lib/a11y/rhyme');
+					const words = text.split(/(\s+)/);
+					
+					const processedWords = words.map((word) => {
+						if (/^\s+$/.test(word)) {
+							return word;
+						}
+						
+						if (word.length === 0) return word;
+						
+						const syllables = splitIntoSyllables(word);
+						
+						if (syllables.length === 0) {
+							return word;
+						} else if (syllables.length === 1 && word.length <= 3) {
+							// Palabra corta, resaltar completa
+							return `<span class="bionic-highlight" style="font-weight: 700;">${word}</span>`;
+						} else {
+							// Resaltar primera sílaba
+							const firstSyllable = syllables[0];
+							const rest = word.slice(firstSyllable.length);
+							return `<span class="bionic-highlight" style="font-weight: 700;">${firstSyllable}</span><span class="bionic-rest" style="font-weight: 400;">${rest}</span>`;
+						}
+					});
+					
+					processedHTML = processedWords.join('');
+				}
+			}
+			
+			(element as HTMLElement).innerHTML = processedHTML;
 		});
 	}
 
