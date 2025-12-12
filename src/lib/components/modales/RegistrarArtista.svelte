@@ -1,6 +1,8 @@
 <script lang="ts">
     import { createEventDispatcher, onMount } from 'svelte';
 
+    // TODO: Agregar lógica para registrar un nuevo artista en la BD
+
     // Creamos el despachador de eventos para comunicarnos con el padre
     const dispatch = createEventDispatcher();
 

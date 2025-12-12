@@ -1,8 +1,9 @@
 <script>
 	import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
     import RegistrarArtista from '$lib/components/modales/RegistrarArtista.svelte';
+    import { goto } from '$app/navigation';
 
-
+    // TODO: Agregar lógica para manejar artistas y estudios
     let mostrarRegistrarArtista = false;
 
     function crearEstudio() {
@@ -16,6 +17,11 @@
         { nombre: 'Vincent', numero: 3 },
         { nombre: 'Marco', numero:4}
     ];
+
+    function irAlEstudio() {
+        // Lógica para navegar al estudio del artista seleccionado
+        goto('/estudio');
+    }
 </script>
 
 <FondoManchas />
@@ -36,7 +42,11 @@
                 {#each artistas as artista}
                     <div class="estudio-item">
                         <span class="artista-numero" aria-label={`Número de artista: ${artista.numero}`}>{artista.numero}</span>
-                        <button class="boton-estudio" aria-label={`Estudio de ${artista.nombre}`}>
+                        <button class="boton-estudio" 
+                        aria-label={`Estudio de ${artista.nombre}`}
+                        title={`Ir al estudio de ${artista.nombre}`}
+			            onclick={irAlEstudio}
+                        >
                             Estudio de {artista.nombre}
                         </button>
                     </div>

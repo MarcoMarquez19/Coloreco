@@ -18,8 +18,8 @@
 
 		<h1 id="titulo-coloreco" class="titulo">COLORECO</h1>
 
-		<div class="logo-ovalo">
-			<img src={logoColoreco} alt="Logo COLORECO" class="logo" width="260" height="120" />
+		<div class="logo-ovalo" aria-label="Logo de coloreco - Pincel mágico en un libro de historias con nombre COLORECO">
+			<img src={logoColoreco} alt="Logo de coloreco - Pincel mágico en un libro de historias con nombre COLORECO" class="logo" width="260" height="120" />
 		</div>
 
 		<p class="subtitulo">Tu estudio de pinturas e historias</p>

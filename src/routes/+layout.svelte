@@ -25,6 +25,7 @@
 	// Detectar si estamos en la página de ajustes o en la página inicial
 	let estaEnConfiguracion = $derived($page.url.pathname === '/ajustes');
 	let estaEnInicio = $derived($page.url.pathname === '/');
+	let estaEnEstudio = $derived($page.url.pathname.startsWith('/estudio'));
 
 	// Funciones de navegación
 	function abrirConfiguracion() {
@@ -60,7 +61,7 @@
 
 	$effect(() => {
 		// Detecta si estás en /ajustes
-		const esPaginaConBarra = $page.url.pathname === '/ajustes' || $page.url.pathname === '/seleccionar-estudio';
+		const esPaginaConBarra = $page.url.pathname === '/ajustes' || $page.url.pathname === '/seleccionar-estudio' || $page.url.pathname.startsWith('/estudio');
 		document.body.style.setProperty('--body-display', esPaginaConBarra ? 'block' : 'flex');
 	});
 </script>
@@ -96,7 +97,7 @@
 	{/if}
 
 	<!-- Botón de volver fijo en la esquina inferior izquierda (oculto en página inicial) -->
-	{#if !estaEnInicio}
+	{#if !estaEnInicio && !estaEnEstudio}
 		<div class="contenedor-flotante-i">
 			<button 
 				class="boton-volver" 
@@ -116,7 +117,7 @@
 	{/if}
 	
 	<!-- Botón de ajustes fijo en la esquina inferior derecha (oculto en /ajustes) -->
-	{#if !estaEnConfiguracion}
+	{#if !estaEnConfiguracion && !estaEnEstudio}
 		<div class="contenedor-flotante-d">
 			<button 
 				class="boton-configuracion" 

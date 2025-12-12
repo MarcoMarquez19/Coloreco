@@ -270,7 +270,8 @@
 		justify-content: space-between;
 		padding: calc(var(--spacing-base, 1rem) * 1.5);
 		border-bottom: 1px solid #e0e0e0;
-		background: white;
+		background: var(--fondo-botones, white);
+		color: var(--icono-color-relleno, black);
 		border-top-left-radius: var(--border-radius, 8px);
 		border-top-right-radius: var(--border-radius, 8px);
 	}
@@ -278,7 +279,7 @@
 	.panel-header h2 {
 		margin: 0;
 		font-size: calc(var(--font-size-base, 1rem) * 1.5);
-		color: #222;
+		color: var(--icono-color-relleno, black);
 	}
 
 	/* Contenido principal: controles + vista previa */
@@ -314,7 +315,7 @@
 		align-items: center;
 		font-weight: 600;
 		font-size: calc(var(--font-size-base, 1rem) * 0.95);
-		color: #333;
+		color: var(--icono-color-borde, black);
 	}
 
 	.control-valor {
@@ -324,7 +325,7 @@
 	}
 
 	.control-ayuda {
-		color: #666;
+		color: var(--icono-color-borde, black);
 		font-size: calc(var(--font-size-base, 1rem) * 0.85);
 	}
 
@@ -332,7 +333,8 @@
 	.boton-reset {
 		margin-top: calc(var(--spacing-base, 1rem) * 0.5);
 		padding: calc(var(--spacing-base, 1rem) * 0.7) calc(var(--spacing-base, 1rem) * 1.2);
-		background: #f5f5f5;
+		background: var(--fondo-botones, #333333);
+		color: var(--icono-color-relleno, white);
 		border: 1px solid #ccc;
 		border-radius: var(--border-radius, 8px);
 		cursor: pointer;
@@ -342,12 +344,14 @@
 	}
 
 	.boton-reset:hover {
-		background: #e8e8e8;
+        background: var(--fondo-botones-hover, #9b978a);
 	}
 
 	.boton-reset:focus {
-		outline: 2px solid #0b6efd;
-		outline-offset: 2px;
+		outline: var(--borde-botones, 4px solid #000000);
+		background: var(--fondo-botones-hover, #9b978a);
+		outline-offset: 7px;
+        transform: translateY(-2px);
 	}
 
 	/* Vista previa: simula una ventana de monitor fija */
@@ -412,7 +416,7 @@
 		margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0;
 		font-size: calc(var(--font-size-base, 1rem) * 1.1);
 		font-weight: 600;
-		color: #222;
+		color: var(--icono-color-borde, black);
 	}
 
 	/* Switch toggle */
@@ -426,7 +430,7 @@
 	.switch-label {
 		font-weight: 500;
 		font-size: calc(var(--font-size-base, 1rem) * 0.95);
-		color: #333;
+		color: var(--icono-color-borde, black);
 	}
 
 	.switch-toggle {
@@ -465,4 +469,5 @@
 	.switch-toggle.active .switch-knob {
 		transform: translateX(24px);
 	}
+
 </style>
