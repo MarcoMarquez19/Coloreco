@@ -53,7 +53,7 @@
                 {/each}
             </div>
 
-            <button class="boton-nuevo" 
+            <button class="boton-nuevo pattern-yellow"
 			aria-label="Crear un nuevo estudio" 
 			title="Crea un estudio nuevo"
 			onclick={crearEstudio}

@@ -26,7 +26,7 @@
 	</header>
 
 	<div class="bienvenida-acciones">
-		<button class="boton-principal" 
+		<button class="boton-principal pattern-yellow" 
 			aria-label="Iniciar aplicación" 
 			title="Iniciar"
 			onclick={iniciar}
@@ -98,6 +98,7 @@
 		cursor: pointer;
 		box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
 		transition: transform 120ms ease, box-shadow 120ms ease;
+		overflow: hidden;
 	}
 
 	.boton-principal:hover {
