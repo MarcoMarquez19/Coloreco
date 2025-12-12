@@ -2,6 +2,11 @@
 // Este "cerebro" centralizado almacena todas las preferencias de accesibilidad y diseño
 
 import { writable } from 'svelte/store';
+import { browser } from '$app/environment';
+
+// === Tipos daltonismo ===
+export type ColorBlindnessMode = 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'achromatopsia';
+export type ContrastMode = 'normal' | 'high';
 
 // Interfaz que define la estructura de la configuración
 // Define todas las propiedades que controlan la apariencia de la aplicación
@@ -29,6 +34,12 @@ export interface ConfiguracionUI {
 	
 	// Modo Inverso: invierte la paleta del modo noche (solo disponible si modoNoche está activo)
 	modoInverso?: boolean;
+
+	// === Propiedades daltonismo ===
+	colorBlindness: ColorBlindnessMode;
+	intensity: number; // 0 a 1
+	textures: boolean;
+	contrast: ContrastMode;
 }
 
 // Valores por defecto para una experiencia estándar
@@ -40,13 +51,39 @@ const valoresPorDefecto: ConfiguracionUI = {
 	lupaActivada: false,
 	nivelMagnificacion: 2,
 	modoNoche: false,
-	modoInverso: false
+	modoInverso: false,
+
+	// Daltonismo
+	colorBlindness: 'none',
+	intensity: 1,
+	textures: false,
+	contrast: 'normal'
 };
 
 // Crear el store reactivo
 // Cualquier componente puede suscribirse a este store y reaccionar a cambios
 function crearEstadoConfiguraciones() {
-	const { subscribe, set, update } = writable<ConfiguracionUI>(valoresPorDefecto);
+	// Lógica de carga inicial desde localStorage (Agregada para persistencia)
+	let estadoInicial = valoresPorDefecto;
+	if (browser) {
+		const guardado = localStorage.getItem('coloreco_settings');
+		if (guardado) {
+			try {
+				estadoInicial = { ...valoresPorDefecto, ...JSON.parse(guardado) };
+			} catch (e) {
+				console.error('Error cargando configuración:', e);
+			}
+		}
+	}
+
+	const { subscribe, set, update } = writable<ConfiguracionUI>(estadoInicial);
+
+	// Persistencia automática (Agregada)
+	if (browser) {
+		subscribe(valor => {
+			localStorage.setItem('coloreco_settings', JSON.stringify(valor));
+		});
+	}
 
 	return {
 		subscribe,
@@ -118,6 +155,12 @@ function crearEstadoConfiguraciones() {
 			...config,
 			modoInverso: !config.modoInverso
 		})),
+
+		// === Métodos daltonismo ===
+		setColorBlindness: (mode: ColorBlindnessMode) => update(config => ({ ...config, colorBlindness: mode })),
+		setIntensity: (val: number) => update(config => ({ ...config, intensity: val })),
+		setTextures: (enabled: boolean) => update(config => ({ ...config, textures: enabled })),
+		setContrast: (mode: ContrastMode) => update(config => ({ ...config, contrast: mode })),
 		
 		// Reinicia toda la configuración a valores por defecto
 		reset: () => set(valoresPorDefecto)
