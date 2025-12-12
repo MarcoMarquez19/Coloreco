@@ -3,6 +3,7 @@
 	// Este componente permite al usuario personalizar la apariencia de la app.
 	// Se ha transformado de modal a página independiente.
 	
+	import type { ColorBlindnessMode } from '$lib/stores/settings';
 	import { configuraciones } from '$lib/stores/settings';
 	import { onMount } from 'svelte';
 
@@ -89,8 +90,8 @@
 						</label>
 						<select
 							id="select-colorblindness"
-							value={$configuraciones.colorBlindness}
-							onchange={(e) => configuraciones.setColorBlindness(e.currentTarget.value)}
+							value={$configuraciones.colorBlindness as any}
+							onchange={(e) => configuraciones.setColorBlindness(e.currentTarget.value as ColorBlindnessMode)}
 							class="select-input"
 							aria-label="Seleccionar modo de simulación de daltonismo"
 						>
@@ -569,7 +570,7 @@
 	/* Range Slider */
 	.slider {
 		width: 100%; height: 8px; border-radius: 4px; background: #e0e0e0;
-		outline: none; -webkit-appearance: none; margin-top: 0.5rem;
+		outline: none; appearance: none; -webkit-appearance: none; margin-top: 0.5rem;
 	}
 	.slider:disabled { opacity: 0.5; cursor: not-allowed; }
 	.slider::-webkit-slider-thumb {

@@ -10,6 +10,7 @@
     .estudio-contenedor {
         padding: 0;
         margin: 0;
+        margin-top: 2rem;
         border: 3px solid #000;
         border-radius: 8px;
         min-height: 90vh;

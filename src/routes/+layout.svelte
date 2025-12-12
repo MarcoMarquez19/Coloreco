@@ -148,6 +148,7 @@
 	{/if}
 	
 	<!-- Botón de ajustes fijo en la esquina inferior derecha (oculto en /ajustes) -->
+
 	{#if !estaEnConfiguracion && !estaEnEstudio}
 		<div class="contenedor-flotante-d" style={filterStyle}>
 			<button 
@@ -182,7 +183,6 @@
 	.app-layout {
 		display: flex;
 		flex-direction: column;
-		min-height: 100vh;
 		background: transparent;
 		color: var(--fg, #111);
 		font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
@@ -201,9 +201,14 @@
 
 	.app-main {
 		flex: 1 1 auto;
+		display: var(--body-display,flex);
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
 		overflow-x: hidden;
 		width: 100%;
-		margin: var(--spacing-base, 1rem) auto;
+		margin: 0 auto;
 		padding: 0 var(--spacing-base, 1rem) calc(var(--spacing-base, 1rem) * 2);
 		box-sizing: border-box;
 	}
