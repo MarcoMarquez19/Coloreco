@@ -16,14 +16,7 @@
 
 	// Recalcular la escala de la vista previa cuando cambian los ajustes relevantes
 	$effect(() => {
-		if (previewMarcoEl && previewContEl) {
-			updatePreviewSize();
-		}
-	});
-
-	$effect(() => {
-		if (previewMarcoEl && previewContEl && ($configuraciones.multiplicadorTamanioFuente || $configuraciones.multiplicadorEspaciado || $configuraciones.lupaActivada)) {
-			// Cuando cambian los ajustes que afectan al diseño, actualizar la escala de la vista previa
+		if (previewMarcoEl && previewContEl && $configuraciones) {
 			updatePreviewSize();
 		}
 	});
@@ -55,7 +48,7 @@
 	onMount(() => {
 		// Actualización inicial
 		updatePreviewSize();
-		
+
 		// Eventos de redimensionamiento
 		window.addEventListener('resize', updatePreviewSize);
 		window.addEventListener('orientationchange', updatePreviewSize);
@@ -71,7 +64,6 @@
 			observer.disconnect();
 		};
 	});
-
 </script>
 
 <!-- Contenedor principal de la página -->
@@ -88,7 +80,94 @@
 			<!-- Sección de Controles -->
 			<section class="controles" aria-label="Controles de personalización" data-magnificable>
 				
-				<!-- Sección: Lupa Mágica -->
+				<div class="control-grupo seccion-grupo">
+					<h3 class="seccion-titulo">Accesibilidad Visual (Daltonismo)</h3>
+					
+					<div class="control-subgrupo">
+						<label for="select-colorblindness" class="control-label">
+							Modo de Visión
+						</label>
+						<select
+							id="select-colorblindness"
+							value={$configuraciones.colorBlindness}
+							onchange={(e) => configuraciones.setColorBlindness(e.currentTarget.value)}
+							class="select-input"
+							aria-label="Seleccionar modo de simulación de daltonismo"
+						>
+							<option value="none">Ninguno (Normal)</option>
+							<option value="protanopia">Protanopía (Rojo)</option>
+							<option value="deuteranopia">Deuteranopía (Verde)</option>
+							<option value="tritanopia">Tritanopía (Azul)</option>
+							<option value="achromatopsia">Acromatopsia (Grises)</option>
+						</select>
+					</div>
+
+					<div class="control-subgrupo">
+						<label for="slider-intensity" class="control-label">
+							Intensidad del Filtro
+							<span class="control-valor">{($configuraciones.intensity * 100).toFixed(0)}%</span>
+						</label>
+						<input
+							id="slider-intensity"
+							type="range"
+							min="0"
+							max="1"
+							step="0.1"
+							value={$configuraciones.intensity}
+							oninput={(e) => configuraciones.setIntensity(parseFloat(e.currentTarget.value))}
+							disabled={$configuraciones.colorBlindness === 'none'}
+							class="slider"
+							aria-label="Ajustar la intensidad del filtro de color"
+							aria-valuemin="0"
+							aria-valuemax="1"
+							aria-valuenow={$configuraciones.intensity}
+							aria-valuetext="{($configuraciones.intensity * 100).toFixed(0)} por ciento"
+						/>
+					</div>
+
+					<div class="control-row">
+						<label class="checkbox-label">
+							<input
+								type="checkbox"
+								checked={$configuraciones.textures}
+								onchange={(e) => configuraciones.setTextures(e.currentTarget.checked)}
+								aria-label="Activar texturas de ayuda para diferenciar colores"
+								aria-checked={$configuraciones.textures}
+							/>
+							<span>Texturas de Ayuda</span>
+						</label>
+						
+						<label class="checkbox-label">
+							<input
+								type="checkbox"
+								checked={$configuraciones.contrast === 'high'}
+								onchange={(e) => configuraciones.setContrast(e.currentTarget.checked ? 'high' : 'normal')}
+								aria-label="Activar modo de alto contraste inteligente"
+								aria-checked={$configuraciones.contrast === 'high'}
+							/>
+							<span>Alto Contraste Inteligente</span>
+						</label>
+					</div>
+
+					{#if $configuraciones.textures}
+						<div 
+							class="texture-legend-container" 
+							aria-label="Leyenda de patrones de identificación por texturas"
+							role="region"
+						>
+							<h4 class="legend-title" id="legend-title">Patrones de Identificación</h4>
+							<div class="texture-legend" aria-labelledby="legend-title">
+								<div class="legend-item"><div class="swatch pattern-red bg-red" aria-hidden="true"></div><span>Rojo</span></div>
+								<div class="legend-item"><div class="swatch pattern-green bg-green" aria-hidden="true"></div><span>Verde</span></div>
+								<div class="legend-item"><div class="swatch pattern-blue bg-blue" aria-hidden="true"></div><span>Azul</span></div>
+								<div class="legend-item"><div class="swatch pattern-yellow bg-yellow" aria-hidden="true"></div><span>Amarillo</span></div>
+							</div>
+						</div>
+					{/if}
+				</div>
+
+				<hr class="separador" />
+
 				<div class="control-grupo">
 					<h3 class="seccion-titulo">Lupa Mágica</h3>
 					
@@ -103,6 +182,7 @@
 							aria-describedby="toggle-magnifier-desc"
 							class="switch-toggle"
 							class:active={$configuraciones.lupaActivada}
+							class:pattern-blue={$configuraciones.lupaActivada}
 							onclick={() => configuraciones.toggleMagnifier()}
 							aria-label={$configuraciones.lupaActivada ? 'Desactivar lupa mágica' : 'Activar lupa mágica'}
 						>
@@ -130,6 +210,7 @@
 							aria-describedby="toggle-font-size-desc"
 							class="switch-toggle"
 							class:active={$configuraciones.multiplicadorTamanioFuente >= 1.2}
+							class:pattern-blue={$configuraciones.multiplicadorTamanioFuente >= 1.2}
 							onclick={() => configuraciones.setFontSize($configuraciones.multiplicadorTamanioFuente >= 1.2 ? 1 : 1.5) }
 							aria-label={$configuraciones.multiplicadorTamanioFuente >= 1.2 ? 'Desactivar tamaño de fuente duplicado' : 'Activar tamaño de fuente duplicado'}
 						>
@@ -157,6 +238,7 @@
 							aria-describedby="toggle-spacing-desc"
 							class="switch-toggle"
 							class:active={$configuraciones.multiplicadorEspaciado >= 1.2}
+							class:pattern-blue={$configuraciones.multiplicadorEspaciado >= 1.2}
 							onclick={() => configuraciones.setSpacing($configuraciones.multiplicadorEspaciado >= 1.2 ? 1 : 1.5) }
 							aria-label={$configuraciones.multiplicadorEspaciado >= 1.2 ? 'Desactivar espaciado duplicado' : 'Activar espaciado duplicado'}
 						>
@@ -183,6 +265,7 @@
 							aria-describedby="toggle-modo-noche-desc"
 							class="switch-toggle"
 							class:active={$configuraciones.modoNoche}
+							class:pattern-blue={$configuraciones.modoNoche}
 							onclick={() => configuraciones.toggleModoNoche()}
 							aria-label={$configuraciones.modoNoche ? 'Desactivar Modo Noche' : 'Activar Modo Noche'}
 						>
@@ -205,6 +288,7 @@
 								aria-describedby="toggle-modo-inverso-desc"
 								class="switch-toggle"
 								class:active={$configuraciones.modoInverso}
+								class:pattern-blue={$configuraciones.modoInverso}
 								onclick={() => configuraciones.toggleModoInverso()}
 								aria-label={$configuraciones.modoInverso ? 'Desactivar Modo Inverso' : 'Activar Modo Inverso'}
 							>
@@ -460,9 +544,50 @@
 		border-radius: 50%;
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 		transition: transform 200ms ease;
+		/* IMPORTANTE: Z-index 2 para estar por encima de la textura pattern-blue */
+		z-index: 2;
 	}
 
 	.switch-toggle.active .switch-knob {
 		transform: translateX(24px);
 	}
+
+	/* === TUS ESTILOS NUEVOS (Agregados para tus controles) === */
+	.seccion-grupo { margin-bottom: 1rem; }
+	.control-subgrupo { margin-bottom: 1rem; }
+	.separador { border: 0; border-top: 1px solid #eee; margin: 1.5rem 0; }
+	
+	/* Input Select */
+	.select-input {
+		padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc;
+		width: 100%; font-size: 1rem; background: white; margin-top: 0.5rem;
+	}
+	
+	/* Range Slider */
+	.slider {
+		width: 100%; height: 8px; border-radius: 4px; background: #e0e0e0;
+		outline: none; -webkit-appearance: none; margin-top: 0.5rem;
+	}
+	.slider:disabled { opacity: 0.5; cursor: not-allowed; }
+	.slider::-webkit-slider-thumb {
+		-webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+		background: #0b6efd; cursor: pointer; box-shadow: 0 2px 6px rgba(11,110,253,0.3);
+	}
+	
+	/* Checkboxes */
+	.control-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; }
+	.checkbox-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; user-select: none; }
+	
+	/* Leyenda de Texturas */
+	.texture-legend-container { margin-top: 1rem; padding: 1rem; background: #f9f9f9; border-radius: 8px; border: 1px solid #eee; }
+	.legend-title { margin: 0 0 0.75rem 0; font-size: 0.95rem; color: #444; }
+	.texture-legend { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+	.legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #555; }
+	.swatch { width: 24px; height: 24px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); }
+	
+	/* Referencia a las clases globales de texturas */
+	.bg-red { background-color: #ff4d4f; }
+	.bg-green { background-color: #52c41a; }
+	.bg-blue { background-color: #1890ff; }
+	.bg-yellow { background-color: #fadb14; }
 </style>
