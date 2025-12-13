@@ -1,26 +1,38 @@
-<script>
-	import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
+<script lang="ts">
+    import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
     import RegistrarArtista from '$lib/components/modales/RegistrarArtista.svelte';
     import { goto } from '$app/navigation';
+    import { onMount } from 'svelte';
+    import {obtenerArtistas,cambiarArtista} from '$lib/db/artistas.service';
 
-    // TODO: Agregar lógica para manejar artistas y estudios
     let mostrarRegistrarArtista = false;
 
     function crearEstudio() {
         mostrarRegistrarArtista = true;
     }
 
-    // Simulación de artistas cargados desde la base de datos
-    let artistas = [
-        { nombre: 'Frida', numero: 1 },
-        { nombre: 'Pablo', numero: 2 },
-        { nombre: 'Vincent', numero: 3 },
-        { nombre: 'Marco', numero:4}
-    ];
+    // Lista real de artistas cargados desde la base de datos
+    let artistas:any = [];
 
-    function irAlEstudio() {
-        // Lógica para navegar al estudio del artista seleccionado
-        goto('/estudio');
+    async function cargarArtistas() {
+        artistas = await obtenerArtistas();
+    }
+
+    onMount(async () => {
+        await cargarArtistas();
+    });
+
+    // Navegar al estudio de un artista concreto
+    async function irAlEstudio(artistaId: number) {
+        // Asegurarse de cambiar el artista y cargar sus ajustes antes de navegar
+        await cambiarArtista(artistaId);
+        goto(`/estudio`);
+    }
+
+    // Manejar cierre del modal: ocultar modal y recargar artistas
+    async function handleModalClose() {
+        mostrarRegistrarArtista = false;
+        await cargarArtistas();
     }
 </script>
 
@@ -28,7 +40,7 @@
 
 {#if mostrarRegistrarArtista}
     <!-- Agregamos on:close para cambiar la variable a false -->
-    <RegistrarArtista on:close={() => mostrarRegistrarArtista = false} />
+    <RegistrarArtista on:close={() => handleModalClose()} />
 {/if}
 
 <div class="seleccionar-estudio-contenedor" aria-label="Contenedor para seleccionar el estudio del artista" data-magnificable>
@@ -41,11 +53,11 @@
             <div class="estudios-lista" aria-label="Lista de estudios de artistas">
                 {#each artistas as artista}
                     <div class="estudio-item">
-                        <span class="artista-numero" aria-label={`Número de artista: ${artista.numero}`}>{artista.numero}</span>
+                        <span class="artista-numero" aria-label={`Número de artista: ${artista.id}`}>{artista.id}</span>
                         <button class="boton-estudio" 
                         aria-label={`Estudio de ${artista.nombre}`}
                         title={`Ir al estudio de ${artista.nombre}`}
-			            onclick={irAlEstudio}
+                        onclick={() => irAlEstudio(artista.id)}
                         >
                             Estudio de {artista.nombre}
                         </button>

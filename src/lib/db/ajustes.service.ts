@@ -165,23 +165,10 @@ export function sincronizarAjustesAUI(ajustes: Ajustes): void {
 	// Si el valor de la BD difiere del actual, alternamos
 	// Usamos una aproximación directa actualizando el store
 	
-	// Para modoNoche y modoInverso, usamos los toggles condicionalmente
-	// Primero obtenemos el estado actual y luego sincronizamos
-	let estadoActual: { modoNoche?: boolean; modoInverso?: boolean } = {};
-	const unsubscribe = configuraciones.subscribe(config => {
-		estadoActual = { modoNoche: config.modoNoche, modoInverso: config.modoInverso };
-	});
-	unsubscribe();
-	
-	// Sincronizar modoNoche
-	if (estadoActual.modoNoche !== ajustes.modoNoche) {
-		configuraciones.toggleModoNoche();
-	}
-	
-	// Sincronizar modoInverso (solo si modoNoche está activo)
-	if (ajustes.modoNoche && estadoActual.modoInverso !== ajustes.modoInverso) {
-		configuraciones.toggleModoInverso();
-	}
+	// Aplicar modoNoche y modoInverso explícitamente para evitar toggles inconsistentes
+	// Los setters gestionan dependencias (ej. activar modoNoche si se habilita modoInverso)
+	configuraciones.setModoNoche(ajustes.modoNoche);
+	configuraciones.setModoInverso(ajustes.modoInverso);
 	
 	// Daltonismo - estos tienen setters directos
 	configuraciones.setColorBlindness(ajustes.modoVisionColor);

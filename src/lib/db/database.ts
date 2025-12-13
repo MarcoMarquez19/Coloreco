@@ -245,3 +245,29 @@ export async function obtenerInfoDB(): Promise<{
 		conteos
 	};
 }
+
+/**
+ * Reinicia (elimina) la base de datos completa y recarga la página.
+ * Útil para desarrollo o para resetear el contador autoincremental de artistas.
+ * Nota: elimina todos los datos del usuario. Ejecutar solo en entorno de desarrollo
+ * o cuando el usuario confirme la acción.
+ */
+export async function reiniciarBaseDeDatosYRecargar(): Promise<void> {
+	if (!browser) return;
+	const nombre = 'ColorecoDB';
+	try {
+		const database = getDB();
+		if (database) {
+			// Cerrar la conexión antes de borrar
+			database.close();
+		}
+		// Eliminar la base de datos desde IndexedDB
+		await Dexie.delete(nombre);
+		console.log('[DB] Base de datos eliminada satisfactoriamente');
+		// Recargar para que el módulo vuelva a crear la instancia limpia
+		location.reload();
+	} catch (e) {
+		console.error('[DB] Error reiniciando la base de datos:', e);
+		throw e;
+	}
+}

@@ -47,7 +47,6 @@ export async function crearArtista(nombre: string): Promise<number> {
 	try {
 		if (browser && localStorage.getItem('coloreco_settings')) {
 			await guardarAjustesDesdeUI(id as number);
-			localStorage.removeItem('coloreco_settings');
 			console.log('[ArtistasService] Ajustes locales migrados a la BD para artista', id);
 		}
 	} catch (e) {
@@ -70,7 +69,7 @@ export async function obtenerArtistas(): Promise<Artista[]> {
 	}
 
 	const artistas = await db.artistas
-		.orderBy('ultimaActividad')
+		.orderBy('id')
 		.reverse()
 		.toArray();
 	

@@ -4,7 +4,7 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 import { obtenerSesionActual } from '$lib/db/artistas.service';
-import { guardarAjustesDesdeUI } from '$lib/db/ajustes.service';
+import { guardarAjustesDesdeUI, cargarAjustesDelArtista } from '$lib/db/ajustes.service';
 
 // === Tipos daltonismo ===
 export type ColorBlindnessMode = 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'achromatopsia';
@@ -80,29 +80,43 @@ function crearEstadoConfiguraciones() {
 
 	const { subscribe, set, update } = writable<ConfiguracionUI>(estadoInicial);
 
-	// Persistencia automática: guarda en IndexedDB si hay artista activo,
-	// o en localStorage si aún no hay artista.
+	// Persistencia automática: guardar solo después de la hidración inicial.
+	// Esto evita que el valor por defecto o el localStorage sobrescriban
+	// los ajustes del artista al recargar la página.
 	if (browser) {
-		subscribe(valor => {
-			// Ejecutar async en segundo plano para no bloquear el store
-			(async () => {
-				try {
-					const sesion = await obtenerSesionActual();
-					const artistaId = sesion?.artistaActualId ?? null;
-					if (artistaId) {
-						// Guardar en Dexie para el artista activo
-						await guardarAjustesDesdeUI(artistaId);
-					} else {
-						// Sin artista: persistir temporalmente en localStorage
-						localStorage.setItem('coloreco_settings', JSON.stringify(valor));
-					}
-				} catch (e) {
-					// Si falla la BD, fallback a localStorage
-					console.error('Error guardando configuraciones:', e);
-					try { localStorage.setItem('coloreco_settings', JSON.stringify(valor)); } catch {}
+		(async () => {
+			try {
+				const sesion = await obtenerSesionActual();
+				const artistaId = sesion?.artistaActualId ?? null;
+				if (artistaId) {
+					// Hidratar desde la BD antes de suscribir para evitar sobrescrituras
+					await cargarAjustesDelArtista(artistaId);
 				}
-			})();
-		});
+			} catch (e) {
+				console.error('Error durante hidratación inicial de configuraciones:', e);
+			}
+			// Tras hidratación, suscribirse para persistir cambios
+			subscribe(valor => {
+				// Ejecutar async en segundo plano para no bloquear el store
+				(async () => {
+					try {
+						const sesion2 = await obtenerSesionActual();
+						const artistaId2 = sesion2?.artistaActualId ?? null;
+						if (artistaId2) {
+							// Guardar en Dexie para el artista activo
+							await guardarAjustesDesdeUI(artistaId2);
+						} else {
+							// Sin artista: persistir temporalmente en localStorage
+							localStorage.setItem('coloreco_settings', JSON.stringify(valor));
+						}
+					} catch (e) {
+						// Si falla la BD, fallback a localStorage
+						console.error('Error guardando configuraciones:', e);
+						try { localStorage.setItem('coloreco_settings', JSON.stringify(valor)); } catch {}
+					}
+				})();
+			});
+		})();
 	}
 
 	return {
@@ -161,20 +175,38 @@ function crearEstadoConfiguraciones() {
 			nivelMagnificacion: zoom
 		})),
 		
+		// Setter explícito para modoNoche (evita toggles inconsistentes)
+		setModoNoche: (value: boolean) => update(config => ({
+			...config,
+			modoNoche: value,
+			// Si desactivamos modoNoche, forzamos modoInverso a false
+			modoInverso: value ? config.modoInverso : false
+		})),
 		// Alterna el modo noche (alto contraste con fondo oscuro)
-		// Si se desactiva el modo noche, también se desactiva el modo inverso automáticamente
-		toggleModoNoche: () => update(config => ({
-			...config,
-			modoNoche: !config.modoNoche,
-			// Si modoNoche pasa a false, modoInverso también debe ser false
-			modoInverso: !config.modoNoche ? false : config.modoInverso
-		})),
+		toggleModoNoche: () => update(config => {
+			const nuevoModo = !config.modoNoche;
+			return {
+				...config,
+				modoNoche: nuevoModo,
+				modoInverso: nuevoModo ? config.modoInverso : false
+			};
+		}),
 		
-		// Alterna el modo inverso (invierte la paleta del modo noche)
-		toggleModoInverso: () => update(config => ({
+		// Setter explícito para modoInverso (activa modoNoche si se habilita)
+		setModoInverso: (value: boolean) => update(config => ({
 			...config,
-			modoInverso: !config.modoInverso
+			modoInverso: value,
+			modoNoche: value ? true : config.modoNoche
 		})),
+		// Alterna el modo inverso (invierte la paleta del modo noche)
+		toggleModoInverso: () => update(config => {
+			const nuevoInv = !config.modoInverso;
+			return {
+				...config,
+				modoInverso: nuevoInv,
+				modoNoche: nuevoInv ? true : config.modoNoche
+			};
+		}),
 
 		// === Métodos daltonismo ===
 		setColorBlindness: (mode: ColorBlindnessMode) => update(config => ({ ...config, colorBlindness: mode })),

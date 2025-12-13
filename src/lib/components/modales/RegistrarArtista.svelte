@@ -1,7 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher, onMount } from 'svelte';
-
-    // TODO: Agregar lógica para registrar un nuevo artista en la BD
+    import {crearArtista,cambiarArtista} from '$lib/db/artistas.service';
 
     // Creamos el despachador de eventos para comunicarnos con el padre
     const dispatch = createEventDispatcher();
@@ -11,9 +10,11 @@
     const maxCaracteres = 7;
 
     // Función vacía para programar la lógica más tarde
-    function accionAlDarEnter() {
-        console.log("Acción ejecutada: " + nombre);
-        // Aquí ira la logica de registro
+    async function accionAlDarEnter() {
+        if (nombre.trim() === '') return;
+        
+        const id = await crearArtista(nombre);
+        cambiarArtista(id);
     }
 
     // Limita el input a 7 caracteres
