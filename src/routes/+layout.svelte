@@ -2,11 +2,12 @@
 	import logoColoreco from '$lib/assets/Logo_coloreco.png';
 	import { configuraciones } from '$lib/stores/settings';
 	import { interpolateMatrix } from '$lib/constants/colorMatrices';
-	
-	import LupaMagica from '$lib/components/a11y/LupaMagica.svelte';
 	import EfectoLupa from '$lib/components/a11y/EfectoLupa.svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import { browser } from '$app/environment';
+	import { obtenerSesionActual } from '$lib/db/artistas.service';
 	import '../lib/styles/themes.css';
 	import IconoVolver from '$lib/components/iconos/IconoVolver.svelte';
 	import IconoAccesibilidad from '$lib/components/iconos/Accesibilidad.svelte';
@@ -75,9 +76,27 @@
 	});
 
 	$effect(() => {
-		// Detecta si estás en /ajustes
+		// Detecta si estás en /ajustes o páginas con barra lateral para ajustar el display del body
 		const esPaginaConBarra = $page.url.pathname === '/ajustes' || $page.url.pathname === '/seleccionar-estudio' || $page.url.pathname.startsWith('/estudio');
 		document.body.style.setProperty('--body-display', esPaginaConBarra ? 'block' : 'flex');
+	});
+
+	// Guardia de rutas: si no hay artista activo solo permitir rutas públicas
+	onMount(async () => {
+		if (!browser) return;
+		try {
+			const sesion = await obtenerSesionActual();
+			const artistaId = sesion?.artistaActualId ?? null;
+			const path = $page.url.pathname;
+			const permisosSinArtista = ['/', '/ajustes', '/seleccionar-estudio'];
+			const permitido = permisosSinArtista.some(p => path === p || path.startsWith(p + '/'));
+			if (!artistaId && !permitido) {
+				// redirigir a página de inicio
+				goto('/');
+			}
+		} catch (e) {
+			console.error('[Layout] Error verificando sesión:', e);
+		}
 	});
 </script>
 

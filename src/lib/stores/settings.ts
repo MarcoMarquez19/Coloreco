@@ -3,6 +3,8 @@
 
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
+import { obtenerSesionActual } from '$lib/db/artistas.service';
+import { guardarAjustesDesdeUI } from '$lib/db/ajustes.service';
 
 // === Tipos daltonismo ===
 export type ColorBlindnessMode = 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'achromatopsia';
@@ -78,10 +80,28 @@ function crearEstadoConfiguraciones() {
 
 	const { subscribe, set, update } = writable<ConfiguracionUI>(estadoInicial);
 
-	// Persistencia automática (Agregada)
+	// Persistencia automática: guarda en IndexedDB si hay artista activo,
+	// o en localStorage si aún no hay artista.
 	if (browser) {
 		subscribe(valor => {
-			localStorage.setItem('coloreco_settings', JSON.stringify(valor));
+			// Ejecutar async en segundo plano para no bloquear el store
+			(async () => {
+				try {
+					const sesion = await obtenerSesionActual();
+					const artistaId = sesion?.artistaActualId ?? null;
+					if (artistaId) {
+						// Guardar en Dexie para el artista activo
+						await guardarAjustesDesdeUI(artistaId);
+					} else {
+						// Sin artista: persistir temporalmente en localStorage
+						localStorage.setItem('coloreco_settings', JSON.stringify(valor));
+					}
+				} catch (e) {
+					// Si falla la BD, fallback a localStorage
+					console.error('Error guardando configuraciones:', e);
+					try { localStorage.setItem('coloreco_settings', JSON.stringify(valor)); } catch {}
+				}
+			})();
 		});
 	}
 
