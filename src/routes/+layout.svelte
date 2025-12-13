@@ -197,16 +197,20 @@
 		align-content: center;
 		justify-content: center;
 		margin: 0;
+		overflow: hidden; /* Evita scroll del body cuando hay filtros */
 	}
 
 	.app-layout {
 		display: flex;
 		flex-direction: column;
 		background: transparent;
+		min-height: 100vh;
+		height: 100vh; /* Fija altura al 100% del viewport */
 		color: var(--fg, #111);
 		font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
 		/* Variables CSS base ahora se inyectan dinámicamente desde el store */
 		font-size: var(--font-size-base, 1rem);
+		overflow: hidden; /* Evita que app-layout tenga scroll */
 	}
 
 	.app-filtered-content {
@@ -216,6 +220,8 @@
 		width: 100%;
 		transition: filter 0.3s ease;
 		min-height: 100vh;
+		height: 100%; /* Ocupa toda la altura disponible */
+		overflow: hidden; /* El scroll lo manejará app-main */
 	}
 
 	.app-main {
@@ -226,6 +232,7 @@
 		justify-content: center;
 		height: 100%;
 		overflow-x: hidden;
+		overflow-y: auto; /* Permite scroll vertical interno */
 		width: 100%;
 		margin: 0 auto;
 		padding: 0 var(--spacing-base, 1rem) calc(var(--spacing-base, 1rem) * 2);
