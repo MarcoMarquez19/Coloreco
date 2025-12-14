@@ -79,6 +79,7 @@
     .seleccionar-estudio-contenedor {
         background: var(--bg,white);
         margin: auto;
+        margin-top: 2rem;
         z-index: 1;
         max-width: 870px;
         width: 100%;
