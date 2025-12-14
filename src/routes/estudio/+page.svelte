@@ -1,6 +1,11 @@
 <script lang="ts">
     import MesaCentral from '$lib/components/iconos/MesaCentral.png';
     import LamparaTecho from '$lib/assets/LamparaTecho.png';
+    import Ajustes from '$lib/components/iconos/Ajustes.png';
+    import Salida from '$lib/components/iconos/Salida.png';
+    import Galeria from '$lib/components/iconos/Galeria.png';
+    import Logros from '$lib/components/iconos/Logros.png';
+    import FondoHabitacion from '$lib/components/fondos/FondoHabitacion.svelte';
     import { goto } from '$app/navigation';
 
     // Funciones para manejar las interacciones de cada elemento
@@ -32,6 +37,9 @@
 </script>
 
 <div class="estudio-contenedor" aria-label="Contenedor del estudio del artista" data-magnificable>
+    <!-- Fondo de la habitación -->
+    <FondoHabitacion/>
+
     <!-- Elemento superior centrado (sin texto) -->
     <div inert
         class="elemento-interactivo elemento-superior"
@@ -50,8 +58,8 @@
         tabindex="0"
     >
         <div class="svg-contenedor">
-            <img src={LamparaTecho} width="150px" height="auto" alt="">
-            <span class="texto-elemento" data-magnificable>SALIDA (ESC)</span>
+            <img src={Salida} width="auto" height="500px" alt="">
+            <span class="texto-elemento" data-magnificable>Salida (ESC)</span>
         </div>
     </button>
     
@@ -63,7 +71,7 @@
         tabindex="0"
     >
         <div class="svg-contenedor">
-            <img src={LamparaTecho} width="150px" height="auto" alt="">
+            <img src={Galeria} width="180px" height="auto" alt="">
             <span class="texto-elemento" data-magnificable>Galería</span>
         </div>
     </button>
@@ -89,7 +97,7 @@
         tabindex="0"
     >
         <div class="svg-contenedor">
-            <img src={LamparaTecho} width="150px" height="auto" alt="">
+            <img src={Logros} width="200px" height="auto" alt="">
             <span class="texto-elemento" data-magnificable>Logros</span>
         </div>
     </button>
@@ -102,13 +110,13 @@
         tabindex="0"
     >
         <div class="svg-contenedor">
-            <img src={LamparaTecho} width="150px" height="auto" alt="">
+            <img src={Ajustes} width="130px" height="auto" alt="">
             <span class="texto-elemento" data-magnificable>Ajustes (CTRL + A)</span>
         </div>
     </button>
 
     <!-- Título del estudio -->
-    <h1 class="titulo-estudio" data-magnificable>ESTUDIO <br> &nbsp;&nbsp;&nbsp;&nbsp; DE <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ARTE</h1>
+    <h1 class="titulo-estudio" data-magnificable>ESTUDIO <br> &nbsp;&nbsp;&nbsp; DE <br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ARTE</h1>
 </div>
 
 <style>
@@ -117,7 +125,7 @@
         padding: 0;
         margin: 0;
         margin-top: 2rem;
-        border: 3px solid #000;
+        border: 3px solid var(--icono-color-borde, black);
         border-radius: 8px;
         min-height: 85vh;
         max-height: 90vh;
@@ -138,30 +146,26 @@
         padding: 0;
         border-radius: 12px;
     }
+    .elemento-interactivo img{
+        filter: drop-shadow(0 0 4px var(--icono-color-borde, black));
+    }
 
     /* Efectos de hover y focus para cumplir con WCAG AAA/AA */
     .elemento-interactivo:hover,
     .elemento-interactivo:focus {
-        background: rgba(255, 255, 255, 0.8);
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-        outline: 3px solid #2196F3;
-        outline-offset: 4px;
+        background: rgba(177, 177, 177, 0.8);
+        outline: 4px solid var(--icono-color-borde,#ffca00);
+        outline-offset: 4px;    
     }
 
     .elemento-interactivo:focus {
-        /* Asegurar que el focus sea visible para accesibilidad */
-        outline: 4px solid #FF5722;
+        outline: 4px solid var(--icono-color-borde,#d1a700);
         outline-offset: 5px;
-    }
-
-    .elemento-interactivo:active {
-        transform: scale(1.05);
     }
 
     /* Efecto adicional al hacer hover sobre el SVG */
     .elemento-interactivo:hover .svg-contenedor,
     .elemento-interactivo:focus .svg-contenedor {
-        filter: drop-shadow(0 0 10px rgba(33, 150, 243, 0.6));
         animation: pulso 1.5s ease-in-out infinite;
     }
 
@@ -170,7 +174,7 @@
             transform: scale(1);
         }
         50% {
-            transform: scale(1.05);
+            transform: scale(1.15);
         }
     }
 
@@ -187,17 +191,18 @@
     .texto-elemento {
         font-size: calc(var(--font-size-base, 1rem) * 1.2);
         font-weight: 600;
-        color: #333;
+        color: var(--color-texto,#333);
         user-select: none;
         transition: color 0.3s ease;
         display: block;
         text-align: center;
         width: 100%;
+        filter: drop-shadow(0 0 3px var(--icono-color-relleno, rgb(255, 255, 255)));    
     }
 
     .elemento-interactivo:hover .texto-elemento,
     .elemento-interactivo:focus .texto-elemento {
-        color: #2196F3;
+        color: var(--color-texto,#333);
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
@@ -214,9 +219,9 @@
     /* Elemento izquierdo: Salida */
     .elemento-salida {
         left: 2rem;
-        top: 50%;
-        transform: translateY(-50%);
-    }
+        top: 60%;
+        transform: translateY(-55%);
+    }   
 
     /* Elemento central: Mesa de trabajo */
     .elemento-mesa {
@@ -227,39 +232,38 @@
 
     /* Elemento derecho: Logros */
     .elemento-logros {
-        right: 2rem;
+        right: 5%;
         top: 25%;
         transform: translateY(-50%);
     }
 
     /* Elemento inferior derecho: Ajustes */
     .elemento-ajustes {
-        right: 6rem;
+        right: 10%;
         bottom: 3rem;
     }
 
     /* Elemento galería (entre salida y mesa, un poco más arriba) */
     .elemento-galeria {
         left: 30%;
-        top: 35%;
+        top: 30%;
         transform: translate(-50%, -50%);
     }
 
     /* Título del estudio */
     .titulo-estudio {
         position: absolute;
-        right: 25%;
+        right: 30%;
         top: 30%;
-        transform: translateY(-50%);
         font-size: calc(var(--font-size-base,2rem)*1.85);
         font-weight: 900;
-        color: #1a1a1a;
+        color: var(--color-texto, #1a1a1a);
         text-transform: uppercase;
         letter-spacing: 2px;
         margin: 0;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        text-shadow: 2px 2px 4px var(--icono-color-borde,#000);
         user-select: none;
-        transform: translateX(35%) translateY(-50%) rotate(-20deg);
+        transform: translateX(30%) translateY(-50%) rotate(-20deg);
         letter-spacing: 0.25em;
         z-index: 2;
     }
