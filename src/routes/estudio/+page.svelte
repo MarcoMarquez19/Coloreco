@@ -46,7 +46,7 @@
         aria-label="Elemento decorativo lampara"
     >
         <div class="svg-contenedor">    
-            <img src={LamparaTecho} width="150px" height="auto" alt="Lampara de techo decorativa">
+            <img src={LamparaTecho} alt="Lampara de techo decorativa">
         </div>
     </div>
 
@@ -58,7 +58,7 @@
         tabindex="0"
     >
         <div class="svg-contenedor">
-            <img src={Salida} width="auto" height="500px" alt="">
+            <img src={Salida} alt="">
             <span class="texto-elemento" data-magnificable>Salida (ESC)</span>
         </div>
     </button>
@@ -71,7 +71,7 @@
         tabindex="0"
     >
         <div class="svg-contenedor">
-            <img src={Galeria} width="180px" height="auto" alt="">
+            <img src={Galeria} alt="">
             <span class="texto-elemento" data-magnificable>Galería</span>
         </div>
     </button>
@@ -84,7 +84,7 @@
         tabindex="0"
     >
         <div class="svg-contenedor">
-            <img src={MesaCentral} width="300px" height="auto" alt="">
+            <img src={MesaCentral} alt="">
             <span class="texto-elemento" data-magnificable>Mesa de trabajo</span>
         </div>
     </button>
@@ -97,7 +97,7 @@
         tabindex="0"
     >
         <div class="svg-contenedor">
-            <img src={Logros} width="200px" height="auto" alt="">
+            <img src={Logros} alt="">
             <span class="texto-elemento" data-magnificable>Logros</span>
         </div>
     </button>
@@ -110,7 +110,7 @@
         tabindex="0"
     >
         <div class="svg-contenedor">
-            <img src={Ajustes} width="130px" height="auto" alt="">
+            <img src={Ajustes} alt="">
             <span class="texto-elemento" data-magnificable>Ajustes (CTRL + A)</span>
         </div>
     </button>
@@ -148,7 +148,18 @@
     }
     .elemento-interactivo img{
         filter: drop-shadow(0 0 4px var(--icono-color-borde, black));
+        max-width: 100%;
+        height: auto;
+        display: block;
     }
+
+    /* Tamaños responsivos por elemento usando clamp() */
+    .elemento-superior img { width: clamp(115px, 12vw, 315px); }
+    .elemento-mesa img { width: clamp(300px, 22vw, 720px); }
+    .elemento-logros img { width: clamp(230px, 15.5vw, 630px); }
+    .elemento-galeria img { width: clamp(180px, 12vw, 380px); }
+    .elemento-ajustes img { width: clamp(64px, 8vw, 160px); }
+    .elemento-salida img { height: clamp(220px, 70vh, 800px); width: auto; }
 
     /* Efectos de hover y focus para cumplir con WCAG AAA/AA */
     .elemento-interactivo:hover,
@@ -174,7 +185,7 @@
             transform: scale(1);
         }
         50% {
-            transform: scale(1.15);
+            transform: scale(1.05);
         }
     }
 
@@ -218,8 +229,8 @@
 
     /* Elemento izquierdo: Salida */
     .elemento-salida {
-        left: 2rem;
-        top: 60%;
+        left: 3.7%;
+        top: 59%;
         transform: translateY(-55%);
     }   
 
