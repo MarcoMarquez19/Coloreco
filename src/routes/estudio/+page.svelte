@@ -7,8 +7,6 @@
     import Logros from '$lib/components/iconos/Logros.png';
     import FondoHabitacion from '$lib/components/fondos/FondoHabitacion.svelte';
     import { goto } from '$app/navigation';
-    // ⚠️ TEMPORAL: Importar helper de pruebas para la galería
-    import { crearObrasDePrueba, limpiarObrasPrueba } from '$lib/db/obras.helper';
 
     // Funciones para manejar las interacciones de cada elemento
     function manejarSalida() {
@@ -36,46 +34,11 @@
         goto('/galeria');
     }
 
-    // ⚠️ TEMPORAL: Funciones de prueba para la galería
-    async function crearObras() {
-        try {
-            await crearObrasDePrueba();
-            alert('✅ ¡5 obras de prueba creadas!\n\nVe a la galería para verlas.');
-        } catch (error) {
-            console.error('Error al crear obras:', error);
-            alert('❌ Error al crear obras de prueba. Revisa la consola.');
-        }
-    }
-
-    async function limpiarObras() {
-        if (confirm('⚠️ ¿Seguro que quieres eliminar TODAS las obras?\n\nEsta acción no se puede deshacer.')) {
-            try {
-                await limpiarObrasPrueba();
-                alert('🗑️ ¡Todas las obras han sido eliminadas!');
-                // Recargar la página actual para reflejar los cambios
-                window.location.reload();
-            } catch (error) {
-                console.error('Error al limpiar obras:', error);
-                alert('❌ Error al eliminar obras. Revisa la consola.');
-            }
-        }
-    }
-
 </script>
 
 <div class="estudio-contenedor" aria-label="Contenedor del estudio del artista" data-magnificable>
     <!-- Fondo de la habitación -->
     <FondoHabitacion/>
-
-    <!-- ⚠️ TEMPORAL: Botones de prueba para la galería -->
-    <div class="botones-prueba">
-        <button class="btn-prueba btn-crear" on:click={crearObras}>
-            🎨 Crear Obras de Prueba
-        </button>
-        <button class="btn-prueba btn-limpiar" on:click={limpiarObras}>
-            🗑️ Limpiar Obras
-        </button>
-    </div>
 
     <!-- Elemento superior centrado (sin texto) -->
     <div inert
@@ -297,61 +260,7 @@
         top: 30%;
         transform: translate(-50%, -50%);
     }
-
-    /* ⚠️ TEMPORAL: Estilos para botones de prueba de la galería */
-    .botones-prueba {
-        position: absolute;
-        top: 1rem;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        gap: 1rem;
-        z-index: 1000;
-        background: rgba(255, 255, 255, 0.95);
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
-        border: 3px dashed #666;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    .btn-prueba {
-        padding: 0.75rem 1.5rem;
-        font-size: 1.1rem;
-        font-weight: 700;
-        border: 3px solid #333;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-transform: none;
-        letter-spacing: normal;
-    }
-
-    .btn-crear {
-        background: #4ecdc4;
-        color: white;
-    }
-
-    .btn-crear:hover {
-        background: #45b8af;
-        transform: scale(1.05);
-        box-shadow: 0 4px 8px rgba(78, 205, 196, 0.4);
-    }
-
-    .btn-limpiar {
-        background: #ff6b6b;
-        color: white;
-    }
-
-    .btn-limpiar:hover {
-        background: #ee5a5a;
-        transform: scale(1.05);
-        box-shadow: 0 4px 8px rgba(255, 107, 107, 0.4);
-    }
-
-    .btn-prueba:active {
-        transform: scale(0.98);
-    }
-
+    
     /* Título del estudio */
     .titulo-estudio {
         position: absolute;

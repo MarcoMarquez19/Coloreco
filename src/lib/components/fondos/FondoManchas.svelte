@@ -59,6 +59,15 @@
 		opacity: 0.8;
 	}
 
+	/* IMPORTANTE: Forzar que las manchas siempre usen position: absolute
+	   incluso cuando se apliquen las clases de pattern */
+	:global(.mancha.pattern-red),
+	:global(.mancha.pattern-green),
+	:global(.mancha.pattern-blue),
+	:global(.mancha.pattern-yellow) {
+		position: absolute !important;
+	}
+
 	/* --- CORRECCIÓN DE TEXTURAS (Para que no sean cuadradas) --- */
 	/* Esto recorta la textura (::after) en forma circular para que se ajuste mejor 
 	   a la forma orgánica de la mancha y no se vea el cuadro del div.
