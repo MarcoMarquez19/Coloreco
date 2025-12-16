@@ -22,6 +22,22 @@
 	/** Mensaje de error si falla la carga */
 	let mensajeError = $state<string>('');
 
+	/** Referencia al contenedor para aplicar transform/scale dinámico */
+	let contenedorGaleriaRef: HTMLElement | null = null;
+
+	/** Calcula y aplica la escala según la altura de la ventana (máx 1080px) */
+	function actualizarEscala(): void {
+		if (!contenedorGaleriaRef) return;
+		const maxHeight = 1080; // referencia 1080p
+		const rawScale = window.innerHeight / maxHeight;
+		// limitar entre 0.6 y 1 para evitar escalados excesivos
+		const scale = Math.max(0.6, Math.min(1, rawScale));
+		contenedorGaleriaRef.style.transform = `scale(${scale})`;
+		contenedorGaleriaRef.style.transformOrigin = 'top center';
+		// Cuando escalamos hacia abajo, mantener centrado horizontalmente
+		contenedorGaleriaRef.style.margin = '0 auto';
+	}
+
 	// ============================================================================
 	// DERIVADOS REACTIVOS
 	// ============================================================================
@@ -188,6 +204,10 @@
 			}
 		})();
 		
+		// Ajuste de escala según tamaño de ventana y listener para resize
+		actualizarEscala();
+		window.addEventListener('resize', actualizarEscala);
+
 		// Listener para navegación con teclado
 		const manejarTeclado = (e: KeyboardEvent) => {
 			if (e.key === 'ArrowLeft') {
@@ -199,12 +219,19 @@
 
 		window.addEventListener('keydown', manejarTeclado);
 		
-		// Limpiar URLs y listener al desmontar
+		// Limpiar URLs y listeners al desmontar
 		return () => {
 			if (obras.length > 0) {
 				liberarURLsImagenes(obras);
 			}
 			window.removeEventListener('keydown', manejarTeclado);
+			window.removeEventListener('resize', actualizarEscala);
+			// restaurar transform si existe
+			if (contenedorGaleriaRef) {
+				contenedorGaleriaRef.style.transform = '';
+				contenedorGaleriaRef.style.transformOrigin = '';
+				contenedorGaleriaRef.style.margin = '';
+			}
 		};
 	});
 </script>
@@ -212,7 +239,7 @@
 <!-- Fondo decorativo con manchas de colores -->
 <FondoManchas />
 
-<div class="contenedor-galeria" data-magnificable>
+<div class="contenedor-galeria" data-magnificable bind:this={contenedorGaleriaRef}>
 	<div class="contenedor-centrado">
 		<!-- Encabezado -->
 		<header class="encabezado">
@@ -237,6 +264,36 @@
 				<p>{mensajeError}</p>
 			</div>
 		{:else if obraActual}
+		<!-- Botonera de acciones -->
+			<section class="acciones" aria-label="Acciones de la obra">
+				<!-- Botón Editar (Azul) -->
+				<button
+					class="boton boton-editar pattern-blue"
+					onclick={editarObra}
+					aria-label="Editar obra actual"
+				>
+					✏️ Editar
+				</button>
+
+				<!-- Botón Descargar (Verde) -->
+				<button
+					class="boton boton-descargar pattern-green"
+					onclick={descargarObra}
+					aria-label="Descargar imagen de la obra"
+				>
+					💾 Descargar
+				</button>
+
+				<!-- Botón Eliminar (Rojo) -->
+				<button
+					class="boton boton-eliminar pattern-red"
+					onclick={manejarEliminar}
+					aria-label="Eliminar obra de la galería"
+				>
+					🗑️ Eliminar
+				</button>
+			</section>
+
 			<!-- Carrusel de obras -->
 			<div class="carrusel">
 				<!-- Flecha anterior -->
@@ -287,36 +344,6 @@
 					{/if}
 				</div>
 			</section>
-
-			<!-- Botonera de acciones -->
-			<section class="acciones" aria-label="Acciones de la obra">
-				<!-- Botón Editar (Azul) -->
-				<button
-					class="boton boton-editar pattern-blue"
-					onclick={editarObra}
-					aria-label="Editar obra actual"
-				>
-					✏️ Editar
-				</button>
-
-				<!-- Botón Descargar (Verde) -->
-				<button
-					class="boton boton-descargar pattern-green"
-					onclick={descargarObra}
-					aria-label="Descargar imagen de la obra"
-				>
-					💾 Descargar
-				</button>
-
-				<!-- Botón Eliminar (Rojo) -->
-				<button
-					class="boton boton-eliminar pattern-red"
-					onclick={manejarEliminar}
-					aria-label="Eliminar obra de la galería"
-				>
-					🗑️ Eliminar
-				</button>
-			</section>
 		{/if}
 	</main>
 	</div>
@@ -328,8 +355,7 @@
 	   ============================================================================ */
 	.contenedor-galeria {
 		/* Aplicar configuraciones de accesibilidad */
-		font-size: calc(var(--font-size-base, 1rem) * var(--multiplicador-fuente, 1));
-		--espaciado: calc(var(--spacing-base, 1rem) * var(--multiplicador-espaciado, 1));
+		--espaciado: calc(var(--spacing-base, 1rem) * 1.2);
 		--radio-borde: var(--border-radius, 8px);
 	}
 
@@ -337,7 +363,6 @@
 	   ESTRUCTURA PRINCIPAL
 	   ============================================================================ */
 	.contenedor-galeria {
-		min-height: 100vh;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;

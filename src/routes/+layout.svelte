@@ -77,7 +77,7 @@
 
 	$effect(() => {
 		// Detecta si estás en /ajustes o páginas con barra lateral para ajustar el display del body
-		const esPaginaConBarra = $page.url.pathname === '/ajustes' || $page.url.pathname === '/seleccionar-estudio' || $page.url.pathname.startsWith('/estudio');
+		const esPaginaConBarra = $page.url.pathname === '/ajustes' || $page.url.pathname === '/seleccionar-estudio' || $page.url.pathname.startsWith('/estudio') || $page.url.pathname.startsWith('/galeria');
 		document.body.style.setProperty('--body-display', esPaginaConBarra ? 'block' : 'flex');
 	});
 
