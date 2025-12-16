@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
 	import { configuraciones } from '$lib/stores/settings';
 	import { obtenerSesionActual } from '$lib/db/artistas.service';
 	import { obtenerObras, eliminarObra, liberarURLsImagenes, type ObraCompleta } from '$lib/db/obras.service';
@@ -235,9 +234,6 @@
 		};
 	});
 </script>
-
-<!-- Fondo decorativo con manchas de colores -->
-<FondoManchas />
 
 <div class="contenedor-galeria" data-magnificable bind:this={contenedorGaleriaRef}>
 	<div class="contenedor-centrado">

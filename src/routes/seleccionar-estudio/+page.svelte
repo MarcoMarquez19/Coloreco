@@ -1,5 +1,4 @@
 <script lang="ts">
-    import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
     import RegistrarArtista from '$lib/components/modales/RegistrarArtista.svelte';
     import { goto } from '$app/navigation';
     import { onMount } from 'svelte';
@@ -35,8 +34,6 @@
         await cargarArtistas();
     }
 </script>
-
-<FondoManchas />
 
 {#if mostrarRegistrarArtista}
     <!-- Agregamos on:close para cambiar la variable a false -->
