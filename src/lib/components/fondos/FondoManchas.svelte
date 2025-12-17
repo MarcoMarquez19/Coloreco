@@ -1,11 +1,12 @@
-<script>
+<script lang="ts">
 	import Mancha from '$lib/components/iconos/Manchas.svelte';
 	// Importamos el store para reactividad (opcional si usas las clases globales, 
 	// pero buena práctica tenerlo si necesitas lógica futura)
 	import { configuraciones } from '$lib/stores/settings';
+	let { style } = $props<{ style?: string }>();
 </script>
 
-<div class="contenedor-fondo">
+<div class="contenedor-fondo" style={style}>
 	<div class="mancha noroeste pattern-yellow">
 		<Mancha clase="mancha noroeste"/>
 	</div>
@@ -56,6 +57,15 @@
 		
 		/* Animación suave si entras a la página */
 		opacity: 0.8;
+	}
+
+	/* IMPORTANTE: Forzar que las manchas siempre usen position: absolute
+	   incluso cuando se apliquen las clases de pattern */
+	:global(.mancha.pattern-red),
+	:global(.mancha.pattern-green),
+	:global(.mancha.pattern-blue),
+	:global(.mancha.pattern-yellow) {
+		position: absolute !important;
 	}
 
 	/* --- CORRECCIÓN DE TEXTURAS (Para que no sean cuadradas) --- */

@@ -2,19 +2,51 @@
 	// Página de bienvenida para la aplicación COLORECO
 	// Importar imágenes desde assets 
 	import logoColoreco from '$lib/assets/Logo_coloreco.png';
-	import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
 	import {configuraciones} from '$lib/stores/settings';
 	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
 
 	function iniciar() {
 		goto('/seleccionar-estudio');
 	}
+
+	let contenedorPantallaPrincipalRef: HTMLElement | null = null;
+
+	/** Calcula y aplica la escala según la altura de la ventana (máx 1080px) */
+	function actualizarEscala(): void {
+		if (!contenedorPantallaPrincipalRef) return;
+		const maxHeight = 1080; // referencia 1080p
+		const rawScale = window.innerHeight / maxHeight;
+		// limitar entre 0.6 y 1 para evitar escalados excesivos
+		const scale = Math.max(0.6, Math.min(1, rawScale));
+		contenedorPantallaPrincipalRef.style.transform = `scale(${scale})`;
+		contenedorPantallaPrincipalRef.style.transformOrigin = 'top center';
+	}
+
+	onMount(() => {
+		document.body.style.overflow = 'hidden';
+		return () => {
+			document.body.style.overflow = ''; // Restaurar al desmontar
+		};
+	});
+
+	$effect(() => {
+		actualizarEscala();
+		window.addEventListener('resize', actualizarEscala);
+		return () => {
+			window.removeEventListener('resize', actualizarEscala);
+			// restaurar transform si existe
+			if (contenedorPantallaPrincipalRef) {
+				contenedorPantallaPrincipalRef.style.transform = '';
+				contenedorPantallaPrincipalRef.style.transformOrigin = '';
+				contenedorPantallaPrincipalRef.style.margin = '';
+			}
+		};
+	})
 </script>
 
-<FondoManchas />
-
-<div class="bienvenida" aria-labelledby="titulo-coloreco">
-	<header class="bienvenida-cabecera" data-magnificable>
+<div class="bienvenida" bind:this={contenedorPantallaPrincipalRef} aria-labelledby="titulo-coloreco" data-magnificable>
+	<header class="bienvenida-cabecera">
 
 		<h1 id="titulo-coloreco" class="titulo">COLORECO</h1>
 
@@ -39,7 +71,7 @@
 <style>
 	/* Estilos adaptativos que responden a las variables CSS dinámicas del store */
 	.bienvenida {
-		display: flex;
+		margin-top: 13vh;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
@@ -51,9 +83,9 @@
 	}
 	
 	.titulo {
-		padding-left: 2rem;
-		margin: calc(var(--spacing-base, 1rem) * 0.25) 0;
-		font-size: calc(var(--font-size-base, 1rem) * 6.5);
+		padding: 0 auto;
+		margin: calc(var(--spacing-base, 1rem) * 1.25) 0;
+		font-size: calc(var(--font-size-base, 1rem) * 7.5);
 		letter-spacing: 0.26em;
 	}
 
@@ -77,7 +109,7 @@
 	.subtitulo {
 		margin: 0;
 		color: var(--color-texto, #535353);
-		font-size: calc(var(--font-size-base, 1rem) * 1.5);
+		font-size: calc(var(--font-size-base, 1rem) * 2.5);
 		font-weight: 500;
 	}
 

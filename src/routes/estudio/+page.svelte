@@ -31,7 +31,7 @@
 
     function manejarGaleria() {
         console.log('Abriendo galería');
-        // TODO: Implementar navegación a la galería
+        goto('/galeria');
     }
 
 </script>
@@ -260,7 +260,7 @@
         top: 30%;
         transform: translate(-50%, -50%);
     }
-
+    
     /* Título del estudio */
     .titulo-estudio {
         position: absolute;

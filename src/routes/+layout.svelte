@@ -11,6 +11,7 @@
 	import '../lib/styles/themes.css';
 	import IconoVolver from '$lib/components/iconos/IconoVolver.svelte';
 	import IconoAccesibilidad from '$lib/components/iconos/Accesibilidad.svelte';
+	import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
 
 	// Pequeño helper de accesibilidad: enfocar el contenido principal al navegar
 	let mainEl: HTMLElement | null = null;
@@ -45,6 +46,12 @@
 	let estaEnInicio = $derived($page.url.pathname === '/');
 	let estaEnEstudio = $derived($page.url.pathname.startsWith('/estudio'));
 
+	//DETECTAR SI SE NECESITA EL FONDO DE MANCHAS
+	let necesitaFondoManchas = $derived($page.url.pathname === '/' 
+	|| $page.url.pathname === '/seleccionar-estudio' 
+	|| $page.url.pathname.startsWith('/galeria')
+);
+
 	// Funciones de navegación
 	function abrirConfiguracion() {
 		if (estaEnConfiguracion) return;
@@ -73,12 +80,6 @@
 		} else {
 			document.body.removeAttribute('data-theme');
 		}
-	});
-
-	$effect(() => {
-		// Detecta si estás en /ajustes o páginas con barra lateral para ajustar el display del body
-		const esPaginaConBarra = $page.url.pathname === '/ajustes' || $page.url.pathname === '/seleccionar-estudio' || $page.url.pathname.startsWith('/estudio');
-		document.body.style.setProperty('--body-display', esPaginaConBarra ? 'block' : 'flex');
 	});
 
 	// Guardia de rutas: si no hay artista activo solo permitir rutas públicas
@@ -132,8 +133,15 @@
 		--border-radius: {$configuraciones.redondesBordes}px;
 		--button-padding: calc(var(--spacing-base) * 0.6) calc(var(--spacing-base) * 1.2);
 	"
+
 >
+<!-- Apartado de fondos -->
+{#if (necesitaFondoManchas)}
+	<FondoManchas style={filterStyle}/>
+{/if}
+
 	<div class="app-filtered-content" style={filterStyle}>
+		
 		<main bind:this={mainEl} class="app-main">
 			{@render children()}
 		</main>
@@ -192,12 +200,11 @@
 	:global(html, body, #svelte) {
 		min-height: 100vh;
 		height: 100vh;
-		display: var(--body-display, flex);
+		display: block;
 		flex-direction: column;
 		align-content: center;
 		justify-content: center;
 		margin: 0;
-		overflow: hidden; /* Evita scroll del body cuando hay filtros */
 	}
 
 	.app-layout {
@@ -205,7 +212,6 @@
 		flex-direction: column;
 		background: transparent;
 		min-height: 100vh;
-		height: 100vh; /* Fija altura al 100% del viewport */
 		color: var(--fg, #111);
 		font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
 		/* Variables CSS base ahora se inyectan dinámicamente desde el store */
@@ -226,7 +232,7 @@
 
 	.app-main {
 		flex: 1 1 auto;
-		display: var(--body-display,flex);
+		display: block;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
