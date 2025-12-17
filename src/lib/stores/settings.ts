@@ -234,6 +234,11 @@ function crearEstadoConfiguraciones() {
 			...config,
 			narrationEnabled: !config.narrationEnabled
 		})),
+		// Setter explícito para narración (usado por sincronización BD → UI)
+		setNarrationEnabled: (value: boolean) => update(config => ({
+			...config,
+			narrationEnabled: value
+		})),
 		
 		setTTSSpeed: (speed: number) => update(config => ({
 			...config,
@@ -245,11 +250,27 @@ function crearEstadoConfiguraciones() {
 			...config,
 			rhymeMode: !config.rhymeMode
 		})),
+		// Setter explícito para modoRima
+		setRhymeMode: (value: boolean) => update(config => ({
+			...config,
+			rhymeMode: value
+		})),
 		
 		// HU-05: Pictogramas
 		togglePictogramMode: () => update(config => ({
 			...config,
 			pictogramMode: !config.pictogramMode
+		})),
+		// Setter explícito para pictogramas
+		setPictogramMode: (value: boolean) => update(config => ({
+			...config,
+			pictogramMode: value
+		})),
+		
+		// Setter explícito para modo biónico
+		setBionicMode: (value: boolean) => update(config => ({
+			...config,
+			bionicMode: value
 		})),
 		//HASTA AQUI DISLEXIA
 
