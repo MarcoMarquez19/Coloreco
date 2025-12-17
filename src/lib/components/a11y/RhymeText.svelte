@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { detectRhymes, applyRhymeHighlight, applySyllableColors } from '$lib/a11y/rhyme';
+	import { detectRhymes, applyRhymeHighlight, applySyllableColors } from '$lib/logic/rhyme';
 
 	export let text: string = '';
 	export let mode: 'rhyme' | 'syllable' = 'rhyme';

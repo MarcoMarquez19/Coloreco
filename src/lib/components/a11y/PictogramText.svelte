@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { applyPictograms } from '$lib/a11y/pictograms';
+	import { applyPictograms } from '$lib/logic/pictograms';
 
 	export let text: string = '';
 	export let showIcons: boolean = true;

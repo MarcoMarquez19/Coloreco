@@ -87,7 +87,7 @@
 					
 					<div class="control-subgrupo">
 						<label for="select-colorblindness" class="control-label">
-							Modo de Visión
+							<span>Modo de Visión</span>
 						</label>
 						<select
 							id="select-colorblindness"
@@ -106,7 +106,7 @@
 
 					<div class="control-subgrupo">
 						<label for="slider-intensity" class="control-label">
-							Intensidad del Filtro
+							<span>Intensidad del Filtro</span>
 							<span class="control-valor">{($configuraciones.intensity * 100).toFixed(0)}%</span>
 						</label>
 						<input

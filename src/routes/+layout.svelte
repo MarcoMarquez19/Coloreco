@@ -167,7 +167,7 @@
 		let applyRhymeHighlight: ((text: string, patterns: any[], backgroundColor?: string) => string) | undefined;
 		let splitIntoSyllables: ((word: string) => string[]) | undefined;
 		if ($configuraciones.rhymeMode || $configuraciones.bionicMode) {
-			const rhymeModule = await import('$lib/a11y/rhyme');
+			const rhymeModule = await import('$lib/logic/rhyme');
 			detectRhymes = rhymeModule.detectRhymes;
 			applyRhymeHighlight = rhymeModule.applyRhymeHighlight;
 			splitIntoSyllables = rhymeModule.splitIntoSyllables;
