@@ -1,5 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher, onMount } from 'svelte';
+    import {crearArtista,cambiarArtista} from '$lib/db/artistas.service';
 
     // Creamos el despachador de eventos para comunicarnos con el padre
     const dispatch = createEventDispatcher();
@@ -9,9 +10,11 @@
     const maxCaracteres = 7;
 
     // Función vacía para programar la lógica más tarde
-    function accionAlDarEnter() {
-        console.log("Acción ejecutada: " + nombre);
-        // Aquí ira la logica de registro
+    async function accionAlDarEnter() {
+        if (nombre.trim() === '') return;
+        
+        const id = await crearArtista(nombre);
+        cambiarArtista(id);
     }
 
     // Limita el input a 7 caracteres
@@ -90,14 +93,15 @@
 
 <style>
     .mensaje-enter {
-        margin-top: 0.3rem;
-        font-size: 0.98rem;
+        margin-top: calc(var(--spacing-base, 1rem) * 1);
+        font-size: calc(var(--font-size-base, 1rem) * 1);
         color: #2b8aef;
         text-align: right;
+        font-weight: 600;
     }
     .contador-caracteres {
-        margin-top: 0.5rem;
-        font-size: 1rem;
+        margin-top: calc(var(--spacing-base, 1rem) * 0.6);
+        font-size: calc(var(--font-size-base, 1rem) * 1);
         color: #555;    
         text-align: right;
     }
@@ -129,6 +133,7 @@
     p {
         color: #000000;
         margin-top: 0;
+        margin-bottom: calc(var(--spacing-base,1rem)*2);
         font-size: calc(var(--font-size-base, 1rem) * 1.2);
         font-weight: bold;
     }

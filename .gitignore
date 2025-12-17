@@ -23,5 +23,4 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 # Contexto adicional
-Arquitectura/Arquitectura del proyecto.txt
-Arquitectura/Definicion de directorios
+Arquitectura/*

@@ -2,6 +2,13 @@
 // Este "cerebro" centralizado almacena todas las preferencias de accesibilidad y diseño
 
 import { writable } from 'svelte/store';
+import { browser } from '$app/environment';
+import { obtenerSesionActual } from '$lib/db/artistas.service';
+import { guardarAjustesDesdeUI, cargarAjustesDelArtista } from '$lib/db/ajustes.service';
+
+// === Tipos daltonismo ===
+export type ColorBlindnessMode = 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'achromatopsia';
+export type ContrastMode = 'normal' | 'high';
 
 // Interfaz que define la estructura de la configuración
 // Define todas las propiedades que controlan la apariencia de la aplicación
@@ -30,6 +37,7 @@ export interface ConfiguracionUI {
 	// Modo Inverso: invierte la paleta del modo noche (solo disponible si modoNoche está activo)
 	modoInverso?: boolean;
 
+//DISLEXIA
 	// === HU-01: Accesibilidad tipográfica ===
 	fontFamily?: string; // familia de fuente
 	fontSize?: number; // tamaño de fuente en px
@@ -53,6 +61,13 @@ export interface ConfiguracionUI {
 	// === HU-06: Contraste y fondo ===
 	backgroundColor?: string; // color de fondo personalizado
 	contrastLevel?: 'normal' | 'high' | 'maximum'; // nivel de contraste WCAG
+
+	// === Propiedades daltonismo ===
+	colorBlindness: ColorBlindnessMode;
+	intensity: number; // 0 a 1
+	textures: boolean;
+	contrast: ContrastMode;
+
 }
 
 // Valores por defecto para una experiencia estándar
@@ -65,7 +80,8 @@ const valoresPorDefecto: ConfiguracionUI = {
 	nivelMagnificacion: 2,
 	modoNoche: false,
 	modoInverso: false,
-	// Nuevos valores por defecto
+
+//DISLEXIA
 	fontFamily: 'Arial, sans-serif',
 	fontSize: 16,
 	letterSpacing: 0,
@@ -77,13 +93,71 @@ const valoresPorDefecto: ConfiguracionUI = {
 	rhymeMode: false,
 	pictogramMode: false,
 	backgroundColor: '#ffffff',
-	contrastLevel: 'normal'
+	contrastLevel: 'normal',
+
+	// Daltonismo
+	colorBlindness: 'none',
+	intensity: 1,
+	textures: false,
+	contrast: 'normal'
 };
 
 // Crear el store reactivo
 // Cualquier componente puede suscribirse a este store y reaccionar a cambios
 function crearEstadoConfiguraciones() {
-	const { subscribe, set, update } = writable<ConfiguracionUI>(valoresPorDefecto);
+	// Lógica de carga inicial desde localStorage (Agregada para persistencia)
+	let estadoInicial = valoresPorDefecto;
+	if (browser) {
+		const guardado = localStorage.getItem('coloreco_settings');
+		if (guardado) {
+			try {
+				estadoInicial = { ...valoresPorDefecto, ...JSON.parse(guardado) };
+			} catch (e) {
+				console.error('Error cargando configuración:', e);
+			}
+		}
+	}
+
+	const { subscribe, set, update } = writable<ConfiguracionUI>(estadoInicial);
+
+	// Persistencia automática: guardar solo después de la hidración inicial.
+	// Esto evita que el valor por defecto o el localStorage sobrescriban
+	// los ajustes del artista al recargar la página.
+	if (browser) {
+		(async () => {
+			try {
+				const sesion = await obtenerSesionActual();
+				const artistaId = sesion?.artistaActualId ?? null;
+				if (artistaId) {
+					// Hidratar desde la BD antes de suscribir para evitar sobrescrituras
+					await cargarAjustesDelArtista(artistaId);
+				}
+			} catch (e) {
+				console.error('Error durante hidratación inicial de configuraciones:', e);
+			}
+			// Tras hidratación, suscribirse para persistir cambios
+			subscribe(valor => {
+				// Ejecutar async en segundo plano para no bloquear el store
+				(async () => {
+					try {
+						const sesion2 = await obtenerSesionActual();
+						const artistaId2 = sesion2?.artistaActualId ?? null;
+						if (artistaId2) {
+							// Guardar en Dexie para el artista activo
+							await guardarAjustesDesdeUI(artistaId2);
+						} else {
+							// Sin artista: persistir temporalmente en localStorage
+							localStorage.setItem('coloreco_settings', JSON.stringify(valor));
+						}
+					} catch (e) {
+						// Si falla la BD, fallback a localStorage
+						console.error('Error guardando configuraciones:', e);
+						try { localStorage.setItem('coloreco_settings', JSON.stringify(valor)); } catch {}
+					}
+				})();
+			});
+		})();
+	}
 
 	return {
 		subscribe,
@@ -141,21 +215,30 @@ function crearEstadoConfiguraciones() {
 			nivelMagnificacion: zoom
 		})),
 		
+		// Setter explícito para modoNoche (evita toggles inconsistentes)
+		setModoNoche: (value: boolean) => update(config => ({
+			...config,
+			modoNoche: value,
+			// Si desactivamos modoNoche, forzamos modoInverso a false
+			modoInverso: value ? config.modoInverso : false
+		})),
 		// Alterna el modo noche (alto contraste con fondo oscuro)
-		// Si se desactiva el modo noche, también se desactiva el modo inverso automáticamente
-		toggleModoNoche: () => update(config => ({
-			...config,
-			modoNoche: !config.modoNoche,
-			// Si modoNoche pasa a false, modoInverso también debe ser false
-			modoInverso: !config.modoNoche ? false : config.modoInverso
-		})),
+		toggleModoNoche: () => update(config => {
+			const nuevoModo = !config.modoNoche;
+			return {
+				...config,
+				modoNoche: nuevoModo,
+				modoInverso: nuevoModo ? config.modoInverso : false
+			};
+		}),
 		
-		// Alterna el modo inverso (invierte la paleta del modo noche)
-		toggleModoInverso: () => update(config => ({
+		// Setter explícito para modoInverso (activa modoNoche si se habilita)
+		setModoInverso: (value: boolean) => update(config => ({
 			...config,
-			modoInverso: !config.modoInverso
+			modoInverso: value,
+			modoNoche: value ? true : config.modoNoche
 		})),
-
+//DISLEXIA
 		// === Nuevos métodos para historias de usuario ===
 		
 		// HU-01: Tipografía
@@ -223,6 +306,24 @@ function crearEstadoConfiguraciones() {
 			...config,
 			contrastLevel: level
 		})),
+		//HASTA AQUI DISLEXIA
+		
+		// Alterna el modo inverso (invierte la paleta del modo noche)
+		toggleModoInverso: () => update(config => {
+			const nuevoInv = !config.modoInverso;
+			return {
+				...config,
+				modoInverso: nuevoInv,
+				modoNoche: nuevoInv ? true : config.modoNoche
+			};
+		}),
+
+		// === Métodos daltonismo ===
+		setColorBlindness: (mode: ColorBlindnessMode) => update(config => ({ ...config, colorBlindness: mode })),
+		setIntensity: (val: number) => update(config => ({ ...config, intensity: val })),
+		setTextures: (enabled: boolean) => update(config => ({ ...config, textures: enabled })),
+		setContrast: (mode: ContrastMode) => update(config => ({ ...config, contrast: mode })),
+
 		
 		// Reinicia toda la configuración a valores por defecto
 		reset: () => set(valoresPorDefecto)

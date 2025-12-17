@@ -1,31 +1,25 @@
-<script>
+<script lang="ts">
 	import Mancha from '$lib/components/iconos/Manchas.svelte';
+	// Importamos el store para reactividad (opcional si usas las clases globales, 
+	// pero buena práctica tenerlo si necesitas lógica futura)
+	import { configuraciones } from '$lib/stores/settings';
+	let { style } = $props<{ style?: string }>();
 </script>
 
-<div class="contenedor-fondo">
-	<!-- 
-		Usamos el mismo SVG 4 veces. 
-		La magia ocurre en el CSS con las clases específicas (.noroeste, .noreste, etc.)
-		que cambian el color, la rotación y la posición.
-	-->
-
-	<!-- Esquina Superior Izquierda -->
-	<div class="mancha noroeste">
+<div class="contenedor-fondo" style={style}>
+	<div class="mancha noroeste pattern-yellow">
 		<Mancha clase="mancha noroeste"/>
 	</div>
 
-	<!-- Esquina Superior Derecha -->
-	<div class="mancha noreste">
+	<div class="mancha noreste pattern-red">
 		<Mancha clase="mancha noreste"/>
 	</div>
 
-	<!-- Esquina Inferior Derecha -->
-	<div class="mancha sureste">
+	<div class="mancha sureste pattern-blue">
 		<Mancha clase="mancha sureste"/>
 	</div>
 
-	<!-- Esquina Inferior Izquierda -->
-	<div class="mancha suroeste">
+	<div class="mancha suroeste pattern-green">
 		<Mancha clase="mancha suroeste"/>
 	</div>
 </div>
@@ -63,6 +57,28 @@
 		
 		/* Animación suave si entras a la página */
 		opacity: 0.8;
+	}
+
+	/* IMPORTANTE: Forzar que las manchas siempre usen position: absolute
+	   incluso cuando se apliquen las clases de pattern */
+	:global(.mancha.pattern-red),
+	:global(.mancha.pattern-green),
+	:global(.mancha.pattern-blue),
+	:global(.mancha.pattern-yellow) {
+		position: absolute !important;
+	}
+
+	/* --- CORRECCIÓN DE TEXTURAS (Para que no sean cuadradas) --- */
+	/* Esto recorta la textura (::after) en forma circular para que se ajuste mejor 
+	   a la forma orgánica de la mancha y no se vea el cuadro del div.
+	*/
+	:global(.mancha.pattern-red::after),
+	:global(.mancha.pattern-green::after),
+	:global(.mancha.pattern-blue::after),
+	:global(.mancha.pattern-yellow::after) {
+		border-radius: 50%; /* Hace que la textura sea redonda */
+		transform: scale(0.9); /* La encoge un poco para asegurar que quede dentro */
+		opacity: 0.6; /* Hacemos la textura un poco más sutil en el fondo */
 	}
 
 	/* --- CONFIGURACIÓN DE CADA ESQUINA --- */
