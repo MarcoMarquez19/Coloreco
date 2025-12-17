@@ -50,7 +50,8 @@
 	let necesitaFondoManchas = $derived($page.url.pathname === '/' 
 	|| $page.url.pathname === '/seleccionar-estudio' 
 	|| $page.url.pathname.startsWith('/galeria')
-);
+	|| $page.url.pathname.startsWith('/menu-juegos')
+	);
 
 	// Funciones de navegación
 	function abrirConfiguracion() {
