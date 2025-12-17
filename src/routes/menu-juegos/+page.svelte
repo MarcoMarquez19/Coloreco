@@ -1,5 +1,4 @@
 <script lang="ts">
-    import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
     import LibroDibujo from '$lib/components/iconos/LibroDibujo.png';
     import CuerpoHumano from '$lib/components/iconos/CuerpoHumano.png';
     import LibroHistorias from '$lib/components/iconos/LibroCuentos.png';
@@ -19,11 +18,43 @@
         //TODO: PONER LA PAGINA DEL MODO DE HISTORIAS
     }
 
+	let contenedorMenuJuegosRef: HTMLElement | null = null;
+
+	/** Calcula y aplica la escala según la altura de la ventana (máx 1080px) */
+	function actualizarEscala(): void {
+		if (!contenedorMenuJuegosRef) return;
+		const maxHeight = 1080; // referencia 1080p
+		const rawScale = window.innerHeight / maxHeight;
+		// limitar entre 0.6 y 1 para evitar escalados excesivos
+		const scale = Math.max(0.6, Math.min(1, rawScale));
+		contenedorMenuJuegosRef.style.transform = `scale(${scale})`;
+		contenedorMenuJuegosRef.style.transformOrigin = 'top center';
+	}
+
+	onMount(() => {
+		document.body.style.overflow = 'hidden';
+		return () => {
+			document.body.style.overflow = ''; // Restaurar al desmontar
+		};
+	});
+
+	$effect(() => {
+		actualizarEscala();
+		window.addEventListener('resize', actualizarEscala);
+		return () => {
+			window.removeEventListener('resize', actualizarEscala);
+			// restaurar transform si existe
+			if (contenedorMenuJuegosRef) {
+				contenedorMenuJuegosRef.style.transform = '';
+				contenedorMenuJuegosRef.style.transformOrigin = '';
+				contenedorMenuJuegosRef.style.margin = '';
+			}
+		};
+	})
+
 </script>
 
-<FondoManchas />
-
-<div class="seleccionar-juegos-contenedor" aria-label="Contenedor para seleccionar el juego de preferencia del artista" data-magnificable>
+<div class="seleccionar-juegos-contenedor" bind:this={contenedorMenuJuegosRef} aria-label="Contenedor para seleccionar el juego de preferencia del artista" data-magnificable>
     <h1>¿Qué quieres probar?</h1>
 
     <button class="boton-juego"
@@ -54,11 +85,16 @@
 
 <style>
     .seleccionar-juegos-contenedor {
+        margin: 8vh auto;
         background: transparent;
         z-index: 1;
-        max-width: 870px;
+        max-width: 1080px;
         width: 100%;
         text-align: center;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+        flex-direction: column
     }
 
     h1 {
@@ -90,7 +126,7 @@
 	}
     .boton-juego img {
         height: auto;
-        width: calc(var(--font-size-base, 1rem) * 4);
+        width: calc(var(--font-size-base, 1rem) * 5);
         margin-right: calc(var(--font-size-base, 1rem) * 1.8);
         margin-left:  calc(var(--font-size-base, 1rem) * 1.8);
         vertical-align: middle;
