@@ -40,12 +40,6 @@
 	   VARIABLES DE ACCESIBILIDAD (HU-01 a HU-08)
 	   ======================================== */
 	
-	/* HU-01: Tipografía */
-	--font-family: 'Arial', sans-serif;
-	--font-size: 16px;
-	--letter-spacing: 0em;
-	--line-height: 1.5;
-	
 	/* HU-02: Lectura biónica */
 	--bionic-highlight-color: #0b6efd;
 	--bionic-rest-opacity: 0.8;
@@ -61,12 +55,6 @@
 	/* HU-05: Pictogramas */
 	--pictogram-bg: #f5f5f5;
 	--pictogram-hover-bg: #e8e8e8;
-	
-	/* HU-06: Contraste y fondo */
-	--background-color: #ffffff;
-	--text-color: #111111;
-	--contrast-high: 4.5; /* ratio WCAG AA */
-	--contrast-maximum: 7; /* ratio WCAG AAA */
 	
 	/* HU-07 y HU-08: Gamificación y retroalimentación */
 	--reward-gradient-start: #667eea;

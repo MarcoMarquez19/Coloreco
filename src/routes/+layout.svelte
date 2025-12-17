@@ -102,43 +102,7 @@
 		}
 	});
 
-	// Efecto para aplicar configuraciones de tipografía
-	$effect(() => {
-		const root = document.documentElement;
-		
-		// Aplicar familia de fuente
-		if ($configuraciones.fontFamily) {
-			root.style.setProperty('--font-family', $configuraciones.fontFamily);
-		}
-		
-		// Aplicar tamaño de fuente
-		if ($configuraciones.fontSize) {
-			root.style.setProperty('--font-size', `${$configuraciones.fontSize}px`);
-		}
-		
-		// Aplicar espaciado entre letras
-		if ($configuraciones.letterSpacing !== undefined) {
-			root.style.setProperty('--letter-spacing', `${$configuraciones.letterSpacing}em`);
-		}
-		
-		// Aplicar altura de línea
-		if ($configuraciones.lineHeight) {
-			root.style.setProperty('--line-height', `${$configuraciones.lineHeight}`);
-		}
-	});
 
-	// Efecto para aplicar color de fondo y contraste
-	$effect(() => {
-		const root = document.documentElement;
-		
-		if ($configuraciones.backgroundColor) {
-			root.style.setProperty('--background-color', $configuraciones.backgroundColor);
-		}
-		
-		if ($configuraciones.contrastLevel) {
-			root.setAttribute('data-contrast', $configuraciones.contrastLevel);
-		}
-	});
 
 	// Efecto para aplicar atributos data según modos activos
 	$effect(() => {
@@ -210,14 +174,15 @@
 		}
 		
 		elements.forEach((element) => {
+
 			// Evitar procesar elementos ya procesados
 			if (element.querySelector('.bionic-highlight') || element.querySelector('.rhyme-highlight')) return;
 			
 			const text = element.textContent?.trim();
 			if (!text) return;
 			
-			// Guardar texto original
-			element.setAttribute('data-original-text', text);
+			// Guardar HTML original para poder restaurarlo exactamente
+			element.setAttribute('data-original-html', (element as HTMLElement).innerHTML);
 			
 			let processedHTML = text;
 			
@@ -333,8 +298,59 @@
 					processedHTML = processedWords.join('');
 				}
 			}
-			
-			(element as HTMLElement).innerHTML = processedHTML;
+
+			// En lugar de reemplazar el innerHTML completo (que rompe la estructura), procesamos
+			// cada nodo de texto individualmente y reemplazamos solo lo necesario.
+			const createBionicFragment = (text: string) => {
+				const frag = document.createDocumentFragment();
+				if (!splitIntoSyllables) { frag.appendChild(document.createTextNode(text)); return frag; }
+				const tokens = text.split(/(\s+)/);
+				tokens.forEach(token => {
+					if (/^\s+$/.test(token)) { frag.appendChild(document.createTextNode(token)); return; }
+					const syllables = splitIntoSyllables(token);
+					if (!syllables || syllables.length === 0) { frag.appendChild(document.createTextNode(token)); return; }
+					if (syllables.length === 1 && token.length <= 3) {
+						const s = document.createElement('span'); s.className = 'bionic-highlight'; s.textContent = token; frag.appendChild(s); return;
+					}
+					const first = syllables[0]; const rest = token.slice(first.length);
+					const h = document.createElement('span'); h.className = 'bionic-highlight'; h.textContent = first; frag.appendChild(h);
+					if (rest) { const r = document.createElement('span'); r.className = 'bionic-rest'; r.textContent = rest; frag.appendChild(r); }
+				});
+				return frag;
+			};
+
+			const processNode = (node: Node) => {
+				if (node.nodeType === Node.TEXT_NODE) {
+					const txt = node.textContent || '';
+					if (!txt.trim()) return;
+					if ($configuraciones.rhymeMode && detectRhymes && applyRhymeHighlight) {
+						const patterns = detectRhymes(txt);
+						const backgroundColor = $configuraciones.modoNoche ? ($configuraciones.modoInverso ? '#ffffff' : '#121212') : '#ffffff';
+						const html = applyRhymeHighlight(txt, patterns, backgroundColor);
+						const tmp = document.createElement('div'); tmp.innerHTML = html;
+						if ($configuraciones.bionicMode) {
+							const walk = (n: Node) => {
+								if (n.nodeType === Node.TEXT_NODE) {
+									const frag = createBionicFragment(n.textContent || ''); n.parentNode?.replaceChild(frag, n);
+								} else if (n.nodeType === Node.ELEMENT_NODE && (n as Element).classList.contains('rhyme-highlight')) {
+									Array.from(n.childNodes).forEach(walk);
+								} else if (n.childNodes && n.childNodes.length) { Array.from(n.childNodes).forEach(walk); }
+							};
+							Array.from(tmp.childNodes).forEach(walk);
+						}
+						const frag = document.createDocumentFragment(); Array.from(tmp.childNodes).forEach(c => frag.appendChild(c.cloneNode(true)));
+						node.parentNode?.replaceChild(frag, node);
+						return;
+					}
+					if ($configuraciones.bionicMode) { const f = createBionicFragment(txt); node.parentNode?.replaceChild(f, node); return; }
+					return;
+				} else if (node.nodeType === Node.ELEMENT_NODE) {
+					if ((node as Element).classList.contains('bionic-highlight') || (node as Element).classList.contains('rhyme-highlight')) return;
+					Array.from(node.childNodes).forEach(processNode);
+				}
+			};
+
+			Array.from(element.childNodes).forEach(processNode);
 		});
 	}
 
@@ -342,12 +358,12 @@
 	function restoreOriginalText() {
 		if (!mainEl) return;
 		
-		const elements = mainEl.querySelectorAll('[data-original-text]');
+		const elements = mainEl.querySelectorAll('[data-original-html]');
 		elements.forEach((element) => {
-			const originalText = element.getAttribute('data-original-text');
-			if (originalText) {
-				(element as HTMLElement).textContent = originalText;
-				element.removeAttribute('data-original-text');
+			const originalHtml = element.getAttribute('data-original-html');
+			if (originalHtml !== null) {
+				(element as HTMLElement).innerHTML = originalHtml;
+				element.removeAttribute('data-original-html');
 			}
 		});
 	}

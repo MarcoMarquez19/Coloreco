@@ -38,29 +38,11 @@ export interface ConfiguracionUI {
 	modoInverso?: boolean;
 
 //DISLEXIA
-	// === HU-01: Accesibilidad tipográfica ===
-	fontFamily?: string; // familia de fuente
-	fontSize?: number; // tamaño de fuente en px
-	letterSpacing?: number; // espaciado entre letras en em
-	lineHeight?: number; // altura de línea
-	dyslexiaMode?: boolean; // modo dislexia (OpenDyslexic)
-
-	// === HU-02: Lectura biónica ===
-	bionicMode?: boolean; // activar lectura biónica
-
-	// === HU-03: Narración auditiva ===
-	narrationEnabled?: boolean; // activar narración TTS
-	ttsSpeed?: number; // velocidad de narración (0.1 - 10)
-
-	// === HU-04: Resaltado de rimas ===
-	rhymeMode?: boolean; // resaltar rimas
-
-	// === HU-05: Pictogramas ===
-	pictogramMode?: boolean; // mostrar pictogramas
-
-	// === HU-06: Contraste y fondo ===
-	backgroundColor?: string; // color de fondo personalizado
-	contrastLevel?: 'normal' | 'high' | 'maximum'; // nivel de contraste WCAG
+	bionicMode: boolean; // activar lectura biónica
+	narrationEnabled: boolean; // activar narración TTS
+	ttsSpeed: number; // velocidad de narración (0.1 - 10)
+	rhymeMode: boolean; // resaltar rimas
+	pictogramMode: boolean; // mostrar pictogramas
 
 	// === Propiedades daltonismo ===
 	colorBlindness: ColorBlindnessMode;
@@ -82,18 +64,11 @@ const valoresPorDefecto: ConfiguracionUI = {
 	modoInverso: false,
 
 //DISLEXIA
-	fontFamily: 'Arial, sans-serif',
-	fontSize: 16,
-	letterSpacing: 0,
-	lineHeight: 1.5,
-	dyslexiaMode: false,
 	bionicMode: false,
 	narrationEnabled: false,
 	ttsSpeed: 1,
 	rhymeMode: false,
 	pictogramMode: false,
-	backgroundColor: '#ffffff',
-	contrastLevel: 'normal',
 
 	// Daltonismo
 	colorBlindness: 'none',
@@ -238,41 +213,22 @@ function crearEstadoConfiguraciones() {
 			modoInverso: value,
 			modoNoche: value ? true : config.modoNoche
 		})),
-//DISLEXIA
-		// === Nuevos métodos para historias de usuario ===
-		
-		// HU-01: Tipografía
-		setFontFamily: (family: string) => update(config => ({ 
-			...config, 
-			fontFamily: family 
-		})),
-		
-		setFontSizeValue: (size: number) => update(config => ({ 
-			...config, 
-			fontSize: size 
-		})),
-		
-		setLetterSpacing: (spacing: number) => update(config => ({ 
-			...config, 
-			letterSpacing: spacing 
-		})),
-		
-		setLineHeight: (height: number) => update(config => ({ 
-			...config, 
-			lineHeight: height 
-		})),
-		
-		toggleDyslexiaMode: () => update(config => ({
-			...config,
-			dyslexiaMode: !config.dyslexiaMode
-		})),
-		
+		// Alterna el modo inverso (invierte la paleta del modo noche)
+		toggleModoInverso: () => update(config => {
+			const nuevoInv = !config.modoInverso;
+			return {
+				...config,
+				modoInverso: nuevoInv,
+				modoNoche: nuevoInv ? true : config.modoNoche
+			};
+		}),
+
+		//DISLEXIA
 		// HU-02: Lectura biónica
 		toggleBionicMode: () => update(config => ({
 			...config,
 			bionicMode: !config.bionicMode
 		})),
-		
 		// HU-03: Narración auditiva
 		toggleNarration: () => update(config => ({
 			...config,
@@ -295,28 +251,7 @@ function crearEstadoConfiguraciones() {
 			...config,
 			pictogramMode: !config.pictogramMode
 		})),
-		
-		// HU-06: Contraste y fondo
-		setBackgroundColor: (color: string) => update(config => ({
-			...config,
-			backgroundColor: color
-		})),
-		
-		setContrastLevel: (level: 'normal' | 'high' | 'maximum') => update(config => ({
-			...config,
-			contrastLevel: level
-		})),
 		//HASTA AQUI DISLEXIA
-		
-		// Alterna el modo inverso (invierte la paleta del modo noche)
-		toggleModoInverso: () => update(config => {
-			const nuevoInv = !config.modoInverso;
-			return {
-				...config,
-				modoInverso: nuevoInv,
-				modoNoche: nuevoInv ? true : config.modoNoche
-			};
-		}),
 
 		// === Métodos daltonismo ===
 		setColorBlindness: (mode: ColorBlindnessMode) => update(config => ({ ...config, colorBlindness: mode })),
