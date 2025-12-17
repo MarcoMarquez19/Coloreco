@@ -1,6 +1,7 @@
 <script lang="ts">
     import { createEventDispatcher, onMount } from 'svelte';
     import {crearArtista,cambiarArtista} from '$lib/db/artistas.service';
+    import { audioStore } from '$lib/stores/audio';
 
     // Creamos el despachador de eventos para comunicarnos con el padre
     const dispatch = createEventDispatcher();
@@ -13,6 +14,7 @@
     async function accionAlDarEnter() {
         if (nombre.trim() === '') return;
         
+        audioStore.playSound('success');
         const id = await crearArtista(nombre);
         cambiarArtista(id);
     }
@@ -48,6 +50,7 @@
 
     // Cierra el modal si se hace click fuera de la caja modal
     function handleBackdropClick() {
+        audioStore.playSound('click');
         dispatch('close');
     }
 

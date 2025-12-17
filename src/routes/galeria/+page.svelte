@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { configuraciones } from '$lib/stores/settings';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 	import { obtenerSesionActual } from '$lib/db/artistas.service';
 	import { obtenerObras, eliminarObra, liberarURLsImagenes, type ObraCompleta } from '$lib/db/obras.service';
 
@@ -267,6 +268,7 @@
 					class="boton boton-editar pattern-blue"
 					onclick={editarObra}
 					aria-label="Editar obra actual"
+					use:clickSound
 				>
 					✏️ Editar
 				</button>
@@ -276,6 +278,7 @@
 					class="boton boton-descargar pattern-green"
 					onclick={descargarObra}
 					aria-label="Descargar imagen de la obra"
+					use:clickSound
 				>
 					💾 Descargar
 				</button>
@@ -285,6 +288,7 @@
 					class="boton boton-eliminar pattern-red"
 					onclick={manejarEliminar}
 					aria-label="Eliminar obra de la galería"
+					use:clickSound
 				>
 					🗑️ Eliminar
 				</button>
@@ -298,6 +302,7 @@
 					onclick={irAnterior}
 					disabled={!puedeRetroceder}
 					aria-label="Ver obra anterior"
+					use:clickSound
 				>
 					<span aria-hidden="true">‹</span>
 				</button>
@@ -317,6 +322,7 @@
 					onclick={irSiguiente}
 					disabled={!puedeAvanzar}
 					aria-label="Ver obra siguiente"
+					use:clickSound
 				>
 					<span aria-hidden="true">›</span>
 				</button>
