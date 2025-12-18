@@ -51,6 +51,7 @@
 	|| $page.url.pathname === '/seleccionar-estudio' 
 	|| $page.url.pathname.startsWith('/galeria')
 	|| $page.url.pathname.startsWith('/menu-juegos')
+	|| $page.url.pathname.startsWith('/taller-escenas')
 	);
 
 	// Funciones de navegación
