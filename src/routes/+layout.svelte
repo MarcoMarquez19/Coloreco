@@ -13,6 +13,7 @@
 	import IconoVolver from '$lib/components/iconos/IconoVolver.svelte';
 	import IconoAccesibilidad from '$lib/components/iconos/Accesibilidad.svelte';
 	import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
+	import FondoLogrosGeneral from '$lib/components/fondos/FondoLogrosGeneral.svelte';
 
 	// Pequeño helper de accesibilidad: enfocar el contenido principal al navegar
 	let mainEl: HTMLElement | null = null;
@@ -53,6 +54,9 @@
 	|| $page.url.pathname.startsWith('/galeria')
 	|| $page.url.pathname.startsWith('/menu-juegos')
 	);
+
+	//DETECTAR SI SE NECESITA EL FONDO DE LOGROS GENERAL
+	let necesitaFondoLogrosGeneral = $derived($page.url.pathname.startsWith('/logros'));
 
 	// Funciones de navegación
 	function abrirConfiguracion() {
@@ -406,6 +410,10 @@
 <!-- Apartado de fondos -->
 {#if (necesitaFondoManchas)}
 	<FondoManchas style={filterStyle}/>
+{/if}
+
+{#if (necesitaFondoLogrosGeneral)}
+	<FondoLogrosGeneral style={filterStyle}/>
 {/if}
 
 	<div class="app-filtered-content" style={filterStyle}>
