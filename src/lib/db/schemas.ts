@@ -91,6 +91,16 @@ export interface Ajustes {
 	/** Modo inverso (invierte paleta del modo noche) */
 	modoInverso: boolean;
 	
+	// === DISLEXIA / Modos de lectura accesible ===
+	/** Modo biónico: resalta primeras sílabas */
+	modoBionico: boolean;
+	/** Narración TTS activada */
+	narracionActivada: boolean;
+	/** Modo rima: resalta rimas */
+	modoRima: boolean;
+	/** Modo pictograma: muestra pictogramas junto a textos */
+	modoPictograma: boolean;
+	
 	// === Daltonismo ===
 	/** Modo de visión del color */
 	modoVisionColor: ModoVisionColor;

@@ -37,11 +37,19 @@ export interface ConfiguracionUI {
 	// Modo Inverso: invierte la paleta del modo noche (solo disponible si modoNoche está activo)
 	modoInverso?: boolean;
 
+//DISLEXIA
+	bionicMode: boolean; // activar lectura biónica
+	narrationEnabled: boolean; // activar narración TTS
+	ttsSpeed: number; // velocidad de narración (0.1 - 10)
+	rhymeMode: boolean; // resaltar rimas
+	pictogramMode: boolean; // mostrar pictogramas
+
 	// === Propiedades daltonismo ===
 	colorBlindness: ColorBlindnessMode;
 	intensity: number; // 0 a 1
 	textures: boolean;
 	contrast: ContrastMode;
+
 }
 
 // Valores por defecto para una experiencia estándar
@@ -54,6 +62,13 @@ const valoresPorDefecto: ConfiguracionUI = {
 	nivelMagnificacion: 2,
 	modoNoche: false,
 	modoInverso: false,
+
+//DISLEXIA
+	bionicMode: false,
+	narrationEnabled: false,
+	ttsSpeed: 1,
+	rhymeMode: false,
+	pictogramMode: false,
 
 	// Daltonismo
 	colorBlindness: 'none',
@@ -208,11 +223,63 @@ function crearEstadoConfiguraciones() {
 			};
 		}),
 
+		//DISLEXIA
+		// HU-02: Lectura biónica
+		toggleBionicMode: () => update(config => ({
+			...config,
+			bionicMode: !config.bionicMode
+		})),
+		// HU-03: Narración auditiva
+		toggleNarration: () => update(config => ({
+			...config,
+			narrationEnabled: !config.narrationEnabled
+		})),
+		// Setter explícito para narración (usado por sincronización BD → UI)
+		setNarrationEnabled: (value: boolean) => update(config => ({
+			...config,
+			narrationEnabled: value
+		})),
+		
+		setTTSSpeed: (speed: number) => update(config => ({
+			...config,
+			ttsSpeed: speed
+		})),
+		
+		// HU-04: Rimas
+		toggleRhymeMode: () => update(config => ({
+			...config,
+			rhymeMode: !config.rhymeMode
+		})),
+		// Setter explícito para modoRima
+		setRhymeMode: (value: boolean) => update(config => ({
+			...config,
+			rhymeMode: value
+		})),
+		
+		// HU-05: Pictogramas
+		togglePictogramMode: () => update(config => ({
+			...config,
+			pictogramMode: !config.pictogramMode
+		})),
+		// Setter explícito para pictogramas
+		setPictogramMode: (value: boolean) => update(config => ({
+			...config,
+			pictogramMode: value
+		})),
+		
+		// Setter explícito para modo biónico
+		setBionicMode: (value: boolean) => update(config => ({
+			...config,
+			bionicMode: value
+		})),
+		//HASTA AQUI DISLEXIA
+
 		// === Métodos daltonismo ===
 		setColorBlindness: (mode: ColorBlindnessMode) => update(config => ({ ...config, colorBlindness: mode })),
 		setIntensity: (val: number) => update(config => ({ ...config, intensity: val })),
 		setTextures: (enabled: boolean) => update(config => ({ ...config, textures: enabled })),
 		setContrast: (mode: ContrastMode) => update(config => ({ ...config, contrast: mode })),
+
 		
 		// Reinicia toda la configuración a valores por defecto
 		reset: () => set(valoresPorDefecto)
