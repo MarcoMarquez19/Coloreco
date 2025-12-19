@@ -7,11 +7,11 @@
     import {obtenerArtistas,cambiarArtista} from '$lib/db/artistas.service';
 
     function irAlTallerDibujo() {
-        //TODO: PONER LA PAGINA DEL TALLER DE ESCENAS CREATIVAS
+        goto('/taller-escenas');
     }
 
     function irAlModoPartesDelCuerpo() {
-        //TODO: PONER LA PAGINA DEL MODO DE PARTES DEL CUERPO
+        goto('/cuerpo-humano');
     }
 
     function irAModoHistorias() {

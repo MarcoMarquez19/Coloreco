@@ -53,6 +53,7 @@
 	|| $page.url.pathname === '/seleccionar-estudio' 
 	|| $page.url.pathname.startsWith('/galeria')
 	|| $page.url.pathname.startsWith('/menu-juegos')
+	|| $page.url.pathname.startsWith('/taller-escenas')
 	);
 
 	//DETECTAR SI SE NECESITA EL FONDO DE LOGROS GENERAL
@@ -105,8 +106,6 @@
 			console.error('[Layout] Error verificando sesión:', e);
 		}
 	});
-
-
 
 	// Efecto para aplicar atributos data según modos activos
 	$effect(() => {
@@ -371,6 +370,21 @@
 			}
 		});
 	}
+    // Escalado accesible de botones según resolución (mantener tamaño aparente entre 720p y 1080p)
+    function actualizarEscalaBotones() {
+        if (!browser) return;
+        const BASE_HEIGHT = 1080;
+        const MIN_SCALE = 0.6;   // evita que en pantallas muy altas se reduzca demasiado
+        const MAX_SCALE = 1;   // en 720p ≈ 1.5 para igualar tamaño aparente
+        const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, BASE_HEIGHT / window.innerHeight));
+        document.documentElement.style.setProperty('--btn-scale', String(scale));
+    }
+
+    onMount(() => {
+        actualizarEscalaBotones();
+        window.addEventListener('resize', actualizarEscalaBotones);
+        return () => window.removeEventListener('resize', actualizarEscalaBotones);
+    });
 </script>
 
 <!-- Escuchamos el evento de teclado en toda la ventana -->
@@ -541,6 +555,7 @@
 	.contenedor-flotante-d { right: calc(var(--spacing-base, 1rem) * 2.5); }
 
 	.texto-tecla {
+		font-size: calc(4vh * var(--btn-scale, 1));
 		font-weight: 500;
 		width: 100%;
 		text-align: center;
@@ -564,8 +579,8 @@
 	/*Botón volver esquina inferior izquierda y botón ajustes esquina inferior derecha*/
 	.boton-volver, .boton-configuracion{
 		position: relative;
-		width: 75px;
-		height: 75px;
+		width: calc(8vw * var(--btn-scale, 1));
+		height: calc(15vh * var(--btn-scale, 1));
 		border-radius: var(--border-radius, 8px);
 		display: inline-flex;
 		align-items: center;
