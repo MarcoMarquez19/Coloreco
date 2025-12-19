@@ -1,0 +1,72 @@
+[
+	{
+		"modo": "dibujo",
+		"escenaId": "bosque-magico",
+		"nombre": "Bosque Mágico",
+		"ruta": "/escenas/bosque-magico.svg",
+		"version": 1
+	},
+	{
+		"modo": "dibujo",
+		"escenaId": "ciudad-futurista",
+		"nombre": "Ciudad Futurista",
+		"ruta": "/escenas/ciudad-futurista.svg",
+		"version": 1
+	},
+	{
+		"modo": "dibujo",
+		"escenaId": "fondo-marino",
+		"nombre": "Fondo Marino",
+		"ruta": "/escenas/fondo-marino.svg",
+		"version": 1
+	},
+	{
+		"modo": "dibujo",
+		"escenaId": "espacio-estelar",
+		"nombre": "Espacio Estelar",
+		"ruta": "/escenas/espacio-estelar.svg",
+		"version": 1
+	},
+	{
+		"modo": "dibujo",
+		"escenaId": "jardin-flores",
+		"nombre": "Jardín de Flores",
+		"ruta": "/escenas/jardin-flores.svg",
+		"version": 1
+	},
+	{
+		"modo": "cuerpoHumano",
+		"escenaId": "cuerpo-completo",
+		"nombre": "Cuerpo Humano Completo",
+		"ruta": "/escenas/cuerpo-completo.svg",
+		"version": 1
+	},
+	{
+		"modo": "cuerpoHumano",
+		"escenaId": "sistema-digestivo",
+		"nombre": "Sistema Digestivo",
+		"ruta": "/escenas/sistema-digestivo.svg",
+		"version": 1
+	},
+	{
+		"modo": "cuerpoHumano",
+		"escenaId": "sistema-circulatorio",
+		"nombre": "Sistema Circulatorio",
+		"ruta": "/escenas/sistema-circulatorio.svg",
+		"version": 1
+	},
+	{
+		"modo": "cuerpoHumano",
+		"escenaId": "sistema-oseo",
+		"nombre": "Sistema Óseo",
+		"ruta": "/escenas/sistema-oseo.svg",
+		"version": 1
+	},
+	{
+		"modo": "cuerpoHumano",
+		"escenaId": "organos-internos",
+		"nombre": "Órganos Internos",
+		"ruta": "/escenas/organos-internos.svg",
+		"version": 1
+	}
+]
