@@ -44,6 +44,11 @@
 
 	let escenaActual = $state<EscenaCatalogo | null>(null);
 
+	// Animación de carrusel: clase temporal y duración accesible
+	let animClass = $state<string>('');
+	const CAROUSEL_ANIM_DURATION = 700; // ms, velocidad moderada
+	let animTimer: ReturnType<typeof setTimeout> | null = null;
+
 	$effect(() => {
 		escenaActual = $escenasFiltradas.length > 0 ? $escenasFiltradas[indiceActual] : null;
 	});
@@ -59,12 +64,20 @@
 
 	function navegarAnterior() {
 		if ($escenasFiltradas.length === 0) return;
+		// aplicar clase de entrada desde la izquierda
+		animClass = 'slide-left';
+		if (animTimer) { clearTimeout(animTimer); animTimer = null; }
 		indiceActual = (indiceActual - 1 + $escenasFiltradas.length) % $escenasFiltradas.length;
+		animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
 	}
 
 	function navegarSiguiente() {
 		if ($escenasFiltradas.length === 0) return;
+		// aplicar clase de entrada desde la derecha
+		animClass = 'slide-right';
+		if (animTimer) { clearTimeout(animTimer); animTimer = null; }
 		indiceActual = (indiceActual + 1) % $escenasFiltradas.length;
+		animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
 	}
 
 	function manejarTeclaPresionada(event: KeyboardEvent) {
@@ -80,7 +93,7 @@
 	/** Calcula y aplica la escala según la altura de la ventana (máx 1080px) */
 	function actualizarEscala(): void {
 		if (!contenedorSeleccionarEscenaRef) return;
-		const maxHeight = 1080; // referencia 1080p
+		const maxHeight = 1080;
 		const rawScale = window.innerHeight / maxHeight;
 		// limitar entre 0.6 y 1 para evitar escalados excesivos
 		const scale = Math.max(0.6, Math.min(1, rawScale));
@@ -150,7 +163,7 @@
 
 			<!-- Escena actual -->
 			{#if escenaActual}
-			<article class="tarjeta-escena-carrusel">
+			<article class={"tarjeta-escena-carrusel " + animClass}>
 				<button
 					class="contenedor-escena-carrusel"
 					onclick={() => seleccionarEscena(escenaActual!)}
@@ -437,4 +450,33 @@
 			height: 24px;
 		}
 	}
+
+/* Animaciones de entrada para simular movimiento de carrusel */
+@keyframes slideInFromRight {
+	from { transform: translateX(30%); opacity: 0; }
+	to   { transform: translateX(0);   opacity: 1; }
+}
+
+@keyframes slideInFromLeft {
+	from { transform: translateX(-30%); opacity: 0; }
+	to   { transform: translateX(0);     opacity: 1; }
+}
+
+.slide-right {
+	animation: slideInFromRight 700ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.slide-left {
+	animation: slideInFromLeft 700ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* Respetar preferencias de reducción de movimiento */
+@media (prefers-reduced-motion: reduce) {
+	.slide-right,
+	.slide-left {
+		animation: none !important;
+		transition: none !important;
+	}
+}
+
 </style>
