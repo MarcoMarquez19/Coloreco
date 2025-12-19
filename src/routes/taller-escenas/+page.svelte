@@ -172,7 +172,7 @@
 					<div class="preview">
 						<!-- TODO: Cargar preview/thumbnail real -->
 						<div class="placeholder-preview">
-							<span>🎨</span>
+							<img src={escenaActual!.ruta} alt="">
 						</div>
 					</div>
 					<h2 class="nombre-escena">{escenaActual.nombre}</h2>
@@ -308,8 +308,8 @@
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 		transition: transform 0.3s, box-shadow 0.3s;
 		flex: 1;
-		min-width: 35vw;
-		max-width: 35vw;
+		min-width: 32vw;
+		max-width: 32vw;
 	}
 
 	.tarjeta-escena-carrusel:hover {
@@ -339,6 +339,12 @@
 		font-size: 6rem;
 	}
 
+	.placeholder-preview img {
+		max-width: 100%;
+		max-height: 100%;
+		object-fit: contain;
+	}
+
 	.nombre-escena {
 		padding: 1.5rem;
 		font-size: 1.5rem;
@@ -350,7 +356,7 @@
 
 	.boton-selección {      
         padding: calc(var(--spacing-base,2rem) * 1.5) 1rem;
-        margin-top: 4rem;
+        margin-top: 2rem;
 		background: var(--fondo-botones, #ffca00);
 		color: var(--icono-color-relleno, black);
 		border: none;
