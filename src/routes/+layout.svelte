@@ -56,7 +56,7 @@
 	);
 
 	//DETECTAR SI SE NECESITA EL FONDO DE LOGROS GENERAL
-	let necesitaFondoLogrosGeneral = $derived($page.url.pathname.startsWith('/logros'));
+	let necesitaFondoLogrosGeneral = $derived($page.url.pathname===('/logros'));
 
 	// Funciones de navegación
 	function abrirConfiguracion() {
