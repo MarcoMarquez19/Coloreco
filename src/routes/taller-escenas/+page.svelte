@@ -3,7 +3,6 @@
 	import { goto } from '$app/navigation';
 	import { escenasStore, escenasFiltradas, cargando, error } from '$lib/stores/escenas';
 	import type { EscenaCatalogo } from '$lib/db/schemas';
-	import IconoVolver from '$lib/components/iconos/IconoVolver.svelte';
 
 	let escenasIniciales: Omit<EscenaCatalogo, 'id'>[] = [];
 	let busqueda = '';
@@ -34,13 +33,6 @@
 			document.body.style.overflow = ''; // Restaurar al desmontar
 		};
 	});
-
-	function seleccionarEscena(escena: EscenaCatalogo) {
-		// TODO: Navegar al canvas con la escena seleccionada
-		// Por ahora solo navegamos a una ruta placeholder
-		console.log('Escena seleccionada:', escena);
-		goto(`/canvas?escenaId=${escena.escenaId}&modo=${escena.modo}`);
-	}
 
 	let escenaActual = $state<EscenaCatalogo | null>(null);
 
@@ -166,13 +158,12 @@
 			<article class={"tarjeta-escena-carrusel " + animClass}>
 				<button
 					class="contenedor-escena-carrusel"
-					onclick={() => seleccionarEscena(escenaActual!)}
 					aria-label={`Seleccionar escena ${escenaActual!.nombre}`}
 				>
 					<div class="preview">
-						<!-- TODO: Cargar preview/thumbnail real -->
+						<!-- TODO: PONER UN ARIA-LABEL CORRECTO PARA DESCRIBIRCADA ESCENA -->
 						<div class="placeholder-preview">
-							<img src={escenaActual!.ruta} alt="">
+							<img src={escenaActual!.ruta} alt={`Escena de ${escenaActual!.nombre}`} aria-label=""/>
 						</div>
 					</div>
 					<h2 class="nombre-escena">{escenaActual.nombre}</h2>
@@ -187,7 +178,6 @@
 				aria-label="Escena siguiente"
 				title="Navegar a la escena siguiente (→ tecla derecha)"
 			>
-				<!-- TODO: Reemplazar este SVG con tu icono de flecha derecha -->
 				<svg 
 					xmlns="http://www.w3.org/2000/svg"
 					viewBox="0 0 24 24"
@@ -347,7 +337,7 @@
 
 	.nombre-escena {
 		padding: 1.5rem;
-		font-size: 1.5rem;
+		font-size: calc(var(--font-size-base,1rem)*1.5);
 		font-weight: 600;
 		color: var(--color-texto, #333);
 		margin: 0;
