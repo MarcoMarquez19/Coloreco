@@ -11,7 +11,7 @@
     }
 
     function irAlModoPartesDelCuerpo() {
-        goto('/cuerpo-humano');
+        goto('/cuerpo-plantillas');
     }
 
     function irAModoHistorias() {
