@@ -54,12 +54,10 @@
 	});
 
     function verDescripcionEscena() {
-        //TODO: PONER LA PAGINA DE la descripción de la escena seleccionada
-		if ($escenasFiltradas.length > 0) {
-			const escenaActual = $escenasFiltradas[indiceActual];
-			console.log('Ver descripción de:', escenaActual);
-			// Aquí se implementará la navegación a la página de descripción
-		}
+		if ($escenasFiltradas.length === 0) return;
+		const escenaActual = $escenasFiltradas[indiceActual];
+		const destino = `/taller-escenas/descripcion/${encodeURIComponent(escenaActual.escenaId)}`;
+		goto(destino);
     }
 
 	function navegarAnterior() {
@@ -320,7 +318,7 @@
 	.contenedor-escena-carrusel {
 		width: 100%;
 		border: none;
-		background: transparent;
+		background: var(--fondo-botones,"transparent");
 		cursor: pointer;
 		padding: 0;
 		text-align: center;
@@ -343,7 +341,7 @@
 		padding: 1.5rem;
 		font-size: 1.5rem;
 		font-weight: 600;
-		color: var(--color-texto, #333);
+		color: var(--icono-color-relleno, #333);
 		margin: 0;
 		letter-spacing: 0.05em;
 	}

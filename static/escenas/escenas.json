@@ -18,7 +18,8 @@
 		"escenaId": "fondo-marino",
 		"nombre": "Fondo Marino",
 		"ruta": "/escenas/fondo-marino.svg",
-		"version": 1
+		"version": 1,
+		"descripcion": "Un fondo marino lleno de vida y color, en el puedes explorar la diversidad de la vida acuática ....."
 	},
 	{
 		"modo": "dibujo",
