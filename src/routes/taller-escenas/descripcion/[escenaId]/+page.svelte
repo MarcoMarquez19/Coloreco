@@ -43,10 +43,6 @@
 
 	onMount(() => {
 		void cargarEscena();
-        document.body.style.overflow = 'hidden';
-		return () => {
-			document.body.style.overflow = ''; // Restaurar al desmontar
-		};
 	});
 
 	let contenedorSeleccionarEscenaRef: HTMLElement | null = null;
@@ -82,6 +78,7 @@
 	bind:this={contenedorSeleccionarEscenaRef}
 	aria-labelledby="titulo-escena"
 	aria-live="polite"
+    data-magnificable
 >
 	<h1 id="titulo-escena">Descripción de la escena</h1>
 
@@ -92,16 +89,15 @@
 	{:else if error}
 		<section class="estado estado-error" role="alert">
 			<p>{error}</p>
-			<button
-				type="button"
-				class="boton-secundario"
-				onclick={() => goto('/taller-escenas')}
-				aria-label="Volver al listado de escenas"
-			>
-				Volver al listado
-			</button>
 		</section>
 	{:else if escena}
+	    <button class="boton-crear"
+			aria-label="Selecciona la escena a utilizar en el taller de dibujo" 
+			title="Ver Descripción de la escena seleccionada"
+			onclick={() => empezarDibujo(escena!.escenaId)}
+		>
+			¡Vamos a crear!
+		</button>
 		<section class="layout" aria-label="Detalle de la escena cargada">
 			<div class="col-izquierda">
 				<div class="marco-preview" aria-label="Previsualización de la escena">
@@ -124,8 +120,7 @@
 					<p class="texto-descripcion">
                         {#if escena.descripcion}
                             {escena.descripcion}
-                            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Vero, doloremque sequi aperiam voluptatum deserunt fugit porro omnis voluptatem, ab similique dolorem culpa. Suscipit reprehenderit vero rerum consequuntur, repudiandae velit hic.
-                        {:else}
+						{:else}
                             No hay descripción disponible para esta escena.
                         {/if}
                     </p>
@@ -134,20 +129,10 @@
                 <h2 tabindex="-1">Retos de la escena</h2>
 
 				<section class="panel panel-retos" aria-label="Retos y logros" tabindex="-1">
-					<p class="placeholder-retos">TODO: cargar logros asociados a la escena (obtenerLogrosEscenaID()).
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi ad quo nisi suscipit quos? Facere, rerum recusandae molestias eius perspiciatis inventore eligendi ratione rem. Cumque vitae amet perspiciatis deserunt et?
-                    </p>
+					<p class="placeholder-retos">TODO: cargar logros asociados a la escena (obtenerLogrosEscenaID()).</p>
 				</section>
 			</div>
 		</section>
-
-        <button class="boton-crear"
-		aria-label="Selecciona la escena a utilizar en el taller de dibujo" 
-		title="Ver Descripción de la escena seleccionada"
-		onclick={() => empezarDibujo(escena!.escenaId)}
-	>
-		¡Vamos a crear!
-	</button>
 	{/if}
 </div>
 
@@ -203,7 +188,7 @@
 		display: grid;
 		grid-template-columns: 1.5fr 2fr;
 		gap: calc(var(--spacing-base,1rem) * 3);
-		align-items: center;
+		align-items: start;
 		height: 100%;
 		box-sizing: border-box;
 	}
@@ -246,8 +231,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
-		height: 100%;
-        max-height: 60vh;
 	}
 
 	.panel {
@@ -257,30 +240,29 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
-		overflow-y: auto;
 		border: 3px solid var(--icono-color-borde, #000000);
 	}
 
 	.panel-descripcion {
-		flex: 1 1 35%;
+		flex: none;
 	}
 
 	.panel-retos {
-		flex: 1 1 65%;
+		flex: none;
 	}
 
 	.texto-descripcion {
 		margin: 0;
 		line-height: 1.6;
 		color: var(--color-texto, #333);
-        font-size: calc(var(--font-size-base, 1rem) * 2);
+        font-size: calc(var(--font-size-base, 1rem) * 1.2);
 	}
 
 	.placeholder-retos {
 		margin: 0;
 		line-height: 1.6;
 		color: var(--color-texto, #000000);
-        font-size: calc(var(--font-size-base, 1rem) * 2);
+        font-size: calc(var(--font-size-base, 1rem) * 1.2);
 	}
 
     .boton-crear {      
@@ -314,5 +296,4 @@
 		background: var(--fondo-botones-hover, #d1a700);
 		outline-offset: 7px;
 	}
-
 </style>
