@@ -33,8 +33,18 @@
 
 	onMount(() => {
 		document.body.style.overflow = 'hidden';
+		
+		// Interceptar el botón de volver del navegador/layout para ir a estudio
+		const handlePopState = (event: PopStateEvent) => {
+			event.preventDefault();
+			goto('/estudio');
+		};
+		
+		window.addEventListener('popstate', handlePopState);
+		
 		return () => {
-			document.body.style.overflow = ''; // Restaurar al desmontar
+			document.body.style.overflow = '';
+			window.removeEventListener('popstate', handlePopState);
 		};
 	});
 

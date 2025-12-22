@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 
 	interface Capitulo {
 		id: number;
@@ -55,16 +56,24 @@
 
 	onMount(() => {
 		document.body.style.overflow = 'hidden';
+		
+		// Interceptar el botón de volver del navegador/layout para ir a seleccionar-historia
+		const handlePopState = (event: PopStateEvent) => {
+			event.preventDefault();
+			goto('/historias/seleccionar-historia');
+		};
+		
+		window.addEventListener('popstate', handlePopState);
+		
 		return () => {
 			document.body.style.overflow = '';
+			window.removeEventListener('popstate', handlePopState);
 		};
 	});
 
 	function seleccionarCapitulo(capitulo: Capitulo) {
 		if (capitulo.desbloqueado) {
-			console.log('Navegar al capítulo:', capitulo.id, 'de historia:', historiaId);
-			// Aquí se implementará la navegación al capítulo
-			// goto(`/historias/${historiaId}/capitulo/${capitulo.id}`)
+			goto(`/historias/${historiaId}/${capitulo.id}`);
 		}
 	}
 
@@ -127,11 +136,11 @@
 <div class="progreso-contenedor" bind:this={contenedorProgresoRef} aria-label="Progreso de la historia" data-magnificable>
 	{#if cargando}
 		<div class="estado-carga">
-			<p>Cargando historia...</p>
+			<p data-magnificable data-readable>Cargando progreso...</p>
 		</div>
 	{:else if error}
 		<div class="estado-error">
-			<p>Error: {error}</p>
+			<p data-magnificable data-readable>Error: {error}</p>
 		</div>
 	{:else}
 		<!-- Título de la historia -->
@@ -163,6 +172,7 @@
 								class:bloqueado={!capitulo.desbloqueado}
 								class:seleccionado={index === capituloSeleccionadoIndex}
 								onclick={() => seleccionarCapitulo(capitulo)}
+								onfocus={() => { if (capitulo.desbloqueado) capituloSeleccionadoIndex = index; }}
 								disabled={!capitulo.desbloqueado}
 								aria-label={capitulo.desbloqueado ? `Jugar ${capitulo.nombre}` : `${capitulo.nombre} bloqueado`}
 								title={capitulo.desbloqueado ? `Jugar ${capitulo.nombre}` : `Completa el capítulo anterior para desbloquear`}
@@ -185,7 +195,7 @@
 			</div>
 		{:else}
 			<div class="estado-vacio">
-				<p>No se encontraron capítulos para esta historia.</p>
+				<p data-magnificable data-readable>No se encontraron capítulos para esta historia.</p>
 			</div>
 		{/if}
 	{/if}

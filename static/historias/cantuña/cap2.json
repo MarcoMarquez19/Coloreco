@@ -1,0 +1,31 @@
+{
+  "capituloId": "cantuna-cap2",
+  "historiaId": "cantuña",
+  "titulo": "Cantuña y el Diablo - Capítulo 2",
+  "imagenPrincipal": "/historias/cantu�a/cantuna-cap2.jpg",
+  "texto": "El diablo aceptó el trato: terminaría la obra en una noche a cambio del alma de Cantuña. Miles de demonios trabajaron durante toda la noche colocando piedras. Pero Cantuña era astuto y tenía un plan para salvarse del pacto infernal.",
+  "pregunta": {
+    "texto": "¿Qué plan crees que tenía Cantuña?",
+    "opciones": [
+      {
+        "id": "opcion1",
+        "texto": "Esconder una piedra para que faltara",
+        "esCorrecta": true,
+        "feedback": "¡Exacto! Así el diablo no cumpliría su parte del trato."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Rezar toda la noche",
+        "esCorrecta": false,
+        "feedback": "Necesitaba algo más concreto."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Huir de la ciudad",
+        "esCorrecta": false,
+        "feedback": "No podía escapar del diablo así."
+      }
+    ]
+  },
+  "personajes": []
+}

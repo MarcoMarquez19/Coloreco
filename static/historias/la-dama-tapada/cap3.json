@@ -1,0 +1,31 @@
+{
+  "capituloId": "dama-tapada-cap3",
+  "historiaId": "la-dama-tapada",
+  "titulo": "La Dama Tapada - Capítulo 3",
+  "imagenPrincipal": "/historias/la-dama-tapada/dama-tapada-cap3.jpg",
+  "texto": "Cuando la Dama se descubrió, el caballero vio una calavera en lugar de un hermoso rostro. Sus ojos se convirtieron en cuencas vacías y su sonrisa en una mueca de muerte. El joven huyó despavorido y desde entonces, nadie más se atrevió a seguir a la misteriosa Dama Tapada por las calles de Quito.",
+  "pregunta": {
+    "texto": "¿Qué lección nos enseña la leyenda de la Dama Tapada?",
+    "opciones": [
+      {
+        "id": "opcion1",
+        "texto": "No juzgar por las apariencias",
+        "esCorrecta": true,
+        "feedback": "¡Exacto! Las apariencias pueden engañar."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Nunca salir de noche",
+        "esCorrecta": false,
+        "feedback": "Es más profundo que eso."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Tener miedo a las mujeres",
+        "esCorrecta": false,
+        "feedback": "No, el mensaje es diferente."
+      }
+    ]
+  },
+  "personajes": []
+}

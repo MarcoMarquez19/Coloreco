@@ -36,8 +36,18 @@
 
 	onMount(() => {
 		document.body.style.overflow = 'hidden';
+		
+		// Interceptar el botón de volver del navegador/layout para ir a menu-juegos
+		const handlePopState = (event: PopStateEvent) => {
+			event.preventDefault();
+			goto('/menu-juegos');
+		};
+		
+		window.addEventListener('popstate', handlePopState);
+		
 		return () => {
 			document.body.style.overflow = '';
+			window.removeEventListener('popstate', handlePopState);
 		};
 	});
 
@@ -130,24 +140,24 @@
 >
 
 <div class="seleccionar-historias-contenedor" bind:this={contenedorSeleccionarHistoriaRef} aria-label="Contenedor para seleccionar la historia de preferencia" data-magnificable>
-	<h1>Elige tu aventura</h1>
+	<h1 data-magnificable data-readable>Elige tu aventura</h1>
 
 	{#if cargando}
 		<div class="estado-carga">
-			<p>Cargando historias...</p>
+			<p data-magnificable data-readable>Cargando historias...</p>
 		</div>
 	{:else if error}
 		<div class="estado-error">
-			<p>Error: {error}</p>
+			<p data-magnificable data-readable>Error: {error}</p>
 		</div>
 	{:else if historias.length === 0}
 		<div class="estado-vacio">
-			<p>No hay historias disponibles.</p>
+			<p data-magnificable data-readable>No hay historias disponibles.</p>
 		</div>
 	{:else}
 		<!-- Indicador de historia actual -->
 		<div class="indicador-historia">
-			<p>Historia {indiceActual + 1} de {historias.length}</p>
+			<p data-magnificable data-readable>Historia {indiceActual + 1} de {historias.length}</p>
 		</div>
 
 		<!-- Carrusel de historias -->
@@ -184,8 +194,8 @@
 						<img src={historiaActual!.imagen} alt={`Historia ${historiaActual!.titulo}`} />
 						</div>
 					</div>
-					<h2 class="nombre-historia">{historiaActual.titulo}</h2>
-					<p class="progreso-historia">Progreso: {historiaActual.progreso}/{historiaActual.totalCapitulos}</p>
+					<h2 class="nombre-historia" data-magnificable data-readable>{historiaActual.titulo}</h2>
+					<p class="progreso-historia" data-magnificable data-readable>Progreso: {historiaActual.progreso}/{historiaActual.totalCapitulos}</p>
 				</button>
 			</article>
 			{/if}

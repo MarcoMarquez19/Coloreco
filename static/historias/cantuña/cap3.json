@@ -1,0 +1,31 @@
+{
+  "capituloId": "cantuna-cap3",
+  "historiaId": "cantuña",
+  "titulo": "Cantuña y el Diablo - Capítulo 3",
+  "imagenPrincipal": "/historias/cantu�a/cantuna-cap3.jpg",
+  "texto": "Antes del amanecer, Cantuña escondió una piedra. Cuando cantó el gallo y salió el sol, el diablo vino a reclamar su alma. Pero entonces se dio cuenta de que faltaba una piedra. El pacto estipulaba que la obra debía estar completa, y no lo estaba.",
+  "pregunta": {
+    "texto": "¿Qué pasó cuando el diablo descubrió que faltaba una piedra?",
+    "opciones": [
+      {
+        "id": "opcion1",
+        "texto": "Se fue furioso sin llevarse el alma",
+        "esCorrecta": true,
+        "feedback": "¡Sí! El pacto se rompió y Cantuña se salvó."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Colocó rápidamente la piedra",
+        "esCorrecta": false,
+        "feedback": "Ya era de día, su tiempo había acabado."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Se llevó el alma de todas formas",
+        "esCorrecta": false,
+        "feedback": "No, el pacto era muy específico."
+      }
+    ]
+  },
+  "personajes": []
+}

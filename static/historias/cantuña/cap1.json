@@ -1,0 +1,31 @@
+{
+  "capituloId": "cantuna-cap1",
+  "historiaId": "cantuña",
+  "titulo": "Cantuña y el Diablo - Capítulo 1",
+  "imagenPrincipal": "/historias/cantu�a/cantuna-cap1.jpg",
+  "texto": "Cantuña era un indígena muy inteligente encargado de construir el atrio de la Iglesia de San Francisco en Quito. Le dieron solo seis meses para terminar la obra, pero era una tarea imposible. Si no lo lograba, perdería su vida. Desesperado, una noche oscura hizo algo impensable.",
+  "pregunta": {
+    "texto": "¿Qué crees que hizo Cantuña en su desesperación?",
+    "opciones": [
+      {
+        "id": "opcion1",
+        "texto": "Hizo un pacto con el diablo",
+        "esCorrecta": true,
+        "feedback": "¡Correcto! Vendió su alma a cambio de terminar la obra."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Contrató a más trabajadores",
+        "esCorrecta": false,
+        "feedback": "No tenía recursos para eso."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Abandonó el proyecto",
+        "esCorrecta": false,
+        "feedback": "No, él era más valiente que eso."
+      }
+    ]
+  },
+  "personajes": []
+}

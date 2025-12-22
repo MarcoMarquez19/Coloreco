@@ -1,0 +1,31 @@
+{
+  "capituloId": "cantuna-cap4",
+  "historiaId": "cantuña",
+  "titulo": "Cantuña y el Diablo - Capítulo 4",
+  "imagenPrincipal": "/historias/cantu�a/cantuna-cap4.jpg",
+  "texto": "El diablo, engañado por la astucia de Cantuña, tuvo que marcharse sin su alma. Cantuña había salvado su vida y su alma con inteligencia. La obra estaba prácticamente terminada y todos en Quito se maravillaron del trabajo realizado en una sola noche.",
+  "pregunta": {
+    "texto": "¿Qué demostró Cantuña con su plan?",
+    "opciones": [
+      {
+        "id": "opcion1",
+        "texto": "Que la inteligencia vence al mal",
+        "esCorrecta": true,
+        "feedback": "¡Correcto! La astucia puede salvarte del peligro."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Que se puede engañar sin consecuencias",
+        "esCorrecta": false,
+        "feedback": "No, usó su ingenio para el bien."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Que el diablo no es inteligente",
+        "esCorrecta": false,
+        "feedback": "La lección es más profunda."
+      }
+    ]
+  },
+  "personajes": []
+}

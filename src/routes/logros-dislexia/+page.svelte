@@ -329,8 +329,8 @@
 
     .tarjeta-logro {
         background: var(--bg, white);
-        border: var(--borde-botones, 4px solid #333);
-        border-radius: var(--border-radius, 16px);
+        border: 2px solid var(--icono-color-borde, #000000);
+        border-radius: 8px;
         padding: calc(var(--spacing-base, 1rem) * 1.5);
         display: flex;
         flex-direction: column;
