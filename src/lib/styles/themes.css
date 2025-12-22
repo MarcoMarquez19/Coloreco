@@ -217,7 +217,7 @@ body {
 }
 
 /* No aplicar a botones con clase específica (botones de control que ya tienen iconos) */
-[data-pictogram="true"] button:not(.boton-volver):not(.boton-configuracion):not(.control-button):not(.switch-toggle):not(:has(svg))::before {
+[data-pictogram="true"] button:not(.boton-volver):not(.boton-configuracion):not(.control-button):not(.switch-toggle):not(.capitulo-imagen):not(.boton-juego):not(.boton-estudio):not(.boton-nuevo):not(.boton-logro):not(.elemento-interactivo):not(:has(svg))::before {
 	content: "▶️ ";
 	margin-right: 0.5rem;
 	font-size: 1.2em;

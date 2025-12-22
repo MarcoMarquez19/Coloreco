@@ -78,6 +78,18 @@
 	}
 
 	function manejarTeclaPresionada(event: KeyboardEvent) {
+		// Solo manejar Enter/Espacio si hay un elemento enfocado (botón)
+		if (event.key === 'Enter' || event.key === ' ') {
+			const elementoActivo = document.activeElement;
+			// Si hay un botón enfocado, permitir que el navegador maneje el evento
+			if (elementoActivo && elementoActivo.tagName === 'BUTTON') {
+				return;
+			}
+			// Si no hay botón enfocado, prevenir la acción por defecto
+			event.preventDefault();
+			return;
+		}
+
 		if (event.key === 'ArrowLeft') {
 			// Navegar al capítulo anterior desbloqueado
 			let nuevoIndex = capituloSeleccionadoIndex - 1;
@@ -95,12 +107,6 @@
 			}
 			if (nuevoIndex < capitulos.length) {
 				capituloSeleccionadoIndex = nuevoIndex;
-			}
-		} else if (event.key === 'Enter' || event.key === ' ') {
-			event.preventDefault();
-			const capituloActual = capitulos[capituloSeleccionadoIndex];
-			if (capituloActual) {
-				seleccionarCapitulo(capituloActual);
 			}
 		}
 	}
@@ -167,7 +173,7 @@
 
 						<div class="capitulo-wrapper">
 							<button
-								class="capitulo-boton"
+							class="capitulo-boton capitulo-imagen"
 								class:desbloqueado={capitulo.desbloqueado}
 								class:bloqueado={!capitulo.desbloqueado}
 								class:seleccionado={index === capituloSeleccionadoIndex}

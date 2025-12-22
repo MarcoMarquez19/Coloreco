@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { configuraciones } from '$lib/stores/settings';
 
 	interface Opcion {
 		id: string;
@@ -115,20 +116,29 @@
 	function manejarTeclaPresionada(event: KeyboardEvent) {
 		if (!capitulo) return;
 
+		// Solo permitir Enter/Espacio cuando se envía respuesta para continuar
 		if (respuestaEnviada) {
+			// Verificar si hay un botón enfocado
+			const elementoActivo = document.activeElement;
+			if (elementoActivo && elementoActivo.tagName === 'BUTTON') {
+				// Permitir que el navegador maneje el evento normalmente
+				return;
+			}
+			// Si no hay botón enfocado, prevenir la acción
 			if (event.key === 'Enter' || event.key === ' ') {
 				event.preventDefault();
-				continuar();
 			}
 			return;
 		}
 
-		if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+		// Prevenir Enter/Espacio cuando no hay respuesta enviada
+		if (event.key === 'Enter' || event.key === ' ') {
+			const elementoActivo = document.activeElement;
+			// Solo permitir si hay un botón enfocado
+			if (elementoActivo && elementoActivo.tagName === 'BUTTON') {
+				return;
+			}
 			event.preventDefault();
-			opcionSeleccionadaIndex = Math.max(0, opcionSeleccionadaIndex - 1);
-		} else if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
-			event.preventDefault();
-			opcionSeleccionadaIndex = Math.min(capitulo.pregunta.opciones.length - 1, opcionSeleccionadaIndex + 1);
 		}
 	}
 
@@ -175,16 +185,16 @@
 					<h1 data-magnificable data-readable>{capitulo.titulo}</h1>
 					
 					<div class="contenido-historia">
-						<div class="imagen-principal-contenedor" data-magnificable>
+						<div class="imagen-principal-contenedor" data-magnificable tabindex="0" role="img" aria-label={`Imagen de ${capitulo.titulo}`}>
 							<img src={capitulo.imagenPrincipal} alt={capitulo.titulo} class="imagen-principal" />
 						</div>
 
-						<div class="texto-historia">
+						<div class="texto-historia" tabindex="0">
 							<p data-magnificable data-readable>{capitulo.texto}</p>
 						</div>
 					</div>
 
-					{#if capitulo.personajes.length > 0}
+					{#if $configuraciones.pictogramMode && capitulo.personajes.length > 0}
 						<div class="personajes-contenedor">
 							{#each capitulo.personajes as personaje}
 								<div class="personaje-item" data-magnificable>
@@ -200,7 +210,7 @@
 			<!-- Panel derecho: Pregunta y opciones -->
 			<div class="panel-pregunta">
 				<div class="cuadro-pregunta">
-					<h2 class="pregunta-titulo" data-magnificable data-readable>{capitulo.pregunta.texto}</h2>
+					<h2 class="pregunta-titulo" data-magnificable data-readable tabindex="0">{capitulo.pregunta.texto}</h2>
 					
 					<p class="etiqueta-opciones">Opciones</p>
 

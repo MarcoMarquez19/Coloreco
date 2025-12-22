@@ -93,9 +93,6 @@
 			navegarAnterior();
 		} else if (event.key === 'ArrowRight') {
 			navegarSiguiente();
-		} else if (event.key === 'Enter' || event.key === ' ') {
-			event.preventDefault();
-			verHistoria();
 		}
 	}
 
@@ -184,18 +181,24 @@
 
 			<!-- Historia actual -->
 			{#if historiaActual}
-			<article class={"tarjeta-historia-carrusel " + animClass}>
-				<button
-					class="contenedor-historia-carrusel"
-					aria-label={`Seleccionar historia ${historiaActual!.titulo}`}
-				>
-					<div class="preview">
-						<div class="placeholder-preview">
-						<img src={historiaActual!.imagen} alt={`Historia ${historiaActual!.titulo}`} />
-						</div>
+		<article class={"tarjeta-historia-carrusel " + animClass} aria-label={`Historia ${historiaActual.titulo}, Progreso ${historiaActual.progreso} de ${historiaActual.totalCapitulos} capítulos`}>
+			<div class="contenedor-historia-carrusel" role="group" aria-labelledby="titulo-historia-{indiceActual}" aria-describedby="progreso-historia-{indiceActual}">
+				<div class="preview" data-magnificable>
+					<div class="placeholder-preview">
+					<img src={historiaActual!.imagen} alt={`Imagen de la historia ${historiaActual!.titulo}`} />
 					</div>
-					<h2 class="nombre-historia" data-magnificable data-readable>{historiaActual.titulo}</h2>
-					<p class="progreso-historia" data-magnificable data-readable>Progreso: {historiaActual.progreso}/{historiaActual.totalCapitulos}</p>
+				</div>
+				<h2 id="titulo-historia-{indiceActual}" class="nombre-historia" data-magnificable data-readable>{historiaActual.titulo}</h2>
+				<p id="progreso-historia-{indiceActual}" class="progreso-historia" data-magnificable data-readable>Progreso: {historiaActual.progreso}/{historiaActual.totalCapitulos}</p>
+				
+				<button class="boton-selección"
+					aria-label={`Jugar la historia ${historiaActual.titulo}`}
+					title="Jugar la historia seleccionada"
+					onclick={verHistoria}
+					data-magnificable
+					data-readable
+				>
+					Jugar
 				</button>
 			</article>
 			{/if}
@@ -221,14 +224,6 @@
 			</button>
 		</div>
 	{/if}
-
-	<button class="boton-selección"
-		aria-label="Selecciona la historia para jugar" 
-		title="Jugar la historia seleccionada"
-		onclick={verHistoria}
-	>
-		Jugar
-	</button>
 </div>
 
 <style>
@@ -351,7 +346,7 @@
 		border: none;
 		background: transparent;
 		cursor: pointer;
-		padding: 0;
+		padding: 0 0 2rem 0;
 		text-align: center;
 	}
 
@@ -380,32 +375,35 @@
 	}
 
 	.nombre-historia {
-		padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+		padding: 1.5rem 2rem 0.5rem 2rem;
 		font-size: calc(var(--font-size-base,1rem)*1.5);
 		font-weight: 600;
 		color: var(--color-texto, #333);
 		margin: 0;
 		letter-spacing: 0.05em;
+		line-height: 1.4;
 	}
 
 	.progreso-historia {
-		padding: 0 1.5rem 1.5rem 1.5rem;
+		padding: 0 2rem 1.5rem 2rem;
 		font-size: calc(var(--font-size-base,1rem)*1.2);
 		font-weight: 500;
 		color: var(--color-texto, #666);
 		margin: 0;
 		letter-spacing: 0.03em;
+		line-height: 1.5;
 	}
 
 	.boton-selección {      
-		padding: calc(var(--spacing-base,2rem) * 1.5) 1rem;
-		margin-top: 2rem;
+		padding: calc(var(--spacing-base,1rem) * 1.2) calc(var(--spacing-base,1rem) * 2.5);
+		margin: 1.5rem 2rem 2rem 2rem;
 		background: var(--fondo-botones, #ffca00);
 		color: var(--icono-color-relleno, black);
 		border: none;
 		font-size: calc(var(--font-size-base, 1rem) * 1.8);
 		font-weight: 600;
-		width: 50%;
+		width: calc(100% - 4rem);
+		max-width: 300px;
 		letter-spacing: 0.05em;
 		border-radius: var(--border-radius, 8px);
 		cursor: pointer;

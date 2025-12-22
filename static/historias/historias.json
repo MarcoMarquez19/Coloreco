@@ -62,9 +62,9 @@
 		]
 	},
 	{
-		"historiaId": "cantuña",
+		"historiaId": "cantuna",
 		"titulo": "Cantuña y el Diablo",
-		"imagen": "/historias/cantuña/cantuna.jpg",
+		"imagen": "/historias/cantuna/cantuna.jpg",
 		"progreso": 2,
 		"totalCapitulos": 5,
 		"version": 1,
@@ -72,31 +72,31 @@
 			{
 				"id": 1,
 				"nombre": "Capítulo 1",
-				"imagen": "/historias/cantuña/cantuna-cap1.jpg",
+				"imagen": "/historias/cantuna/cantuna-cap1.jpg",
 				"desbloqueado": true
 			},
 			{
 				"id": 2,
 				"nombre": "Capítulo 2",
-				"imagen": "/historias/cantuña/cantuna-cap2.jpg",
+				"imagen": "/historias/cantuna/cantuna-cap2.jpg",
 				"desbloqueado": true
 			},
 			{
 				"id": 3,
 				"nombre": "Capítulo 3",
-				"imagen": "/historias/cantuña/cantuna-cap3.jpg",
+				"imagen": "/historias/cantuna/cantuna-cap3.jpg",
 				"desbloqueado": false
 			},
 			{
 				"id": 4,
 				"nombre": "Capítulo 4",
-				"imagen": "/historias/cantuña/cantuna-cap4.jpg",
+				"imagen": "/historias/cantuna/cantuna-cap4.jpg",
 				"desbloqueado": false
 			},
 			{
 				"id": 5,
 				"nombre": "Capítulo 5",
-				"imagen": "/historias/cantuña/cantuna-cap5.jpg",
+				"imagen": "/historias/cantuna/cantuna-cap5.jpg",
 				"desbloqueado": false
 			}
 		]
