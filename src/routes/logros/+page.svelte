@@ -5,10 +5,17 @@
     import { goto } from '$app/navigation';
     import Trofeo from '$lib/components/iconos/Trofeo.svelte';
     import { onMount } from 'svelte';
+    import { configuraciones } from '$lib/stores/settings';
 
     // Props para controlar el trofeo dinámicamente
     let rangoTrofeo = $state<'oro' | 'plata' | 'bronce'>('oro');
     let textoRango = $state('Oro');
+
+    // Detectar si hay filtros de fuente o espaciado activos
+    let hayFiltrosActivos = $derived(
+        $configuraciones.multiplicadorTamanioFuente !== 1 || 
+        $configuraciones.multiplicadorEspaciado !== 1
+    );
 
     function irALogrosTaller() {
         //TODO: PONER LA PAGINA DE LOGROS TALLER
@@ -100,7 +107,7 @@
         </div>
     </div>
 
-    <div class="botones-contenedor">
+    <div class="botones-contenedor" style="gap: {hayFiltrosActivos ? '0' : 'calc(var(--spacing-base, 1rem) * 4)'}">
         <button class="boton-logro"
             aria-label="Ver logros del taller de escenas creativas" 
             title="Logros Taller"   
@@ -130,7 +137,7 @@
 
 <style>
     .seleccionar-logros-contenedor {
-        margin: 8vh auto;
+        margin: 2vh auto;
         background: transparent;
         z-index: 1;
         max-width: 1080px;
@@ -144,21 +151,21 @@
 
     h1 {
         font-size: calc(var(--font-size-base, 1rem) * 2.5);
-        margin-bottom: calc(var(--spacing-base, 1rem) * 0.5);
         margin: 0;
-        margin-top: calc(var(--spacing-base,1rem) * 1.5);
+        margin-top: calc(var(--spacing-base, 1rem) * 0.5);
+        margin-bottom: calc(var(--spacing-base, 1rem) * 0.5);
         padding: 0;
         font-weight: 600;
-        letter-spacing: 0.1em;
-        word-spacing: 0.2em;
+        letter-spacing: calc(var(--spacing-base, 1rem) * 0.1);
+        word-spacing: calc(var(--spacing-base, 1rem) * 0.2);
     }
 
     .trofeo-contenedor {
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-top: clamp(0.5rem, 1vh, 1rem);
-        margin-bottom: clamp(0.5rem, 1vh, 1.5rem);
+        margin-top: calc(var(--spacing-base, 1rem) * 0.5);
+        margin-bottom: calc(var(--spacing-base, 1rem) * 0.5);
         width: 100%;
     }
 
@@ -166,12 +173,12 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: clamp(0.25rem, 1vh, 0.5rem);
+        gap: calc(var(--spacing-base, 1rem) * 0.5);
     }
 
     .trofeo-wrapper {
-        width: clamp(4rem, 15vw, 8rem);
-        height: clamp(4rem, 15vw, 8rem);
+        width: calc(var(--font-size-base, 1rem) * 10);
+        height: calc(var(--font-size-base, 1rem) * 10);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -185,10 +192,10 @@
 
     .texto-trofeo {
         margin: 0;
-        font-size: clamp(1.2rem, 4vw, 2rem);
+        font-size: calc(var(--font-size-base, 1rem) * 2);
         font-weight: 600;
         color: var(--trofeo-texto-color, #FFD700);
-        letter-spacing: 0.05em;
+        letter-spacing: calc(var(--spacing-base, 1rem) * 0.05);
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
@@ -196,22 +203,22 @@
         width: 100%;
         display: flex;
         flex-direction: column;
-        gap: clamp(0.75rem, 2vh, 1.5rem);
-        margin-top: clamp(0.5rem, 1vh, 1rem);
-        flex: 1;
+        gap: 0;
+        margin-top: calc(var(--spacing-base, 1rem) * 1);
+        margin-bottom: calc(var(--spacing-base, 1rem) * 2);
         justify-content: flex-start;
     }
 
     .boton-logro {      
-        padding: calc(var(--spacing-base,2rem) * 1.5) 1rem;
-        margin-top: 4rem;
+        padding: calc(var(--spacing-base, 1rem) * 1.2) calc(var(--spacing-base, 1rem) * 1);
+        margin-top: 0;
 		background: var(--fondo-botones, #ffca00);
 		color: var(--icono-color-relleno, black);
 		border: none;
 		font-size: calc(var(--font-size-base, 1rem) * 1.8);
 		font-weight: 600;
         width: 100%;
-		letter-spacing: 0.05em;
+		letter-spacing: calc(var(--spacing-base, 1rem) * 0.05);
 		border-radius: var(--border-radius, 8px);
 		cursor: pointer;
 		box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
@@ -241,27 +248,5 @@
         outline: var(--borde-botones, 4px solid #000000);
         background: var(--fondo-botones-hover, #d1a700);
         outline-offset: 7px;
-    }
-
-    /* Media queries para pantallas pequeñas */
-    @media (max-height: 700px) {
-        .seleccionar-logros-contenedor {
-            margin: 1vh auto;
-        }
-
-        h1 {
-            margin-top: 1rem;
-        }
-
-        .trofeo-contenedor {
-            margin-top: 1rem;
-            margin-bottom: 0rem;
-        }
-
-        .botones-contenedor {
-            gap: 0rem;
-        }
-
-
     }
 </style>

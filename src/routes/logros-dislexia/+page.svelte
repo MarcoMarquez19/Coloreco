@@ -63,8 +63,9 @@
     /** Calcula y aplica la escala según la altura de la ventana (máx 1080px) */
     function actualizarEscala(): void {
         if (!contenedorLogrosRef) return;
-        const maxHeight = 1080;
+        const maxHeight = 1080; // referencia 1080p
         const rawScale = window.innerHeight / maxHeight;
+        // limitar entre 0.6 y 1 para evitar escalados excesivos
         const scale = Math.max(0.6, Math.min(1, rawScale));
         contenedorLogrosRef.style.transform = `scale(${scale})`;
         contenedorLogrosRef.style.transformOrigin = 'top center';
@@ -134,7 +135,7 @@
 >
 
 <div class="seleccionar-logros-contenedor" bind:this={contenedorLogrosRef} aria-label="Contenedor de logros de historias" data-magnificable>
-    <h1>Rango general</h1>
+    <h1>Rango General</h1>
     
     <div class="trofeo-contenedor">
         <div class="trofeo-con-texto">
@@ -190,37 +191,37 @@
     }
 
     .seleccionar-logros-contenedor {
-        margin: 4vh auto;
+        margin: 2vh auto;
         background: transparent;
         z-index: 1;
         max-width: 1080px;
         width: 100%;
-        padding: 0 2rem;
         text-align: center;
         align-items: center;
         justify-content: flex-start;
         display: flex;
         flex-direction: column;
+        padding: 0 calc(var(--spacing-base, 1rem) * 1);
         box-sizing: border-box;
     }
 
     h1 {
-        font-size: clamp(2rem, 5vw, 3rem);
+        font-size: calc(var(--font-size-base, 1rem) * 2.5);
         margin: 0;
-        margin-top: clamp(1rem, 3vh, 2rem);
-        margin-bottom: clamp(0.5rem, 2vh, 1rem);
+        margin-top: calc(var(--spacing-base, 1rem) * 0.5);
+        margin-bottom: calc(var(--spacing-base, 1rem) * 0.5);
         padding: 0;
         font-weight: 600;
-        letter-spacing: 0.1em;
-        word-spacing: 0.2em;
+        letter-spacing: calc(var(--spacing-base, 1rem) * 0.1);
+        word-spacing: calc(var(--spacing-base, 1rem) * 0.2);
     }
 
     .trofeo-contenedor {
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-top: clamp(1rem, 2vh, 2rem);
-        margin-bottom: clamp(1rem, 2vh, 2rem);
+        margin-top: calc(var(--spacing-base, 1rem) * 0.5);
+        margin-bottom: calc(var(--spacing-base, 1rem) * 0.5);
         width: 100%;
     }
 
@@ -228,12 +229,12 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: clamp(0.5rem, 1vh, 1rem);
+        gap: calc(var(--spacing-base, 1rem) * 0.5);
     }
 
     .trofeo-wrapper {
-        width: clamp(6rem, 18vw, 10rem);
-        height: clamp(6rem, 18vw, 10rem);
+        width: calc(var(--font-size-base, 1rem) * 10);
+        height: calc(var(--font-size-base, 1rem) * 10);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -247,36 +248,37 @@
 
     .texto-trofeo {
         margin: 0;
-        font-size: clamp(1.5rem, 4vw, 2.5rem);
+        font-size: calc(var(--font-size-base, 1rem) * 2);
         font-weight: 600;
         color: var(--trofeo-texto-color, #FFD700);
-        letter-spacing: 0.05em;
+        letter-spacing: calc(var(--spacing-base, 1rem) * 0.05);
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     .titulo-logro {
-        font-size: clamp(1.5rem, 4vw, 2.5rem);
+        font-size: calc(var(--font-size-base, 1rem) * 2);
         font-weight: 600;
-        margin: clamp(2rem, 4vh, 3rem) 0 clamp(1.5rem, 3vh, 2.5rem) 0;
-        letter-spacing: 0.05em;
+        margin: calc(var(--spacing-base, 1rem) * 1) 0 calc(var(--spacing-base, 1rem) * 0.5) 0;
+        letter-spacing: calc(var(--spacing-base, 1rem) * 0.05);
     }
 
     .navegacion-logros {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: clamp(2rem, 5vw, 5rem);
+        gap: calc(var(--spacing-base, 1rem) * 1.5);
         width: 100%;
         max-width: 1000px;
-        margin-top: clamp(1rem, 2vh, 2rem);
+        margin-top: calc(var(--spacing-base, 1rem) * 0.5);
+        margin-bottom: calc(var(--spacing-base, 1rem) * 2);
     }
 
     .flecha-navegacion {
         background: var(--fondo-botones, #ffca00);
         border: none;
         border-radius: 50%;
-        width: clamp(3.5rem, 8vw, 5rem);
-        height: clamp(3.5rem, 8vw, 5rem);
+        width: calc(var(--font-size-base, 1rem) * 5);
+        height: calc(var(--font-size-base, 1rem) * 5);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -307,81 +309,39 @@
     }
 
     .tarjeta-logro {
-        background: white;
-        border: 4px solid #333;
+        background: var(--bg, white);
+        border: var(--borde-botones, 4px solid #333);
         border-radius: var(--border-radius, 16px);
-        padding: clamp(2rem, 4vw, 3rem);
+        padding: calc(var(--spacing-base, 1rem) * 1.5);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: clamp(0.75rem, 1.5vh, 1.25rem);
+        gap: calc(var(--spacing-base, 1rem) * 0.75);
         box-shadow: var(--sombra-botones, 0 8px 24px rgba(0, 0, 0, 0.2));
-        min-width: clamp(250px, 40vw, 400px);
-        min-height: clamp(250px, 30vh, 350px);
+        min-width: calc(var(--font-size-base, 1rem) * 12.5);
+        min-height: calc(var(--font-size-base, 1rem) * 12.5);
     }
 
     .icono-logro {
-        font-size: clamp(4rem, 10vw, 6rem);
+        font-size: calc(var(--font-size-base, 1rem) * 6);
         line-height: 1;
         filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
     }
 
     .titulo-logro-individual {
         margin: 0;
-        font-size: clamp(1.3rem, 3.5vw, 2.2rem);
+        font-size: calc(var(--font-size-base, 1rem) * 2.2);
         font-weight: 700;
-        color: #222;
-        letter-spacing: 0.03em;
+        color: var(--icono-color-relleno, #222);
+        letter-spacing: calc(var(--spacing-base, 1rem) * 0.03);
     }
 
     .descripcion-logro {
         margin: 0;
-        font-size: clamp(1rem, 2.5vw, 1.5rem);
+        font-size: calc(var(--font-size-base, 1rem) * 1.5);
         font-weight: 500;
-        color: #555;
-        letter-spacing: 0.02em;
-    }
-
-    /* Media queries para pantallas pequeñas */
-    @media (max-height: 700px) {
-        .seleccionar-logros-contenedor {
-            margin: 2vh auto;
-            padding: 0 1rem;
-        }
-
-        h1 {
-            margin-top: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .trofeo-contenedor {
-            margin-top: 0.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .titulo-logro {
-            margin: 1rem 0 1rem 0;
-        }
-
-        .navegacion-logros {
-            margin-top: 0.5rem;
-            gap: 1.5rem;
-        }
-
-        .tarjeta-logro {
-            padding: 1.5rem;
-            min-height: 200px;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .navegacion-logros {
-            gap: 1rem;
-        }
-
-        .tarjeta-logro {
-            min-width: 200px;
-        }
+        color: var(--icono-color-relleno, #555);
+        letter-spacing: calc(var(--spacing-base, 1rem) * 0.02);
     }
 </style>
