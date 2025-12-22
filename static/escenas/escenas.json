@@ -1,39 +1,43 @@
 [
 	{
 		"modo": "dibujo",
-		"escenaId": "bosque-magico",
-		"nombre": "Bosque Mágico",
-		"ruta": "/escenas/bosque-magico.svg",
-		"version": 1
-	},
-	{
-		"modo": "dibujo",
-		"escenaId": "ciudad-futurista",
-		"nombre": "Ciudad Futurista",
-		"ruta": "/escenas/ciudad-futurista.svg",
-		"version": 1
-	},
-	{
-		"modo": "dibujo",
-		"escenaId": "fondo-marino",
-		"nombre": "Fondo Marino",
-		"ruta": "/escenas/fondo-marino.svg",
+		"escenaId": "cabaña-bosque",
+		"nombre": "Cabaña en el bosque",
+		"ruta": "/escenas/cabaña-bosque.svg",
 		"version": 1,
-		"descripcion": "Un fondo marino lleno de vida y color, en el puedes explorar la diversidad de la vida acuática ....."
+		"descripcion": "Una acogedora cabaña rodeada de árboles y naturaleza, perfecta para una escapada tranquila. Alrededor hay muchos árboles altos cubiertos de nieve blanca. De la chimenea sale humito, lo que significa que adentro está calientito."
 	},
 	{
 		"modo": "dibujo",
-		"escenaId": "espacio-estelar",
-		"nombre": "Espacio Estelar",
-		"ruta": "/escenas/espacio-estelar.svg",
-		"version": 1
+		"escenaId": "parque-sendero",
+		"nombre": "Sendero del parque",
+		"ruta": "/escenas/parque-sendero.svg",
+		"version": 1,
+		"descripcion":"Una tranquila banca en un sendero de un parque, rodeada de árboles y naturaleza, con faroles que iluminan el camino como si cuidaran el lugar. Es un espacio calmado donde se puede descansar."
 	},
 	{
 		"modo": "dibujo",
-		"escenaId": "jardin-flores",
-		"nombre": "Jardín de Flores",
-		"ruta": "/escenas/jardin-flores.svg",
-		"version": 1
+		"escenaId": "parque-ciudad",
+		"nombre": "Parque en la ciudad",
+		"ruta": "/escenas/parque-ciudad.svg",
+		"version": 1,
+		"descripcion": "Un alegre parque para niños, los columpios suben tan alto que casi tocan las nubes, en la caja de arena cualquiera se divierte y la resbaladera es para los más valientes."
+	},
+	{
+		"modo": "dibujo",
+		"escenaId": "estanque-patos",
+		"nombre": "Estanque con patos",
+		"ruta": "/escenas/estanque-patos.svg",
+		"version": 1,
+		"descripcion":"Un tranquilo estanque lleno de agua brillante donde una familia de patos nada muy feliz. Aunque solo se ven ellos, se siente que hay muchos animalitos más viviendo allí, ocultos bajo el agua y entre las plantas."
+	},
+	{
+		"modo": "dibujo",
+		"escenaId": "arcoiris-cielo",
+		"nombre": "Cielo con arcoíris",
+		"ruta": "/escenas/arcoiris-cielo.svg",
+		"version": 1,
+		"descripcion":"Un cielo amplio y brillante donde el sol ilumina todo con calidez. Algunas nubes suaves flotan tranquilas y, de repente, aparece un hermoso arcoíris lleno de colores que parece sonreírle al mundo."
 	},
 	{
 		"modo": "cuerpoHumano",

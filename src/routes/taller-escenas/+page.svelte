@@ -321,7 +321,6 @@
 
 	.preview {
 		width: 100%;
-		aspect-ratio: 4 / 3;
 		background: var(--color-fondo-preview, #e0e0e0);
 		display: flex;
 		align-items: center;
@@ -330,12 +329,17 @@
 
 	.placeholder-preview {
 		font-size: 6rem;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	.placeholder-preview img {
-		max-width: 100%;
-		max-height: 100%;
-		object-fit: contain;
+		width: 100%;
+		height: 100%;
+		object-fit:cover;
 	}
 
 	.nombre-escena {
