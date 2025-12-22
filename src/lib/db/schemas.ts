@@ -144,8 +144,12 @@ export interface LogroDefinicion {
 	puntos: number;
 	/** Modo específico del logro (opcional, si aplica a un modo) */
 	modo?: Modo;
+	/** ID de la escena específica (opcional, si el logro está asociado a una escena) */
+	escenaId?: string;
 	/** Criterio de desbloqueo en formato JSON o texto */
 	criterio: string;
+	/** Icono o emoji del logro (opcional) */
+	icono?: string;
 }
 
 /**
