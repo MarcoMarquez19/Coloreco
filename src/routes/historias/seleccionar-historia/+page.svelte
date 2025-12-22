@@ -1,0 +1,521 @@
+<script lang="ts">
+	import LibroHistorias from '$lib/components/iconos/LibroAbierto.png';
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+
+	// Sistema de historias
+	interface Historia {
+		historiaId: string;
+		titulo: string;
+		imagen: string;
+		progreso: number;
+		totalCapitulos: number;
+		version: number;
+	}
+
+	let historias = $state<Historia[]>([]);
+	let cargando = $state<boolean>(true);
+	let error = $state<string | null>(null);
+	let indiceActual = $state<number>(0);
+
+	onMount(async () => {
+		// Cargar historias desde JSON estático
+		try {
+			const response = await fetch('/historias/historias.json');
+			if (!response.ok) {
+				throw new Error('Error al cargar las historias');
+			}
+			historias = await response.json();
+			cargando = false;
+		} catch (err) {
+			console.error('Error al cargar historias:', err);
+			error = err instanceof Error ? err.message : 'Error desconocido';
+			cargando = false;
+		}
+	});
+
+	onMount(() => {
+		document.body.style.overflow = 'hidden';
+		return () => {
+			document.body.style.overflow = '';
+		};
+	});
+
+	let historiaActual = $state<Historia | null>(null);
+
+	// Animación de carrusel: clase temporal y duración accesible
+	let animClass = $state<string>('');
+	const CAROUSEL_ANIM_DURATION = 700; // ms, velocidad moderada
+	let animTimer: ReturnType<typeof setTimeout> | null = null;
+
+	$effect(() => {
+		historiaActual = historias.length > 0 ? historias[indiceActual] : null;
+	});
+
+	function verHistoria() {
+		if (historias.length > 0) {
+			const historiaActual = historias[indiceActual];
+			// Navegar a la página de progreso de la historia seleccionada
+			goto(`/historias/${historiaActual.historiaId}/progreso`);
+		}
+	}
+
+	function navegarAnterior() {
+		if (historias.length === 0) return;
+		// aplicar clase de entrada desde la izquierda
+		animClass = 'slide-left';
+		if (animTimer) { clearTimeout(animTimer); animTimer = null; }
+		indiceActual = (indiceActual - 1 + historias.length) % historias.length;
+		animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
+	}
+
+	function navegarSiguiente() {
+		if (historias.length === 0) return;
+		// aplicar clase de entrada desde la derecha
+		animClass = 'slide-right';
+		if (animTimer) { clearTimeout(animTimer); animTimer = null; }
+		indiceActual = (indiceActual + 1) % historias.length;
+		animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
+	}
+
+	function manejarTeclaPresionada(event: KeyboardEvent) {
+		if (event.key === 'ArrowLeft') {
+			navegarAnterior();
+		} else if (event.key === 'ArrowRight') {
+			navegarSiguiente();
+		} else if (event.key === 'Enter' || event.key === ' ') {
+			event.preventDefault();
+			verHistoria();
+		}
+	}
+
+	let contenedorSeleccionarHistoriaRef: HTMLElement | null = null;
+
+	/** Calcula y aplica la escala según la altura de la ventana (máx 1080px) */
+	function actualizarEscala(): void {
+		if (!contenedorSeleccionarHistoriaRef) return;
+		const maxHeight = 1080;
+		const rawScale = window.innerHeight / maxHeight;
+		// limitar entre 0.6 y 1 para evitar escalados excesivos
+		const scale = Math.max(0.6, Math.min(1, rawScale));
+		contenedorSeleccionarHistoriaRef.style.transform = `scale(${scale})`;
+		contenedorSeleccionarHistoriaRef.style.transformOrigin = 'top center';
+	}
+
+	$effect(() => {
+		actualizarEscala();
+		window.addEventListener('resize', actualizarEscala);
+		window.addEventListener('keydown', manejarTeclaPresionada);
+		return () => {
+			window.removeEventListener('resize', actualizarEscala);
+			window.removeEventListener('keydown', manejarTeclaPresionada);
+			// restaurar transform si existe
+			if (contenedorSeleccionarHistoriaRef) {
+				contenedorSeleccionarHistoriaRef.style.transform = '';
+				contenedorSeleccionarHistoriaRef.style.transformOrigin = '';
+				contenedorSeleccionarHistoriaRef.style.margin = '';
+			}
+		};
+	})
+
+	// Tamaño de la imagen decorativa (ajustable)
+	let tamañoImagen = '20rem';
+</script>
+
+<img 
+	src={LibroHistorias} 
+	alt="Libro de historias"
+	class="imagen-decorativa"
+	style="width: {tamañoImagen};"
+>
+
+<div class="seleccionar-historias-contenedor" bind:this={contenedorSeleccionarHistoriaRef} aria-label="Contenedor para seleccionar la historia de preferencia" data-magnificable>
+	<h1>Elige tu aventura</h1>
+
+	{#if cargando}
+		<div class="estado-carga">
+			<p>Cargando historias...</p>
+		</div>
+	{:else if error}
+		<div class="estado-error">
+			<p>Error: {error}</p>
+		</div>
+	{:else if historias.length === 0}
+		<div class="estado-vacio">
+			<p>No hay historias disponibles.</p>
+		</div>
+	{:else}
+		<!-- Indicador de historia actual -->
+		<div class="indicador-historia">
+			<p>Historia {indiceActual + 1} de {historias.length}</p>
+		</div>
+
+		<!-- Carrusel de historias -->
+		<div class="carrusel-contenedor">
+			<!-- Botón flecha izquierda -->
+			<button 
+				class="boton-flecha boton-izquierda"
+				onclick={navegarAnterior}
+				aria-label="Historia anterior"
+				title="Navegar a la historia anterior (← tecla izquierda)"
+			>
+				<svg 
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 24 24"
+					fill="currentColor"
+					aria-hidden="true"
+					focusable="false"
+					width="62"
+					height="62"
+				>
+					<path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+				</svg>
+			</button>
+
+			<!-- Historia actual -->
+			{#if historiaActual}
+			<article class={"tarjeta-historia-carrusel " + animClass}>
+				<button
+					class="contenedor-historia-carrusel"
+					aria-label={`Seleccionar historia ${historiaActual!.titulo}`}
+				>
+					<div class="preview">
+						<div class="placeholder-preview">
+						<img src={historiaActual!.imagen} alt={`Historia ${historiaActual!.titulo}`} />
+						</div>
+					</div>
+					<h2 class="nombre-historia">{historiaActual.titulo}</h2>
+					<p class="progreso-historia">Progreso: {historiaActual.progreso}/{historiaActual.totalCapitulos}</p>
+				</button>
+			</article>
+			{/if}
+
+			<!-- Botón flecha derecha -->
+			<button 
+				class="boton-flecha boton-derecha"
+				onclick={navegarSiguiente}
+				aria-label="Historia siguiente"
+				title="Navegar a la historia siguiente (→ tecla derecha)"
+			>
+				<svg 
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 0 24 24"
+					fill="currentColor"
+					aria-hidden="true"
+					focusable="false"
+					width="62"
+					height="62"
+				>
+					<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+				</svg>
+			</button>
+		</div>
+	{/if}
+
+	<button class="boton-selección"
+		aria-label="Selecciona la historia para jugar" 
+		title="Jugar la historia seleccionada"
+		onclick={verHistoria}
+	>
+		Jugar
+	</button>
+</div>
+
+<style>
+	.imagen-decorativa {
+		position: fixed;
+		top: clamp(-6rem, -20vh, 2rem);
+		right: clamp(-6rem, -20vw, -5rem);
+		height: auto;
+		z-index: 10;
+		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+		pointer-events: none;
+	}
+
+	.seleccionar-historias-contenedor {
+		margin: 5vh auto;
+		background: transparent;
+		z-index: 1;
+		width: 100%;
+		max-width: 70vw;
+		text-align: center;
+		align-items: center;
+		justify-content: center;
+		display: flex;
+		flex-direction: column;
+		padding: 0 2rem;
+	}
+
+	h1 {
+		font-size: calc(var(--font-size-base, 1rem) * 2.5);
+		margin-bottom: calc(var(--spacing-base, 1rem) * 0.5);
+		margin: 0;
+		margin-top: calc(var(--spacing-base,1rem) * 1.5);
+		padding: 0;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		word-spacing: 0.2em;
+	}
+
+	/* Indicador de historia */
+	.indicador-historia {
+		margin: 2rem 0 1rem;
+		font-size: calc(var(--font-size-base, 1rem) * 1.5);
+		font-weight: 600;
+		color: var(--color-texto, #333);
+	}
+
+	.indicador-historia p {
+		margin: 0;
+		letter-spacing: 0.05em;
+	}
+
+	/* Contenedor del carrusel */
+	.carrusel-contenedor {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: calc(var(--font-size-base, 1rem) * 5.5);
+		width: 100%;
+		margin: 2rem 0;
+	}
+
+	/* Botones de flecha */
+	.boton-flecha {
+		background: var(--fondo-botones, #ffca00);
+		color: var(--icono-color-relleno, black);
+		border: none;
+		border-radius: var(--border-radius, 8px);
+		cursor: pointer;
+		box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
+		transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+		padding: 1.5rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 80px;
+		min-height: 80px;
+	}
+
+	.boton-flecha:hover {
+		background: var(--fondo-botones-hover, #d1a700);
+		transform: translateY(-2px);
+		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+	}
+
+	.boton-flecha:active {
+		transform: translateY(0);
+	}
+
+	.boton-flecha:focus {
+		outline: var(--borde-botones, 4px solid #000000);
+		background: var(--fondo-botones-hover, #d1a700);
+		outline-offset: 7px;
+	}
+
+	.boton-flecha svg {
+		width: calc(var(--font-size-base,1rem)*6);
+		height: calc(var(--font-size-base,1rem)*6);
+		pointer-events: none;
+	}
+
+	/* Tarjeta de historia en carrusel */
+	.tarjeta-historia-carrusel {
+		background: white;
+		border-radius: 12px;
+		overflow: hidden;
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+		transition: transform 0.3s, box-shadow 0.3s;
+		flex: 1;
+		min-width: 32vw;
+		max-width: 32vw;
+	}
+
+	.tarjeta-historia-carrusel:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+	}
+
+	.contenedor-historia-carrusel {
+		width: 100%;
+		border: none;
+		background: transparent;
+		cursor: pointer;
+		padding: 0;
+		text-align: center;
+	}
+
+	.preview {
+		width: 100%;
+		aspect-ratio: 4 / 3;
+		background: var(--color-fondo-preview, #e0e0e0);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.placeholder-preview {
+		font-size: 6rem;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.placeholder-preview img {
+		max-width: 100%;
+		max-height: 100%;
+		object-fit: contain;
+	}
+
+	.nombre-historia {
+		padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+		font-size: calc(var(--font-size-base,1rem)*1.5);
+		font-weight: 600;
+		color: var(--color-texto, #333);
+		margin: 0;
+		letter-spacing: 0.05em;
+	}
+
+	.progreso-historia {
+		padding: 0 1.5rem 1.5rem 1.5rem;
+		font-size: calc(var(--font-size-base,1rem)*1.2);
+		font-weight: 500;
+		color: var(--color-texto, #666);
+		margin: 0;
+		letter-spacing: 0.03em;
+	}
+
+	.boton-selección {      
+		padding: calc(var(--spacing-base,2rem) * 1.5) 1rem;
+		margin-top: 2rem;
+		background: var(--fondo-botones, #ffca00);
+		color: var(--icono-color-relleno, black);
+		border: none;
+		font-size: calc(var(--font-size-base, 1rem) * 1.8);
+		font-weight: 600;
+		width: 50%;
+		letter-spacing: 0.05em;
+		border-radius: var(--border-radius, 8px);
+		cursor: pointer;
+		box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
+		text-align: center;
+		transition: transform 120ms ease, box-shadow 120ms ease;
+	}
+
+	.boton-selección:hover {
+		background: var(--fondo-botones-hover, #d1a700);
+		transform: translateY(-2px);
+	}
+
+	.boton-selección:active {
+		transform: translateY(0);
+	}
+
+	.boton-selección:focus {
+		outline: var(--borde-botones, 4px solid #000000);
+		background: var(--fondo-botones-hover, #d1a700);
+		outline-offset: 7px;
+	}
+
+	.estado-carga,
+	.estado-error,
+	.estado-vacio {
+		text-align: center;
+		padding: 3rem;
+		font-size: 1.25rem;
+	}
+
+	.estado-error {
+		color: var(--color-error, #d32f2f);
+	}
+
+	@media (max-width: 768px) {
+		.seleccionar-historias-contenedor {
+			padding: 0 1rem;
+		}
+
+		h1 {
+			font-size: 1.75rem;
+		}
+
+		.carrusel-contenedor {
+			gap: 1rem;
+		}
+
+		.boton-flecha {
+			min-width: 60px;
+			min-height: 60px;
+			padding: 1rem;
+		}
+
+		.boton-flecha svg {
+			width: 32px;
+			height: 32px;
+		}
+
+		.tarjeta-historia-carrusel {
+			max-width: 400px;
+		}
+
+		.placeholder-preview {
+			font-size: 4rem;
+		}
+
+		.nombre-historia {
+			font-size: 1.25rem;
+			padding: 1rem;
+		}
+
+		.indicador-historia {
+			font-size: calc(var(--font-size-base, 1rem) * 1.2);
+		}
+	}
+
+	@media (max-width: 480px) {
+		.carrusel-contenedor {
+			gap: 0.5rem;
+		}
+
+		.boton-flecha {
+			min-width: 50px;
+			min-height: 50px;
+			padding: 0.75rem;
+		}
+
+		.boton-flecha svg {
+			width: 24px;
+			height: 24px;
+		}
+	}
+
+/* Animaciones de entrada para simular movimiento de carrusel */
+@keyframes slideInFromRight {
+	from { transform: translateX(30%); opacity: 0; }
+	to   { transform: translateX(0);   opacity: 1; }
+}
+
+@keyframes slideInFromLeft {
+	from { transform: translateX(-30%); opacity: 0; }
+	to   { transform: translateX(0);     opacity: 1; }
+}
+
+.slide-right {
+	animation: slideInFromRight 700ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.slide-left {
+	animation: slideInFromLeft 700ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* Respetar preferencias de reducción de movimiento */
+@media (prefers-reduced-motion: reduce) {
+	.slide-right,
+	.slide-left {
+		animation: none !important;
+		transition: none !important;
+	}
+}
+
+</style>

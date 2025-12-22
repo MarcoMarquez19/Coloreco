@@ -155,8 +155,16 @@
             aria-label="Logro anterior"
             title="Ver logro anterior (←)"
         >
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg 
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+                focusable="false"
+                width="62"
+                height="62"
+            >
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
             </svg>
         </button>
 
@@ -172,8 +180,16 @@
             aria-label="Logro siguiente"
             title="Ver siguiente logro (→)"
         >
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg 
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+                focusable="false"
+                width="62"
+                height="62"
+            >
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
             </svg>
         </button>
     </div>
@@ -275,37 +291,40 @@
 
     .flecha-navegacion {
         background: var(--fondo-botones, #ffca00);
+        color: var(--icono-color-relleno, black);
         border: none;
-        border-radius: 50%;
-        width: calc(var(--font-size-base, 1rem) * 5);
-        height: calc(var(--font-size-base, 1rem) * 5);
+        border-radius: var(--border-radius, 8px);
+        cursor: pointer;
+        box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
+        transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+        padding: 1.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
-        transition: transform 120ms ease, background 120ms ease;
-        flex-shrink: 0;
-    }
-
-    .flecha-navegacion svg {
-        width: 60%;
-        height: 60%;
-        color: var(--icono-color-relleno, black);
+        min-width: 80px;
+        min-height: 80px;
     }
 
     .flecha-navegacion:hover {
         background: var(--fondo-botones-hover, #d1a700);
-        transform: scale(1.1);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
     }
 
     .flecha-navegacion:active {
-        transform: scale(0.95);
+        transform: translateY(0);
     }
 
     .flecha-navegacion:focus {
         outline: var(--borde-botones, 4px solid #000000);
-        outline-offset: 4px;
+        background: var(--fondo-botones-hover, #d1a700);
+        outline-offset: 7px;
+    }
+
+    .flecha-navegacion svg {
+        width: calc(var(--font-size-base,1rem)*6);
+        height: calc(var(--font-size-base,1rem)*6);
+        pointer-events: none;
     }
 
     .tarjeta-logro {

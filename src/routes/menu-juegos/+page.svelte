@@ -15,7 +15,7 @@
     }
 
     function irAModoHistorias() {
-        //TODO: PONER LA PAGINA DEL MODO DE HISTORIAS
+        goto('/historias/seleccionar-historia');
     }
 
 	let contenedorMenuJuegosRef: HTMLElement | null = null;

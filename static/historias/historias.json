@@ -1,0 +1,104 @@
+[
+	{
+		"historiaId": "padre-almeida",
+		"titulo": "El Padre Almeida",
+		"imagen": "/historias/padre-almeida.jpg",
+		"progreso": 1,
+		"totalCapitulos": 4,
+		"version": 1,
+		"capitulos": [
+			{
+				"id": 1,
+				"nombre": "Capítulo 1",
+				"imagen": "/historias/capitulos/padre-almeida-cap1.jpg",
+				"desbloqueado": true
+			},
+			{
+				"id": 2,
+				"nombre": "Capítulo 2",
+				"imagen": "/historias/capitulos/padre-almeida-cap2.jpg",
+				"desbloqueado": true
+			},
+			{
+				"id": 3,
+				"nombre": "Capítulo 3",
+				"imagen": "/historias/capitulos/padre-almeida-cap3.jpg",
+				"desbloqueado": false
+			},
+			{
+				"id": 4,
+				"nombre": "Capítulo 4",
+				"imagen": "/historias/capitulos/padre-almeida-cap4.jpg",
+				"desbloqueado": false
+			}
+		]
+	},
+	{
+		"historiaId": "la-dama-tapada",
+		"titulo": "La Dama Tapada",
+		"imagen": "/historias/dama-tapada.jpg",
+		"progreso": 0,
+		"totalCapitulos": 3,
+		"version": 1,
+		"capitulos": [
+			{
+				"id": 1,
+				"nombre": "Capítulo 1",
+				"imagen": "/historias/capitulos/dama-tapada-cap1.jpg",
+				"desbloqueado": true
+			},
+			{
+				"id": 2,
+				"nombre": "Capítulo 2",
+				"imagen": "/historias/capitulos/dama-tapada-cap2.jpg",
+				"desbloqueado": false
+			},
+			{
+				"id": 3,
+				"nombre": "Capítulo 3",
+				"imagen": "/historias/capitulos/dama-tapada-cap3.jpg",
+				"desbloqueado": false
+			}
+		]
+	},
+	{
+		"historiaId": "cantuña",
+		"titulo": "Cantuña y el Diablo",
+		"imagen": "/historias/cantuna.jpg",
+		"progreso": 2,
+		"totalCapitulos": 5,
+		"version": 1,
+		"capitulos": [
+			{
+				"id": 1,
+				"nombre": "Capítulo 1",
+				"imagen": "/historias/capitulos/cantuna-cap1.jpg",
+				"desbloqueado": true
+			},
+			{
+				"id": 2,
+				"nombre": "Capítulo 2",
+				"imagen": "/historias/capitulos/cantuna-cap2.jpg",
+				"desbloqueado": true
+			},
+			{
+				"id": 3,
+				"nombre": "Capítulo 3",
+				"imagen": "/historias/capitulos/cantuna-cap3.jpg",
+				"desbloqueado": false
+			},
+			{
+				"id": 4,
+				"nombre": "Capítulo 4",
+				"imagen": "/historias/capitulos/cantuna-cap4.jpg",
+				"desbloqueado": false
+			},
+			{
+				"id": 5,
+				"nombre": "Capítulo 5",
+				"imagen": "/historias/capitulos/cantuna-cap5.jpg",
+				"desbloqueado": false
+			}
+		]
+	}
+]
