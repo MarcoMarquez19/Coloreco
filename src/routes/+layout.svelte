@@ -73,7 +73,14 @@
 		}
 	}
 	function manejarTecla(event: KeyboardEvent) {
-		if (event.key === 'Escape') volver();
+		// No capturar ESC si hay un modal abierto
+		if (event.key === 'Escape') {
+			const modalAbierto = document.querySelector('[aria-modal="true"]');
+			if (!modalAbierto) {
+				volver();
+			}
+			return;
+		}
 		if ((event.key === 'a' || event.key === 'A') && event.ctrlKey) {
 			event.preventDefault();
 			abrirConfiguracion();
