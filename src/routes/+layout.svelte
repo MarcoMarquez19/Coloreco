@@ -107,6 +107,25 @@
 		}
 	});
 
+	// Listener para procesar modales cuando se montan
+	onMount(() => {
+		if (!browser) return;
+		
+		const handleModalMounted = () => {
+			setTimeout(() => {
+				if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+					applyAccessibilityModes();
+				}
+			}, 100);
+		};
+		
+		window.addEventListener('modal-mounted', handleModalMounted);
+		
+		return () => {
+			window.removeEventListener('modal-mounted', handleModalMounted);
+		};
+	});
+
 	// Efecto para aplicar atributos data según modos activos
 	$effect(() => {
 		const root = document.documentElement;

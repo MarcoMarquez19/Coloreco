@@ -1,4 +1,6 @@
 <script lang="ts">
+	import Instrucciones from '$lib/components/modales/Instrucciones.svelte';
+	import IconoInstrucciones from '$lib/components/iconos/IconoInstrucciones.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -26,6 +28,11 @@
 	let cargando = $state<boolean>(true);
 	let error = $state<string | null>(null);
 	let capituloSeleccionadoIndex = $state<number>(0);
+	let mostrarInstrucciones = $state<boolean>(false);
+
+	function abrirInstrucciones() {
+		mostrarInstrucciones = true;
+	}
 
 	onMount(async () => {
 		// Cargar historias desde JSON
@@ -78,6 +85,13 @@
 	}
 
 	function manejarTeclaPresionada(event: KeyboardEvent) {
+		// Manejar Ctrl+I para instrucciones
+		if ((event.key === 'i' || event.key === 'I') && event.ctrlKey) {
+			event.preventDefault();
+			abrirInstrucciones();
+			return;
+		}
+
 		// Solo manejar Enter/Espacio si hay un elemento enfocado (botón)
 		if (event.key === 'Enter' || event.key === ' ') {
 			const elementoActivo = document.activeElement;
@@ -139,6 +153,22 @@
 	})
 </script>
 
+<!-- Botón de instrucciones -->
+<div class="contenedor-flotante-i-instrucciones">
+	<button 
+		class="boton-instrucciones pattern-yellow"
+		onclick={abrirInstrucciones}
+		aria-label="Ver instrucciones"
+		aria-keyshortcuts="Control + I"
+		title="Instrucciones (Control + I)"
+		type="button"
+	>
+		<span class="solo-lectores">Ver instrucciones</span>
+		<IconoInstrucciones />
+	</button>
+	<span class="texto-tecla">Ctrl + I</span>
+</div>
+
 <div class="progreso-contenedor" bind:this={contenedorProgresoRef} aria-label="Progreso de la historia" data-magnificable>
 	{#if cargando}
 		<div class="estado-carga">
@@ -150,28 +180,28 @@
 		</div>
 	{:else}
 		<!-- Título de la historia -->
-		<div class="titulo-historia-contenedor">
-			<h1>{tituloHistoria}</h1>
+		<div class="titulo-historia-contenedor" data-magnificable>
+			<h1 data-magnificable data-readable>{tituloHistoria}</h1>
 		</div>
 
 		<!-- Contenedor de capítulos -->
 		{#if capitulos.length > 0}
-			<div class="marco-externo">
-				<div class="capitulos-contenedor">
+			<div class="marco-externo" data-magnificable>
+				<div class="capitulos-contenedor" data-magnificable>
                     <!-- Personaje decorativo -->
-                    <div class="personaje-decorativo">
+                    <div class="personaje-decorativo" data-magnificable>
                         <img src="/historias/personaje.png" alt="Personaje de la historia" />
                     </div>
 
 					{#each capitulos as capitulo, index}
                     	<!-- Flecha conectora (no mostrar después del último) -->
-                        <div class="flecha-conectora">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
+                        <div class="flecha-conectora" data-magnificable>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32" data-magnificable>
                                 <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
                             </svg>
                         </div>
 
-						<div class="capitulo-wrapper">
+						<div class="capitulo-wrapper" data-magnificable>
 							<button
 							class="capitulo-boton capitulo-imagen"
 								class:desbloqueado={capitulo.desbloqueado}
@@ -183,13 +213,14 @@
 								aria-label={capitulo.desbloqueado ? `Jugar ${capitulo.nombre}` : `${capitulo.nombre} bloqueado`}
 								title={capitulo.desbloqueado ? `Jugar ${capitulo.nombre}` : `Completa el capítulo anterior para desbloquear`}
 								style={!capitulo.desbloqueado ? `background-image: url('${capitulo.imagen}');` : ''}
+								data-magnificable
 							>
 								{#if capitulo.desbloqueado}
-									<img src={capitulo.imagen} alt={capitulo.nombre} />
+									<img src={capitulo.imagen} alt={capitulo.nombre} data-magnificable />
 								{:else}
-									<div class="overlay-bloqueo"></div>
-									<div class="candado-contenedor">
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="80" height="80">
+									<div class="overlay-bloqueo" data-magnificable></div>
+									<div class="candado-contenedor" data-magnificable>
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="80" height="80" data-magnificable>
 											<path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
 										</svg>
 									</div>
@@ -206,6 +237,11 @@
 		{/if}
 	{/if}
 </div>
+
+<!-- Modal de Instrucciones -->
+{#if mostrarInstrucciones}
+	<Instrucciones on:close={() => mostrarInstrucciones = false} />
+{/if}
 
 <style>
 	.progreso-contenedor {
@@ -428,4 +464,71 @@
 			transform: rotate(90deg);
 		}
 	}
+
+.contenedor-flotante-i-instrucciones {
+	position: fixed;
+	top: var(--spacing-base, 1rem);
+	left: calc(var(--spacing-base, 1rem) * 2.5);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	z-index: 100;
+	transition: filter 0.3s ease;
+}
+
+.boton-instrucciones {
+	position: relative;
+	width: calc(8vw * var(--btn-scale, 1));
+	height: calc(15vh * var(--btn-scale, 1));
+	border-radius: var(--border-radius, 8px);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--fondo-botones, #ffca00);
+	border: none;
+	box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
+	cursor: pointer;
+	transition: transform 120ms ease, box-shadow 120ms ease;
+	z-index: 100;
+}
+
+.boton-instrucciones:hover {
+	transform: translateY(-2px);
+	background: var(--fondo-botones-hover, #d1a700);
+}
+
+.boton-instrucciones:active {
+	transform: translateY(0);
+}
+
+.boton-instrucciones:focus {
+	outline: var(--borde-botones, 4px solid #000000);
+	background: var(--fondo-botones-hover, #d1a700);
+	outline-offset: 7px;
+}
+
+.texto-tecla {
+	font-size: calc(4vh * var(--btn-scale, 1));
+	font-weight: 500;
+	width: 100%;
+	text-align: center;
+	padding-top: 1rem;
+	color: var(--color-texto, rgb(0, 0, 0));
+	user-select: none;
+	pointer-events: none;
+	text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.solo-lectores {
+	position: absolute !important;
+	height: 1px;
+	width: 1px;
+	overflow: hidden;
+	clip: rect(1px, 1px, 1px, 1px);
+	white-space: nowrap;
+	border: 0;
+	padding: 0;
+	margin: -1px;
+}
 </style>

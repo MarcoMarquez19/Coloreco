@@ -111,6 +111,7 @@
 	alt="Libro de historias"
 	class="imagen-decorativa"
 	style="width: {tamañoImagen};"
+	data-magnificable
 >
 
 <div class="completada-contenedor" bind:this={contenedorCompletadaRef} aria-label="Historia completada" data-magnificable>
@@ -124,14 +125,14 @@
 		</div>
 	{:else if historia}
 		
-		<div class="confeti-contenedor">
-				<div class="confeti-wrapper">
-					<img src={ConfetiImagen} alt="Confeti de celebración" class="confeti-imagen" />
+		<div class="confeti-contenedor" data-magnificable>
+				<div class="confeti-wrapper" data-magnificable>
+					<img src={ConfetiImagen} alt="Confeti de celebración" class="confeti-imagen" data-magnificable />
 				</div>
 		</div>
 
-		<div class="marco-externo">
-			<div class="mensaje-contenedor">
+		<div class="marco-externo" data-magnificable>
+			<div class="mensaje-contenedor" data-magnificable>
 				<h1 data-magnificable data-readable>¡Actividad completada!</h1>
 				<h2 data-magnificable data-readable>¡Has ganado una nueva medalla!</h2>
 				<p class="historia-titulo" data-magnificable data-readable>Completaste: {historia.titulo}</p>

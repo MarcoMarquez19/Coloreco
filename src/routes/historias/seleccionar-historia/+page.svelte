@@ -1,5 +1,7 @@
 <script lang="ts">
 	import LibroHistorias from '$lib/components/iconos/LibroAbierto.png';
+	import Instrucciones from '$lib/components/modales/Instrucciones.svelte';
+	import IconoInstrucciones from '$lib/components/iconos/IconoInstrucciones.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 
@@ -17,6 +19,11 @@
 	let cargando = $state<boolean>(true);
 	let error = $state<string | null>(null);
 	let indiceActual = $state<number>(0);
+	let mostrarInstrucciones = $state<boolean>(false);
+
+	function abrirInstrucciones() {
+		mostrarInstrucciones = true;
+	}
 
 	onMount(async () => {
 		// Cargar historias desde JSON estático
@@ -93,6 +100,9 @@
 			navegarAnterior();
 		} else if (event.key === 'ArrowRight') {
 			navegarSiguiente();
+		} else if ((event.key === 'i' || event.key === 'I') && event.ctrlKey) {
+			event.preventDefault();
+			abrirInstrucciones();
 		}
 	}
 
@@ -134,7 +144,24 @@
 	alt="Libro de historias"
 	class="imagen-decorativa"
 	style="width: {tamañoImagen};"
+	data-magnificable
 >
+
+<!-- Botón de instrucciones -->
+<div class="contenedor-flotante-i-instrucciones">
+	<button 
+		class="boton-instrucciones pattern-yellow"
+		onclick={abrirInstrucciones}
+		aria-label="Ver instrucciones"
+		aria-keyshortcuts="Control + I"
+		title="Instrucciones (Control + I)"
+		type="button"
+	>
+		<span class="solo-lectores">Ver instrucciones</span>
+		<IconoInstrucciones />
+	</button>
+	<span class="texto-tecla">Ctrl + I</span>
+</div>
 
 <div class="seleccionar-historias-contenedor" bind:this={contenedorSeleccionarHistoriaRef} aria-label="Contenedor para seleccionar la historia de preferencia" data-magnificable>
 	<h1 data-magnificable data-readable>Elige tu aventura</h1>
@@ -153,18 +180,19 @@
 		</div>
 	{:else}
 		<!-- Indicador de historia actual -->
-		<div class="indicador-historia">
+		<div class="indicador-historia" data-magnificable>
 			<p data-magnificable data-readable>Historia {indiceActual + 1} de {historias.length}</p>
 		</div>
 
 		<!-- Carrusel de historias -->
-		<div class="carrusel-contenedor">
+		<div class="carrusel-contenedor" data-magnificable>
 			<!-- Botón flecha izquierda -->
 			<button 
 				class="boton-flecha boton-izquierda"
 				onclick={navegarAnterior}
 				aria-label="Historia anterior"
 				title="Navegar a la historia anterior (← tecla izquierda)"
+				data-magnificable
 			>
 				<svg 
 					xmlns="http://www.w3.org/2000/svg"
@@ -181,8 +209,8 @@
 
 			<!-- Historia actual -->
 			{#if historiaActual}
-		<article class={"tarjeta-historia-carrusel " + animClass} aria-label={`Historia ${historiaActual.titulo}, Progreso ${historiaActual.progreso} de ${historiaActual.totalCapitulos} capítulos`}>
-			<div class="contenedor-historia-carrusel" role="group" aria-labelledby="titulo-historia-{indiceActual}" aria-describedby="progreso-historia-{indiceActual}">
+		<article class={"tarjeta-historia-carrusel " + animClass} aria-label={`Historia ${historiaActual.titulo}, Progreso ${historiaActual.progreso} de ${historiaActual.totalCapitulos} capítulos`} data-magnificable>
+			<div class="contenedor-historia-carrusel" role="group" aria-labelledby="titulo-historia-{indiceActual}" aria-describedby="progreso-historia-{indiceActual}" data-magnificable>
 				<div class="preview" data-magnificable>
 					<div class="placeholder-preview">
 					<img src={historiaActual!.imagen} alt={`Imagen de la historia ${historiaActual!.titulo}`} />
@@ -209,6 +237,7 @@
 				onclick={navegarSiguiente}
 				aria-label="Historia siguiente"
 				title="Navegar a la historia siguiente (→ tecla derecha)"
+				data-magnificable
 			>
 				<svg 
 					xmlns="http://www.w3.org/2000/svg"
@@ -225,6 +254,11 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Modal de Instrucciones -->
+{#if mostrarInstrucciones}
+	<Instrucciones on:close={() => mostrarInstrucciones = false} />
+{/if}
 
 <style>
 	.imagen-decorativa {
@@ -326,7 +360,8 @@
 
 	/* Tarjeta de historia en carrusel */
 	.tarjeta-historia-carrusel {
-		background: white;
+		background: var(--bg, white);
+		border: 2px solid var(--icono-color-borde, #000000);
 		border-radius: 12px;
 		overflow: hidden;
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
@@ -524,6 +559,73 @@
 		animation: none !important;
 		transition: none !important;
 	}
+}
+
+.contenedor-flotante-i-instrucciones {
+	position: fixed;
+	top: var(--spacing-base, 1rem);
+	left: calc(var(--spacing-base, 1rem) * 2.5);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	z-index: 100;
+	transition: filter 0.3s ease;
+}
+
+.boton-instrucciones {
+	position: relative;
+	width: calc(8vw * var(--btn-scale, 1));
+	height: calc(15vh * var(--btn-scale, 1));
+	border-radius: var(--border-radius, 8px);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--fondo-botones, #ffca00);
+	border: none;
+	box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
+	cursor: pointer;
+	transition: transform 120ms ease, box-shadow 120ms ease;
+	z-index: 100;
+}
+
+.boton-instrucciones:hover {
+	transform: translateY(-2px);
+	background: var(--fondo-botones-hover, #d1a700);
+}
+
+.boton-instrucciones:active {
+	transform: translateY(0);
+}
+
+.boton-instrucciones:focus {
+	outline: var(--borde-botones, 4px solid #000000);
+	background: var(--fondo-botones-hover, #d1a700);
+	outline-offset: 7px;
+}
+
+.texto-tecla {
+	font-size: calc(4vh * var(--btn-scale, 1));
+	font-weight: 500;
+	width: 100%;
+	text-align: center;
+	padding-top: 1rem;
+	color: var(--color-texto, rgb(0, 0, 0));
+	user-select: none;
+	pointer-events: none;
+	text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.solo-lectores {
+	position: absolute !important;
+	height: 1px;
+	width: 1px;
+	overflow: hidden;
+	clip: rect(1px, 1px, 1px, 1px);
+	white-space: nowrap;
+	border: 0;
+	padding: 0;
+	margin: -1px;
 }
 
 </style>

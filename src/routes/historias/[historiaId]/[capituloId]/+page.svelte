@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FeedbackHistoria from '$lib/components/modales/FeedbackHistoria.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -40,6 +41,8 @@
 	let feedbackMostrado = $state<string>('');
 	let totalCapitulos = $state<number>(0);
 	let capituloActual = $state<number>(0);
+	let mostrarModal = $state<boolean>(false);
+	let pista = $state<string>('');
 
 	onMount(async () => {
 		try {
@@ -94,22 +97,32 @@
 
 	function enviarRespuesta() {
 		if (!capitulo || respuestaEnviada) return;
-		
 		const opcionElegida = capitulo.pregunta.opciones[opcionSeleccionadaIndex];
 		respuestaEnviada = true;
 		opcionCorrecta = opcionElegida.esCorrecta;
 		feedbackMostrado = opcionElegida.feedback;
+		pista = opcionElegida.feedback; // Si feedback es la pista, si no, ajusta aquí
+		mostrarModal = true;
 	}
 
 	function continuar() {
+		mostrarModal = false;
 		if (!capitulo) return;
 		
-		// Si es el último capítulo y la respuesta es correcta, ir a página de completado
-		if (opcionCorrecta && capituloActual === totalCapitulos) {
-			goto(`/historias/${capitulo.historiaId}/completada`);
+		// Si la respuesta es correcta, navegar
+		if (opcionCorrecta) {
+			// Si es el último capítulo, ir a página de completado
+			if (capituloActual === totalCapitulos) {
+				goto(`/historias/${capitulo.historiaId}/completada`);
+			} else {
+				// Si no, volver a progreso
+				goto(`/historias/${capitulo.historiaId}/progreso`);
+			}
 		} else {
-			// Si no, volver a progreso
-			goto(`/historias/${capitulo.historiaId}/progreso`);
+			// Si la respuesta es incorrecta, resetear para permitir reintentar
+			respuestaEnviada = false;
+			opcionCorrecta = false;
+			feedbackMostrado = '';
 		}
 	}
 
@@ -178,27 +191,24 @@
 			<p data-magnificable data-readable>Error: {error}</p>
 		</div>
 	{:else if capitulo}
-		<div class="contenido-principal">
+		<div class="contenido-principal" data-magnificable>
 			<!-- Panel izquierdo: Historia -->
-			<div class="panel-historia">
-				<div class="cuadro-historia">
+			<div class="panel-historia" data-magnificable>
+				<div class="cuadro-historia" data-magnificable>
 					<h1 data-magnificable data-readable>{capitulo.titulo}</h1>
-					
-					<div class="contenido-historia">
-						<div class="imagen-principal-contenedor" data-magnificable tabindex="0" role="img" aria-label={`Imagen de ${capitulo.titulo}`}>
-							<img src={capitulo.imagenPrincipal} alt={capitulo.titulo} class="imagen-principal" />
+					<div class="contenido-historia" data-magnificable>
+						<div class="imagen-principal-contenedor" data-magnificable tabindex="0" role="img" aria-label={`Imagen de ${capitulo.titulo}`}> 
+							<img src={capitulo.imagenPrincipal} alt={capitulo.titulo} class="imagen-principal" data-magnificable />
 						</div>
-
-						<div class="texto-historia" tabindex="0">
+						<div class="texto-historia" tabindex="0" data-magnificable>
 							<p data-magnificable data-readable>{capitulo.texto}</p>
 						</div>
 					</div>
-
 					{#if $configuraciones.pictogramMode && capitulo.personajes.length > 0}
-						<div class="personajes-contenedor">
-							{#each capitulo.personajes as personaje}
-								<div class="personaje-item" data-magnificable>
-									<img src={personaje.imagen} alt={personaje.nombre} />
+					<div class="personajes-contenedor" data-magnificable>
+						{#each capitulo.personajes as personaje}
+							<div class="personaje-item" data-magnificable>
+								<img src={personaje.imagen} alt={personaje.nombre} data-magnificable />
 								<span data-magnificable data-readable>{personaje.nombre}</span>
 								</div>
 							{/each}
@@ -206,48 +216,46 @@
 					{/if}
 				</div>
 			</div>
-
 			<!-- Panel derecho: Pregunta y opciones -->
-			<div class="panel-pregunta">
-				<div class="cuadro-pregunta">
+			<div class="panel-pregunta" data-magnificable>
+				<div class="cuadro-pregunta" data-magnificable>
 					<h2 class="pregunta-titulo" data-magnificable data-readable tabindex="0">{capitulo.pregunta.texto}</h2>
-					
-					<p class="etiqueta-opciones">Opciones</p>
-
-					<div class="opciones-lista">
+					<p class="etiqueta-opciones" data-magnificable data-readable>Opciones</p>
+					<div class="opciones-lista" data-magnificable>
 						{#each capitulo.pregunta.opciones as opcion, index}
 							<button
 								class="opcion-boton"
 								class:seleccionada={index === opcionSeleccionadaIndex && !respuestaEnviada}
-								class:correcta={respuestaEnviada && opcion.esCorrecta}
-								class:incorrecta={respuestaEnviada && !opcion.esCorrecta && index === opcionSeleccionadaIndex}
+						class:correcta={respuestaEnviada && opcionCorrecta && opcion.esCorrecta}
+						class:incorrecta={respuestaEnviada && !opcionCorrecta && index === opcionSeleccionadaIndex}
 								class:deshabilitada={respuestaEnviada}
-							onclick={() => { if (!respuestaEnviada) { opcionSeleccionadaIndex = index; enviarRespuesta(); } }}
-							onfocus={() => { if (!respuestaEnviada) opcionSeleccionadaIndex = index; }}
+								onclick={() => { if (!respuestaEnviada) { opcionSeleccionadaIndex = index; enviarRespuesta(); } }}
+								onfocus={() => { if (!respuestaEnviada) opcionSeleccionadaIndex = index; }}
 								disabled={respuestaEnviada}
 								aria-label={`Opción: ${opcion.texto}`}
-							title={opcion.texto}
-							data-magnificable
-							data-readable
-						>
+								title={opcion.texto}
+								data-magnificable
+								data-readable
+							>
 								{opcion.texto}
 							</button>
 						{/each}
 					</div>
-
-					{#if respuestaEnviada}
-						<div class="feedback-contenedor" class:correcto={opcionCorrecta} class:incorrecto={!opcionCorrecta}>
-							<p class="feedback-texto" data-magnificable data-readable>{feedbackMostrado}</p>
-							<button class="boton-continuar" onclick={continuar} aria-label="Continuar" data-magnificable data-readable>
-								Continuar
-							</button>
-						</div>
-					{/if}
 				</div>
 			</div>
 		</div>
-	{/if}
+{/if}
 </div>
+
+{#if mostrarModal}
+	<FeedbackHistoria
+		correct={opcionCorrecta}
+		mensaje={opcionCorrecta ? feedbackMostrado : ''}
+		pista={!opcionCorrecta ? feedbackMostrado : ''}
+		on:close={continuar}
+	/>
+{/if}
+
 
 <style>
 	.pregunta-contenedor {
@@ -417,11 +425,14 @@
 	.opcion-boton:focus {
 		outline: var(--borde-botones, 4px solid #000000);
 		outline-offset: 4px;
+		background: var(--fondo-botones, #ffca00);
+		color: var(--icono-color-relleno, black);
 	}
 
 	.opcion-boton.seleccionada {
 		background: var(--fondo-botones, #e3f2fd);
 		border-color: var(--icono-color-borde, #1976d2);
+		color: var(--icono-color-relleno, black);
 		transform: scale(1.02);
 	}
 

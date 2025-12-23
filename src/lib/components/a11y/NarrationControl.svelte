@@ -14,6 +14,7 @@
 	let readableElements: HTMLElement[] = $state([]); // Lista de elementos a leer
 	let currentElementIndex = $state(0); // Índice del elemento actual
 	let isAutoFocusing = $state(false); // Bandera para indicar que el focus es automático
+	let isWaitingToStartAutoNarration = $state(false); // Bandera para evitar lecturas mientras se prepara el inicio automático
 
 	// Sincronizar currentSpeed con las configuraciones
 	$effect(() => {
@@ -33,8 +34,9 @@
 	function getAllPageText(): string {
 		if (!browser) return '';
 		
-		// Buscar el contenido principal de la página actual
-		const mainContent = document.querySelector('main');
+		// Buscar primero en modales activos (tienen mayor prioridad)
+		const modal = document.querySelector('.modal[role="dialog"]');
+		const mainContent = modal || document.querySelector('main');
 		if (!mainContent) return '';
 		
 		// Solo elementos de texto visibles de nivel superior (sin incluir elementos anidados)
@@ -55,7 +57,8 @@
 			if (element.closest('.narration-control')) return;
 			if (element.closest('.contenedor-flotante-i')) return;
 			if (element.closest('.contenedor-flotante-d')) return;
-			if (element.closest('[aria-hidden="true"]')) return;
+			// Solo excluir si el elemento mismo tiene aria-hidden, no sus ancestros
+			if (element.hasAttribute('aria-hidden') && element.getAttribute('aria-hidden') === 'true') return;
 			
 			// Verificar que el elemento esté realmente visible en la pantalla
 			const rect = element.getBoundingClientRect();
@@ -104,8 +107,17 @@
 	function readFocusedElement(element: Element | null) {
 		if (!element || !$configuraciones.narrationEnabled) return;
 
-		// Ignorar solo la etiqueta de narración, pero permitir los botones
+		// Ignorar controles de narración
 		if (element.classList.contains('narration-label')) return;
+		if (element.classList.contains('control-button')) return;
+		if ((element as HTMLElement).closest('.narration-control')) return;
+
+		// Si la narración automática está activa, NO leer elementos enfocados
+		// porque el focus es parte del proceso automático
+		if (isPlaying && !isPaused) return;
+		
+		// Si estamos esperando para iniciar la narración automática, ignorar
+		if (isWaitingToStartAutoNarration) return;
 
 		// Obtener texto accesible: primero buscar span.solo-lectores, luego aria-label, finalmente textContent
 		let text = '';
@@ -132,19 +144,22 @@
 				}
 			}
 			
-			// Leer el elemento enfocado inmediatamente
-			const utterance = new SpeechSynthesisUtterance(text);
-			utterance.lang = 'es-ES';
-			utterance.rate = currentSpeed;
-			
-			if (isPlaying && isPaused && wasPlayingBeforeFocus) {
-				utterance.onend = () => {
-					// Avanzar al siguiente elemento para cuando se reanude
-					currentElementIndex++;
-				};
-			}
-			
-			window.speechSynthesis.speak(utterance);
+			// Pequeño delay después de cancelar para asegurar que el motor de síntesis esté listo
+			setTimeout(() => {
+				// Leer el elemento enfocado
+				const utterance = new SpeechSynthesisUtterance(text);
+				utterance.lang = 'es-ES';
+				utterance.rate = currentSpeed;
+				
+				if (isPlaying && isPaused && wasPlayingBeforeFocus) {
+					utterance.onend = () => {
+						// Avanzar al siguiente elemento para cuando se reanude
+						currentElementIndex++;
+					};
+				}
+				
+				window.speechSynthesis.speak(utterance);
+			}, 10);
 		}
 	}
 
@@ -155,11 +170,46 @@
 		}
 	}
 
+	// Manejar eventos de clic
+	function handleClick(event: MouseEvent) {
+		if (!$configuraciones.narrationEnabled) return;
+		
+		// Ignorar clics en los controles de narración
+		const target = event.target as Element;
+		if (target.closest('.narration-control')) return;
+		
+		// Si hay una narración automática en curso, detenerla
+		if (isPlaying && !isPaused) {
+			window.speechSynthesis.cancel();
+			isPaused = true;
+			wasPlayingBeforeFocus = true;
+		}
+		
+		// Leer el elemento clickeado (el focus ya se encarga de esto)
+		// Solo aseguramos que la narración automática se detenga
+	}
+
+	// Manejar eventos de scroll
+	function handleScroll() {
+		// Importante: No pausar si el scroll es causado por el focus automático
+		// Esto previene que la narración se pause inmediatamente al iniciar
+		if (isAutoFocusing) return;
+		
+		if ($configuraciones.narrationEnabled && isPlaying && !isPaused) {
+			// Cancelar narración automática cuando se hace scroll manual
+			window.speechSynthesis.cancel();
+			isPaused = true;
+			wasPlayingBeforeFocus = true;
+		}
+	}
+
 	// Obtener todos los elementos legibles de la página
 	function getAllReadableElements(): HTMLElement[] {
 		if (!browser) return [];
 		
-		const mainContent = document.querySelector('main');
+		// Buscar primero en modales activos (tienen mayor prioridad)
+		const modal = document.querySelector('.modal[role="dialog"]');
+		const mainContent = modal || document.querySelector('main');
 		if (!mainContent) return [];
 		
 		const selector = 'h1, h2, h3, h4, h5, h6, p, button, label';
@@ -175,7 +225,8 @@
 			if (element.closest('.narration-control')) return;
 			if (element.closest('.contenedor-flotante-i')) return;
 			if (element.closest('.contenedor-flotante-d')) return;
-			if (element.closest('[aria-hidden="true"]')) return;
+			// Solo excluir si el elemento mismo tiene aria-hidden, no sus ancestros
+			if (element.hasAttribute('aria-hidden') && element.getAttribute('aria-hidden') === 'true') return;
 			
 			const rect = element.getBoundingClientRect();
 			const style = window.getComputedStyle(element);
@@ -222,10 +273,10 @@
 
 		// Hacer focus en el elemento
 		if (element.hasAttribute('tabindex') || element.tagName === 'BUTTON' || element.tagName === 'A') {
-			element.focus();
+			element.focus({ preventScroll: true }); // Prevenir scroll automático
 		} else {
 			element.setAttribute('tabindex', '-1');
-			element.focus();
+			element.focus({ preventScroll: true }); // Prevenir scroll automático
 			element.style.outline = '2px solid var(--color-enfoque, #0066cc)';
 		}
 
@@ -274,8 +325,9 @@
 	}
 
 	// Leer todo el contenido de la página (narración automática)
-	function readAll() {
-		if (browser && window.speechSynthesis) {
+	function readAll() {		// Desactivar bandera de espera
+		isWaitingToStartAutoNarration = false;
+				if (browser && window.speechSynthesis) {
 			window.speechSynthesis.cancel();
 		}
 		
@@ -287,7 +339,10 @@
 		isPaused = false;
 		wasPlayingBeforeFocus = false;
 
-		readCurrentElement();
+		// Delay de 200ms antes de iniciar la narración para evitar leer el botón
+		setTimeout(() => {
+			readCurrentElement();
+		}, 500);
 	}
 
 	function pauseNarration() {
@@ -346,6 +401,30 @@
 	onMount(() => {
 		if (browser) {
 			document.addEventListener('focusin', handleFocus);
+			document.addEventListener('click', handleClick, true); // true para capturar antes que otros eventos
+			window.addEventListener('scroll', handleScroll, true); // true para capturar en fase de captura
+			
+			// Listener para iniciar lectura cuando se abre un modal
+			const handleReadModal = () => {
+				if ($configuraciones.narrationEnabled) {
+					// Detener cualquier narración actual
+					if (isPlaying || isPaused) {
+						stopNarration();
+					}
+					// Iniciar lectura del modal
+					setTimeout(() => {
+						readAll();
+					}, 100);
+				}
+			};
+			
+			window.addEventListener('read-modal', handleReadModal);
+			
+			return () => {
+				window.removeEventListener('read-modal', handleReadModal);
+				document.removeEventListener('click', handleClick, true);
+				window.removeEventListener('scroll', handleScroll, true);
+			};
 		}
 	});
 
@@ -353,6 +432,7 @@
 	onDestroy(() => {
 		if (browser) {
 			document.removeEventListener('focusin', handleFocus);
+			document.removeEventListener('click', handleClick, true);
 		}
 		// Siempre detener al desmontar
 		ttsService.stop();
@@ -367,6 +447,12 @@
 				stopNarration();
 			}
 			previousNarrationState = false;
+		} else if ($configuraciones.narrationEnabled && previousNarrationState) {
+			// Si el modo ya estaba activo pero está pausado, limpiar el estado de pausa
+			if (isPaused && !isPlaying) {
+				isPaused = false;
+				wasPlayingBeforeFocus = false;
+			}
 		}
 	});
 
@@ -389,9 +475,11 @@
 		// Si el modo está activo Y (cambió la ruta O se acaba de activar el modo)
 		if (browser && $configuraciones.narrationEnabled && (routeChanged || modeActivated)) {
 			previousNarrationState = true;
-			// Un solo setTimeout para evitar duplicaciones
+			// Activar bandera para evitar lecturas mientras se prepara el inicio
+			isWaitingToStartAutoNarration = true;
+			// Iniciar narración automáticamente después de un delay
 			setTimeout(() => {
-				if ($configuraciones.narrationEnabled && !isPlaying && !isPaused) {
+				if ($configuraciones.narrationEnabled && !isPlaying) {
 					readAll();
 				}
 			}, 600);
@@ -403,7 +491,8 @@
 	<div class="narration-control" role="region" aria-label="Controles de narración">
 		<!-- Etiqueta descriptiva -->
 		<div class="narration-label">
-			Narración automática
+			<div>Narración</div>
+			<div>automática</div>
 		</div>
 		
 		<!-- Botón Reproducir/Pausar -->
@@ -452,7 +541,7 @@
 <style>
 	.narration-control {
 		position: fixed;
-		bottom: calc(var(--spacing-base, 1rem) * 8);
+		top: 50%;
 		right: calc(var(--spacing-base, 1rem) * 1.5);
 		display: flex;
 		align-items: center;
@@ -468,9 +557,10 @@
 	.narration-label {
 		font-size: 0.875rem;
 		font-weight: 600;
-		color: var(--texto-principal, #000);
+		color: var(--color-texto, #000);
 		padding: 0 0.5rem;
-		white-space: nowrap;
+		text-align: center;
+		line-height: 1.2;
 	}
 
 	.control-button {
