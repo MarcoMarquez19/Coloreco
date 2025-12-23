@@ -37,7 +37,8 @@
 	}
 
     function empezarDibujo(escenaId: string) {
-        // TODO: Navegar al canvas con la escena seleccionada
+        // Navegar al canvas con la escena seleccionada
+        goto(`/juegos/dibujo/${escenaId}`);
     }
 
 
