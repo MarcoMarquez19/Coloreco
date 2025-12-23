@@ -49,7 +49,7 @@
     function verDescripcionEscena() {
 		if ($escenasFiltradas.length === 0) return;
 		const escenaActual = $escenasFiltradas[indiceActual];
-		const destino = `/taller-escenas/descripcion/${encodeURIComponent(escenaActual.escenaId)}`;
+		const destino = `/juegos/cuerpo-humano/${encodeURIComponent(escenaActual.escenaId)}`;
 		goto(destino);
     }
 
@@ -124,7 +124,7 @@
 		</div>
 	{:else if $escenasFiltradas.length === 0}
 		<div class="estado-vacio">
-			<p>No hay escenas disponibles para el Taller de Escenas Creativas.</p>
+			<p>No hay escenas disponibles para el modo de Cuerpo Humano.</p>
 		</div>
 	{:else}
 		<!-- Indicador de escena actual -->
@@ -163,7 +163,6 @@
 							aria-label={`Escena de ${escenaActual!.nombre}`}
 						>
 							<div class="preview">
-								<!-- TODO: PONER UN ARIA-LABEL CORRECTO PARA DESCRIBIRCADA ESCENA -->
 								<div class="placeholder-preview">
 									<img src={escenaActual!.ruta} alt={`Escena de ${escenaActual!.nombre}`}/>
 								</div>
