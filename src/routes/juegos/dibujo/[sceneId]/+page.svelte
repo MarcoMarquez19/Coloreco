@@ -24,6 +24,11 @@
 	// Estado del taller de dibujo
 	let tallerInicializado = $state<boolean>(false);
 	let mostrarAyuda = $state<boolean>(false);
+
+	// Configuración de herramientas y acciones visibles
+	// Puedes modificar estos arrays para controlar qué se muestra en la barra
+	const herramientasVisibles = ['pincel', 'borrador','stickers']; // Sin stickers por ahora
+	const accionesVisibles = ['mover','deshacer', 'guardar', 'terminar']; // Sin mover por ahora
     let guardarObra = $state<boolean>(false);
 
     //Propiedades de la escena actual
@@ -283,8 +288,8 @@
 	<main class="area-principal">
 		<!-- Barra de herramientas -->
 		<section class="seccion-herramientas" aria-label="Herramientas de dibujo" data-magnificable>
-			<DibujoBarraHerramientas
-				on:cambiarHerramienta={manejarEventoBarra}
+			<DibujoBarraHerramientas				herramientasVisibles={herramientasVisibles}
+				accionesVisibles={accionesVisibles}				on:cambiarHerramienta={manejarEventoBarra}
 				on:cambiarColor={manejarEventoBarra}
 				on:cambiarGrosor={manejarEventoBarra}
 				on:accionDeshacer={manejarEventoBarra}

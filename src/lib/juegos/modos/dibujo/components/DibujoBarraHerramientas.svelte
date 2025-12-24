@@ -9,6 +9,17 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 
+	// Props para configurar herramientas y acciones visibles
+	interface Props {
+		herramientasVisibles?: string[];
+		accionesVisibles?: string[];
+	}
+
+	let { 
+		herramientasVisibles = ['pincel', 'borrador', 'stickers'],
+		accionesVisibles = ['mover', 'deshacer', 'guardar', 'terminar']
+	}: Props = $props();
+
 	// Dispatcher para comunicar cambios a los componentes padre
 	const dispatch = createEventDispatcher<{
 		cambiarHerramienta: { herramienta: string };
@@ -39,8 +50,8 @@
 		'#FFC0CB'  // Rosa
 	];
 
-	// Herramientas disponibles
-	const herramientasDisponibles = [
+	// Todas las herramientas disponibles
+	const todasLasHerramientas = [
 		{
 			id: 'pincel',
 			nombre: 'Pincel',
@@ -60,6 +71,11 @@
 			descripcion: 'Añadir stickers decorativos (próximamente)'
 		}
 	];
+
+	// Herramientas filtradas según configuración
+	const herramientasDisponibles = $derived(
+		todasLasHerramientas.filter(h => herramientasVisibles.includes(h.id))
+	);
 
 	/**
 	 * Cambia la herramienta activa
@@ -113,55 +129,74 @@
 	function ejecutarMover() {
 		dispatch('accionMover', {});
 	}
+
+	/**
+	 * Verifica si una acción debe mostrarse
+	 */
+	function mostrarAccion(accion: string): boolean {
+		return accionesVisibles.includes(accion);
+	}
 </script>
 
 <div class="barra-herramientas" role="toolbar" aria-label="Herramientas de dibujo">
 	<!-- Sección 1: Acciones Generales -->
-	<section class="seccion-acciones" aria-label="Acciones generales">
-		<button
-			class="boton-accion"
-			onclick={ejecutarMover}
-			aria-label="Mover vista del lienzo"
-			title="Mover (próximamente)"
-			disabled
-		>
-			<span class="icono">↔️</span>
-			<span class="texto">Mover</span>
-		</button>
+	{#if accionesVisibles.length > 0}
+		<section class="seccion-acciones" aria-label="Acciones generales">
+			{#if mostrarAccion('mover')}
+				<button
+					class="boton-accion"
+					onclick={ejecutarMover}
+					aria-label="Mover vista del lienzo"
+					title="Mover (próximamente)"
+					disabled
+				>
+					<span class="icono">↔️</span>
+					<span class="texto">Mover</span>
+				</button>
+			{/if}
 
-		<button
-			class="boton-accion"
-			onclick={ejecutarDeshacer}
-			aria-label="Deshacer última acción"
-			title="Deshacer"
-		>
-			<span class="icono">↩️</span>
-			<span class="texto">Deshacer</span>
-		</button>
+			{#if mostrarAccion('deshacer')}
+				<button
+					class="boton-accion"
+					onclick={ejecutarDeshacer}
+					aria-label="Deshacer última acción"
+					title="Deshacer"
+				>
+					<span class="icono">↩️</span>
+					<span class="texto">Deshacer</span>
+				</button>
+			{/if}
 
-		<button
-			class="boton-accion"
-			onclick={ejecutarGuardar}
-			aria-label="Guardar dibujo actual"
-			title="Guardar (próximamente)"
-		>
-			<span class="icono">💾</span>
-			<span class="texto">Guardar</span>
-		</button>
+			{#if mostrarAccion('guardar')}
+				<button
+					class="boton-accion"
+					onclick={ejecutarGuardar}
+					aria-label="Guardar dibujo actual"
+					title="Guardar (próximamente)"
+				>
+					<span class="icono">💾</span>
+					<span class="texto">Guardar</span>
+				</button>
+			{/if}
 
-		<button
-			class="boton-accion boton-terminar"
-			onclick={ejecutarTerminar}
-			aria-label="Terminar sesión de dibujo"
-			title="Terminar (próximamente)"
-		>
-			<span class="icono">🚪</span>
-			<span class="texto">Terminar</span>
-		</button>
-	</section>
+			{#if mostrarAccion('terminar')}
+				<button
+					class="boton-accion boton-terminar"
+					onclick={ejecutarTerminar}
+					aria-label="Terminar sesión de dibujo"
+					title="Terminar (próximamente)"
+				>
+					<span class="icono">🚪</span>
+					<span class="texto">Terminar</span>
+				</button>
+			{/if}
+		</section>
+	{/if}
 
 	<!-- Separador -->
-	<div class="separador" aria-hidden="true"></div>
+	{#if accionesVisibles.length > 0 && herramientasDisponibles.length > 0}
+		<div class="separador" aria-hidden="true"></div>
+	{/if}
 
 	<!-- Sección 2: Herramientas -->
 	<section class="seccion-herramientas" aria-label="Herramientas de dibujo">
@@ -182,7 +217,9 @@
 	</section>
 
 	<!-- Separador -->
-	<div class="separador" aria-hidden="true"></div>
+	{#if herramientasDisponibles.length > 0}
+		<div class="separador" aria-hidden="true"></div>
+	{/if}
 
 	<!-- Sección 3: Opciones Específicas de Herramienta -->
 	<section class="seccion-opciones" aria-label="Opciones de la herramienta seleccionada">
