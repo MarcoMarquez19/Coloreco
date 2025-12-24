@@ -1,16 +1,22 @@
 <!--
-  Página del modo de dibujo accesible
-  Integra DibujoCanvas, DibujoBarraHerramientas y DibujoOverlay
-  usando el ServicioDibujo como orquestador.
+  Página del modo de juego Cuerpo Humano
+  Combina el modo de dibujo con drag & drop de partes del cuerpo
+  Integra DibujoCanvas con sistema de validación de partes
 -->
 
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 	import DibujoCanvas from '$lib/juegos/modos/dibujo/components/DibujoCanvas.svelte';
 	import DibujoBarraHerramientas from '$lib/juegos/modos/dibujo/components/DibujoBarraHerramientas.svelte';
 	import DibujoOverlay from '$lib/juegos/modos/dibujo/components/DibujoOverlay.svelte';
+	import PartesCuerpoPanel from '$lib/juegos/modos/cuerpo-humano/components/PartesCuerpoPanel.svelte';
+	import ZonasValidasOverlay from '$lib/juegos/modos/cuerpo-humano/components/ZonasValidasOverlay.svelte';
+	import MensajeFeedback from '$lib/juegos/modos/cuerpo-humano/components/MensajeFeedback.svelte';
 	import { servicioDibujo } from '$lib/juegos/modos/dibujo/dibujo.service';
+	import type { EscenaConfig } from '$lib/juegos/modos/cuerpo-humano/types/cuerpo-humano.types';
+	import { obtenerConfiguracionEscena } from '$lib/juegos/modos/cuerpo-humano/configuraciones-escenas';
 
 	// Referencias a los componentes
 	let canvasRef: DibujoCanvas;
@@ -19,6 +25,38 @@
 	// Estado del taller de dibujo
 	let tallerInicializado = $state<boolean>(false);
 	let mostrarAyuda = $state<boolean>(false);
+
+	// Estado del drag & drop de partes del cuerpo
+	let arrastrando = $state<boolean>(false);
+	let zonaHover = $state<string | null>(null);
+	let partesColocadas = $state<Set<string>>(new Set());
+	let partesColocadasConZona = $state<Array<{ parteId: string; parteNombre: string; zona: any }>>([]); // Para mostrar etiquetas
+
+	// Estado de mensajes de feedback
+	let mostrarMensaje = $state<boolean>(false);
+	let mensajeTexto = $state<string>('');
+	let mensajeTipo = $state<'success' | 'error'>('success');
+	let timeoutMensaje: ReturnType<typeof setTimeout> | null = null;
+
+	// Configuración de la escena (cargar según sceneId)
+	let escenaConfig = $state<EscenaConfig | null>(null);
+
+	// Cargar la configuración de la escena
+	onMount(async () => {
+		const sceneId = $page.params.sceneId || 'default';
+		
+		// Cargar configuración desde el archivo de configuraciones
+		const config = obtenerConfiguracionEscena(sceneId);
+		
+		if (config) {
+			escenaConfig = config;
+			console.log('[CuerpoHumano] Escena cargada:', config.nombre);
+		} else {
+			console.error('[CuerpoHumano] No se encontró configuración para:', sceneId);
+			// Fallback a cuerpo-humano por defecto
+			escenaConfig = obtenerConfiguracionEscena('cuerpo-humano');
+		}
+	});
 
 	/**
 	 * Inicializa el taller de dibujo
@@ -95,6 +133,85 @@
 				console.log('[TallerDibujo] Salir del modo accesible');
 				break;
 		}
+	}
+
+	/**
+	 * Maneja cuando se inicia el arrastre de una parte
+	 */
+	function manejarIniciarArrastre(evento: CustomEvent) {
+		arrastrando = true;
+		// Bloquear el canvas de dibujo
+		servicioDibujo.bloquear();
+		console.log('[CuerpoHumano] Inicio arrastre:', evento.detail);
+	}
+
+	/**
+	 * Maneja cuando se finaliza el arrastre de una parte
+	 */
+	function manejarFinalizarArrastre() {
+		arrastrando = false;
+		zonaHover = null;
+		// Desbloquear el canvas de dibujo
+		servicioDibujo.desbloquear();
+		console.log('[CuerpoHumano] Fin arrastre');
+	}
+
+	/**
+	 * Maneja cuando se coloca una parte en una zona
+	 */
+	function manejarColocarParte(evento: CustomEvent) {
+		const { parte, zona } = evento.detail;
+
+		// Validar si la parte corresponde a esta zona
+		if (zona.parteCorrecta === parte.id) {
+			// ✅ Correcto
+			// Crear un nuevo Set para disparar reactividad en Svelte 5
+			partesColocadas = new Set([...partesColocadas, parte.id]);
+			// Guardar parte con su zona para mostrar etiqueta
+			partesColocadasConZona = [...partesColocadasConZona, { parteId: parte.id, parteNombre: parte.nombre, zona }];
+			mostrarMensajeFeedback('¡Correcto!', 'success');
+			
+			console.log('[CuerpoHumano] Parte colocada:', parte.nombre, 'Total:', partesColocadas.size);
+			
+			// Verificar si completó todas las partes
+			if (escenaConfig && partesColocadas.size === escenaConfig.partes.length) {
+				setTimeout(() => {
+					mostrarMensajeFeedback('¡Completaste todas las partes!', 'success');
+				}, 500);
+			}
+		} else {
+			// ❌ Incorrecto
+			mostrarMensajeFeedback('Intenta de nuevo', 'error');
+		}
+
+		manejarFinalizarArrastre();
+	}
+
+	/**
+	 * Maneja cuando el cursor está sobre una zona
+	 */
+	function manejarHoverZona(evento: CustomEvent) {
+		zonaHover = evento.detail.zonaId;
+	}
+
+	/**
+	 * Muestra un mensaje al usuario
+	 */
+	function mostrarMensajeFeedback(texto: string, tipo: 'success' | 'error') {
+		// Limpiar timeout anterior si existe
+		if (timeoutMensaje) {
+			clearTimeout(timeoutMensaje);
+		}
+
+		// Mostrar mensaje
+		mensajeTexto = texto;
+		mensajeTipo = tipo;
+		mostrarMensaje = true;
+
+		// Ocultar después de 2 segundos
+		timeoutMensaje = setTimeout(() => {
+			mostrarMensaje = false;
+		}, 2000);
 	}
 
 	/**
@@ -244,6 +361,28 @@
 			<div class="contenedor-lienzo">
 				<DibujoCanvas bind:this={canvasRef} />
 				
+				<!-- Overlay de zonas válidas (se muestra al arrastrar) -->
+				{#if escenaConfig}
+					<ZonasValidasOverlay
+						visible={arrastrando}
+						zonas={escenaConfig.zonasValidas}
+						{zonaHover}
+						on:colocarParte={manejarColocarParte}
+						on:hoverZona={manejarHoverZona}
+					/>
+				{/if}
+
+				<!-- Etiquetas de partes colocadas correctamente -->
+				{#each partesColocadasConZona as parteColocada (parteColocada.parteId)}
+					<div
+						class="etiqueta-parte-colocada"
+						style:left="{parteColocada.zona.x + parteColocada.zona.width / 2}%"
+						style:top="{parteColocada.zona.y + parteColocada.zona.height / 2}%"
+					>
+						{parteColocada.parteNombre}
+					</div>
+				{/each}
+				
 				<!-- Overlay de accesibilidad -->
 				<DibujoOverlay
 					bind:this={overlayRef}
@@ -252,6 +391,16 @@
 					on:escapar={manejarEventoOverlay}
 				/>
 			</div>
+
+			<!-- Panel de partes (lado derecho del canvas) -->
+			{#if escenaConfig}
+				<PartesCuerpoPanel
+					partes={escenaConfig.partes}
+					{partesColocadas}
+					on:iniciarArrastre={manejarIniciarArrastre}
+					on:finalizarArrastre={manejarFinalizarArrastre}
+				/>
+			{/if}
 		</section>
 	</main>
 
@@ -263,6 +412,13 @@
 			Cargando taller de dibujo...
 		{/if}
 	</div>
+
+	<!-- Mensaje de feedback -->
+	<MensajeFeedback 
+		visible={mostrarMensaje}
+		mensaje={mensajeTexto}
+		tipo={mensajeTipo}
+	/>
 </div>
 
 <style>
@@ -370,11 +526,12 @@
 	}
 
 	.seccion-lienzo {
-        padding-left: 20vh;
-        min-width: 45%;
+		padding-left: 20vh;
+		min-width: 45%;
 		flex: 1;
 		display: flex;
-		flex-direction: column;
+		flex-direction: row;
+		gap: 4rem;
 		min-height: 0;
 	}
 
@@ -386,6 +543,34 @@
 		overflow: hidden;
 		background: var(--color-fondo-lienzo, #fff);
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+	}
+
+	/* Etiquetas de partes colocadas */
+	.etiqueta-parte-colocada {
+		position: absolute;
+		transform: translate(-50%, -50%);
+		background: rgba(76, 175, 80, 0.95);
+		color: white;
+		padding: 0.5rem 1rem;
+		border-radius: 8px;
+		font-weight: 700;
+		font-size: 0.9rem;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+		border: 2px solid #2e7d32;
+		pointer-events: none;
+		z-index: 75;
+		animation: aparecer-etiqueta 0.3s ease-out;
+	}
+
+	@keyframes aparecer-etiqueta {
+		from {
+			opacity: 0;
+			transform: translate(-50%, -50%) scale(0.5);
+		}
+		to {
+			opacity: 1;
+			transform: translate(-50%, -50%) scale(1);
+		}
 	}
 
 </style>
