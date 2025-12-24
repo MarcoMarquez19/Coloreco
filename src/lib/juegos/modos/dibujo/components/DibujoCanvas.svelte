@@ -10,6 +10,8 @@
 	import { get } from 'svelte/store';
 	import { buscarPorEscenaId } from '$lib/db/escenas.service';
 	import type { EscenaCatalogo } from '$lib/db/schemas';
+	import { guardarObra } from '$lib/db/obras.service';
+	import { obtenerSesionActual } from '$lib/db/artistas.service';
 
 	// Referencias del canvas y contexto
 	let canvasRef: HTMLCanvasElement;
@@ -246,14 +248,63 @@
 	}
 
 	/**
-	 * Guarda el dibujo como imagen PNG
-	 * TODO: Implementar integración con el servicio de obras para guardar en galería
+	 * Guarda el dibujo como obra en la galería
 	 */
-	export function guardarDibujo() {
-		if (!canvasRef) return;
-		
-		// TODO: Integrar con obras.service.ts para guardar en la galería
-		
+	export async function guardarDibujo(): Promise<void> {
+		if (!canvasRef || !escena) {
+			console.error('[DibujoCanvas] No hay canvas o escena disponible para guardar');
+			return;
+		}
+
+		try {
+			// Obtener el artistaId actual de los ajustes
+			const sesion = await obtenerSesionActual();
+			const artistaId = sesion?.artistaActualId ?? null;
+
+			if (!artistaId) {
+				console.error('[DibujoCanvas] No hay artista seleccionado');
+				alert('Por favor, selecciona un artista antes de guardar el dibujo.');
+				return;
+			}
+
+			// Convertir el canvas a blob
+			const blob = await new Promise<Blob>((resolve, reject) => {
+				canvasRef.toBlob((blob) => {
+					if (blob) {
+						resolve(blob);
+					} else {
+						reject(new Error('No se pudo convertir el canvas a blob'));
+					}
+				}, 'image/png');
+			});
+
+			// Generar título basado en la escena y fecha
+			const fecha = new Date();
+			const titulo = `${escena.nombre} - ${fecha.toLocaleDateString()}`;
+			
+			// Preparar datos de la obra
+			const datosObra = {
+				artistaId,
+				titulo,
+				descripcion: `Dibujo creado en la escena: ${escena.nombre}`,
+				modo: escena.modo,
+				blob,
+				mime: 'image/png',
+				escenaId: escena.escenaId,
+				etiquetas: [escena.nombre, 'dibujo', 'taller'],
+				alt: `Dibujo de ${escena.nombre} creado el ${fecha.toLocaleDateString()}`
+			};
+
+			// Guardar la obra en la base de datos
+			const obraId = await guardarObra(datosObra);
+			
+			console.log(`[DibujoCanvas] Obra guardada exitosamente con ID: ${obraId}`);
+			alert(`¡Dibujo guardado exitosamente en la galería! 🎨`);
+
+		} catch (error) {
+			console.error('[DibujoCanvas] Error al guardar el dibujo:', error);
+			alert('Ocurrió un error al guardar el dibujo. Por favor, inténtalo de nuevo.');
+		}
 	}
 
 	// Efectos reactivos

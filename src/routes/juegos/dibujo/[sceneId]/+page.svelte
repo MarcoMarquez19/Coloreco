@@ -11,6 +11,11 @@
 	import DibujoBarraHerramientas from '$lib/juegos/modos/dibujo/components/DibujoBarraHerramientas.svelte';
 	import DibujoOverlay from '$lib/juegos/modos/dibujo/components/DibujoOverlay.svelte';
 	import { servicioDibujo } from '$lib/juegos/modos/dibujo/dibujo.service';
+    import Modal from '$lib/components/modales/Modal.svelte';
+    import type { EscenaCatalogo } from '$lib/db/schemas';
+	import { buscarPorEscenaId } from '$lib/db/escenas.service';
+	import { page } from '$app/stores';
+	import { get } from 'svelte/store';
 
 	// Referencias a los componentes
 	let canvasRef: DibujoCanvas;
@@ -19,6 +24,56 @@
 	// Estado del taller de dibujo
 	let tallerInicializado = $state<boolean>(false);
 	let mostrarAyuda = $state<boolean>(false);
+    let guardarObra = $state<boolean>(false);
+
+    //Propiedades de la escena actual
+	let escena: EscenaCatalogo | null = $state<EscenaCatalogo | null>(null);
+    let error: string | null = $state<string | null>(null);
+	let cargando = $state<boolean>(true); // Estado de carga inicial ;
+
+	async function cargarEscena() {
+		try {
+			const { params } = get(page);
+			const escenaId = params?.sceneId;
+
+			if (!escenaId) {
+				error = 'Falta el identificador de la escena.';
+				return;
+			}
+
+			const resultados = await buscarPorEscenaId(escenaId);
+			if (!resultados || resultados.length === 0) {
+				error = 'La escena no existe o no está disponible.';
+				return;
+			}
+
+			escena = resultados[0];
+			error = null;
+		} catch (e) {
+			console.error('[descripcion-escena] Error al cargar escena:', e);
+			error = 'Ocurrió un error al cargar la escena.';
+		} finally {
+			cargando = false;
+		}
+	}
+
+    onMount(() => {
+        void cargarEscena();
+    });
+
+    function abrirModalGuardar() {
+        guardarObra = true;
+    }
+
+    async function confirmarGuardar(){
+        try {
+            await servicioDibujo.guardarDibujo();
+            console.log('[TallerDibujo] Obra guardada exitosamente');
+            guardarObra = false;
+        } catch (e) {
+            console.error('[TallerDibujo] Error al guardar la obra:', e);
+        }
+    }
 
 	/**
 	 * Inicializa el taller de dibujo
@@ -60,7 +115,7 @@
 				break;
 			
 			case 'accionGuardar':
-				servicioDibujo.guardarDibujo();
+				abrirModalGuardar();
 				break;
 			
 			case 'accionTerminar':
@@ -265,6 +320,49 @@
 	</div>
 </div>
 
+<!-- Modal de confirmación de eliminación -->
+<Modal
+	bind:abierto={guardarObra}
+	titulo="Confirmar guardar obra"
+	anchoMaximo="600px"
+	cerrarAlClickearFuera={false}
+>
+	{#snippet children()}
+        {#if !escena}
+			<p style="margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0; font-size: calc(var(--font-size-base, 1rem) * 1);">
+			<strong>sin una escena válida</strong>
+		    </p>
+		{:else}
+            <p style="margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0; font-size: calc(var(--font-size-base, 1rem) * 1);">
+                ¿Estás seguro que deseas guardar la obra <strong>"{escena.nombre}.{escena.modo}"</strong>
+            </p>
+            <p style="margin: 0; color: #d32f2f; font-weight: 600; font-size: calc(var(--font-size-base, 1rem) * 1);">
+                ⚠️ Puede visitar las obras guardadas en la interfaz de galeria.
+            </p>
+		{/if} 
+
+	{/snippet}
+
+	{#snippet acciones()}
+        {#if escena}
+            <button
+                class="modal-boton modal-boton-cancelar"
+                onclick={() => guardarObra = false}
+                type="button"
+            >
+                Cancelar
+            </button>
+            <button
+                class="modal-boton modal-boton-confirmar pattern-red"
+                onclick={confirmarGuardar}
+                type="button"
+            >
+                Guardar obra
+            </button>            
+        {/if}
+	{/snippet}
+</Modal>
+
 <style>
 	/* Contenedor principal */
 	.taller-dibujo {
@@ -385,6 +483,52 @@
 		overflow: hidden;
 		background: var(--color-fondo-lienzo, #fff);
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+	}
+
+    /* ============================================================================
+	   BOTONES DEL MODAL
+	   ============================================================================ */
+	:global(.modal-boton) {
+		padding: calc(var(--spacing-base, 1rem) * 1) calc(var(--spacing-base, 1rem) * 1.5);
+		font-size: calc(var(--font-size-base, 1rem) * 1.1);
+		font-weight: 600;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		transition: transform 120ms ease, background 120ms ease;
+		min-width: 100px;
+	}
+
+	:global(.modal-boton-cancelar) {
+		background: #757575;
+		color: white;
+	}
+
+	:global(.modal-boton-cancelar:hover) {
+		background: #616161;
+		transform: translateY(-2px);
+	}
+
+	:global(.modal-boton-cancelar:focus) {
+		outline: 2px solid #000000;
+		background: #616161;
+		outline-offset: 2px;
+	}
+
+	:global(.modal-boton-confirmar) {
+		background: #15803d;
+		color: white;
+	}
+
+	:global(.modal-boton-confirmar:hover) {
+		background: #13632a !important;
+		transform: translateY(-2px);
+	}
+
+	:global(.modal-boton-confirmar:focus) {
+		outline: 2px solid #000000;
+		background: #13632a !important;
+		outline-offset: 2px;
 	}
 
 </style>
