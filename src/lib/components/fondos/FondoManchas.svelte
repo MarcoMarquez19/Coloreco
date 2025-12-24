@@ -11,7 +11,7 @@
 		<Mancha clase="mancha noroeste"/>
 	</div>
 
-	<div class="mancha noreste pattern-red">
+	<div class="mancha noreste pattern-magenta">
 		<Mancha clase="mancha noreste"/>
 	</div>
 
@@ -61,7 +61,7 @@
 
 	/* IMPORTANTE: Forzar que las manchas siempre usen position: absolute
 	   incluso cuando se apliquen las clases de pattern */
-	:global(.mancha.pattern-red),
+	:global(.mancha.pattern-magenta),
 	:global(.mancha.pattern-green),
 	:global(.mancha.pattern-blue),
 	:global(.mancha.pattern-yellow) {
@@ -72,7 +72,7 @@
 	/* Esto recorta la textura (::after) en forma circular para que se ajuste mejor 
 	   a la forma orgánica de la mancha y no se vea el cuadro del div.
 	*/
-	:global(.mancha.pattern-red::after),
+	:global(.mancha.pattern-magenta::after),
 	:global(.mancha.pattern-green::after),
 	:global(.mancha.pattern-blue::after),
 	:global(.mancha.pattern-yellow::after) {
