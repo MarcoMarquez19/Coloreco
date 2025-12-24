@@ -14,6 +14,7 @@
 	import PartesCuerpoPanel from '$lib/juegos/modos/cuerpo-humano/components/PartesCuerpoPanel.svelte';
 	import ZonasValidasOverlay from '$lib/juegos/modos/cuerpo-humano/components/ZonasValidasOverlay.svelte';
 	import MensajeFeedback from '$lib/juegos/modos/cuerpo-humano/components/MensajeFeedback.svelte';
+	import Modal from '$lib/components/modales/Modal.svelte';
 	import { servicioDibujo } from '$lib/juegos/modos/dibujo/dibujo.service';
 	import type { EscenaConfig } from '$lib/juegos/modos/cuerpo-humano/types/cuerpo-humano.types';
 	import { obtenerConfiguracionEscena } from '$lib/juegos/modos/cuerpo-humano/configuraciones-escenas';
@@ -37,6 +38,11 @@
 	let mensajeTexto = $state<string>('');
 	let mensajeTipo = $state<'success' | 'error'>('success');
 	let timeoutMensaje: ReturnType<typeof setTimeout> | null = null;
+
+	// Estado de modales de guardado
+	let modalConfirmarGuardado = $state<boolean>(false);
+	let modalGuardadoExitoso = $state<boolean>(false);
+	let guardandoObra = $state<boolean>(false);
 
 	// Configuración de la escena (cargar según sceneId)
 	let escenaConfig = $state<EscenaConfig | null>(null);
@@ -98,7 +104,8 @@
 				break;
 			
 			case 'accionGuardar':
-				servicioDibujo.guardarDibujo();
+				// Abrir modal de confirmación
+				modalConfirmarGuardado = true;
 				break;
 			
 			case 'accionTerminar':
@@ -192,6 +199,41 @@
 	 */
 	function manejarHoverZona(evento: CustomEvent) {
 		zonaHover = evento.detail.zonaId;
+	}
+
+	/**
+	 * Confirma y ejecuta el guardado de la obra
+	 */
+	async function confirmarGuardarObra() {
+		modalConfirmarGuardado = false;
+		guardandoObra = true;
+
+		try {
+			// Llamar al método de guardado del canvas
+			await canvasRef.guardarDibujo();
+			
+			// Mostrar modal de éxito
+			modalGuardadoExitoso = true;
+		} catch (error) {
+			console.error('[CuerpoHumano] Error al guardar:', error);
+			mostrarMensajeFeedback('Error al guardar la obra', 'error');
+		} finally {
+			guardandoObra = false;
+		}
+	}
+
+	/**
+	 * Cancela el guardado de la obra
+	 */
+	function cancelarGuardarObra() {
+		modalConfirmarGuardado = false;
+	}
+
+	/**
+	 * Cierra el modal de guardado exitoso
+	 */
+	function cerrarModalExito() {
+		modalGuardadoExitoso = false;
 	}
 
 	/**
@@ -419,6 +461,75 @@
 		mensaje={mensajeTexto}
 		tipo={mensajeTipo}
 	/>
+
+	<!-- Modal de confirmación para guardar -->
+	<Modal
+		bind:abierto={modalConfirmarGuardado}
+		titulo="Guardar obra"
+		anchoMaximo="500px"
+		cerrarAlClickearFuera={!guardandoObra}
+		mostrarBotonCerrar={!guardandoObra}
+	>
+		<div style="padding: 1.5rem 0; text-align: center;">
+			<div style="font-size: 4rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">💾</div>
+			<p style="font-size: 1.2rem; margin-bottom: 1rem; font-weight: 600; color: var(--color-texto, #333);">
+				¿Deseas guardar tu obra en la galería?
+			</p>
+			<p style="color: var(--color-texto-secundario, #666); font-size: 1rem; line-height: 1.5;">
+				Tu dibujo se guardará y podrás verlo más tarde en la galería de obras.
+			</p>
+		</div>
+
+		{#snippet acciones()}
+			<button
+				class="boton-modal boton-secundario"
+				onclick={cancelarGuardarObra}
+				disabled={guardandoObra}
+				type="button"
+			>
+				Cancelar
+			</button>
+			<button
+				class="boton-modal boton-primario"
+				onclick={confirmarGuardarObra}
+				disabled={guardandoObra}
+				type="button"
+			>
+				{#if guardandoObra}
+					Guardando...
+				{:else}
+					Guardar
+				{/if}
+			</button>
+		{/snippet}
+	</Modal>
+
+	<!-- Modal de guardado exitoso -->
+	<Modal
+		bind:abierto={modalGuardadoExitoso}
+		titulo="¡Obra guardada!"
+		anchoMaximo="450px"
+	>
+		<div style="padding: 1.5rem 0; text-align: center;">
+			<div style="font-size: 4rem; margin-bottom: 1rem;">🎨</div>
+			<p style="font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 600;">
+				¡Tu obra ha sido guardada exitosamente!
+			</p>
+			<p style="color: var(--color-texto-secundario, #666); font-size: 0.9rem;">
+				Puedes verla en la galería cuando quieras.
+			</p>
+		</div>
+
+		{#snippet acciones()}
+			<button
+				class="boton-modal boton-primario"
+				onclick={cerrarModalExito}
+				type="button"
+			>
+				Aceptar
+			</button>
+		{/snippet}
+	</Modal>
 </div>
 
 <style>
@@ -571,6 +682,45 @@
 			opacity: 1;
 			transform: translate(-50%, -50%) scale(1);
 		}
+	}
+
+	/* Estilos para botones de modales */
+	:global(.boton-modal) {
+		padding: 0.75rem 1.5rem;
+		border-radius: 8px;
+		font-weight: 600;
+		font-size: 1rem;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		border: 2px solid transparent;
+	}
+
+	:global(.boton-modal:disabled) {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+
+	:global(.boton-modal.boton-primario) {
+		background: var(--color-primario, #4CAF50);
+		color: white;
+		border-color: var(--color-primario, #4CAF50);
+	}
+
+	:global(.boton-modal.boton-primario:hover:not(:disabled)) {
+		background: var(--color-primario-hover, #45a049);
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+	}
+
+	:global(.boton-modal.boton-secundario) {
+		background: transparent;
+		color: var(--color-texto, #333);
+		border-color: var(--color-borde, #ccc);
+	}
+
+	:global(.boton-modal.boton-secundario:hover:not(:disabled)) {
+		background: var(--color-fondo-hover, #f5f5f5);
+		border-color: var(--color-borde-hover, #999);
 	}
 
 </style>
