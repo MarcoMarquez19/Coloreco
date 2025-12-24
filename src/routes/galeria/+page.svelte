@@ -25,6 +25,9 @@
 	/** Control del modal de confirmación de eliminación */
 	let modalEliminarAbierto = $state<boolean>(false);
 
+	/** Control del modal de eliminación exitosa */
+	let modalEliminadoExitoso = $state<boolean>(false);
+
 	/** Referencia al contenedor para aplicar transform/scale dinámico */
 	let contenedorGaleriaRef: HTMLElement | null = null;
 
@@ -118,6 +121,9 @@
 				} else if (obras.length === 0) {
 					indiceActual = 0;
 				}
+
+				// Mostrar modal de éxito
+				modalEliminadoExitoso = true;
 			} else {
 				alert('Error al eliminar la obra. Inténtalo nuevamente.');
 			}
@@ -382,12 +388,15 @@
 	cerrarAlClickearFuera={false}
 >
 	{#snippet children()}
-		<p style="margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0; font-size: calc(var(--font-size-base, 1rem) * 1);">
-			¿Estás seguro que deseas eliminar la obra <strong>"{obraActual?.titulo}"</strong>?
-		</p>
-		<p style="margin: 0; color: #d32f2f; font-weight: 600; font-size: calc(var(--font-size-base, 1rem) * 1);">
-			⚠️ Esta acción no se puede deshacer.
-		</p>
+		<div style="text-align: center; padding: 1rem 0;">
+			<div style="font-size: 5rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">🗑️</div>
+			<p style="margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0; font-size: calc(var(--font-size-base, 1rem) * 1.1); line-height: 1.5;">
+				¿Estás seguro que deseas eliminar la obra <strong>"{obraActual?.titulo}"</strong>?
+			</p>
+			<p style="margin: 0; color: #d32f2f; font-weight: 600; font-size: calc(var(--font-size-base, 1rem) * 1);">
+				⚠️ Esta acción no se puede deshacer.
+			</p>
+		</div>
 	{/snippet}
 
 	{#snippet acciones()}
@@ -404,6 +413,66 @@
 			type="button"
 		>
 			Eliminar
+		</button>
+	{/snippet}
+</Modal>
+
+<!-- Modal de eliminación exitosa -->
+<Modal
+	bind:abierto={modalEliminadoExitoso}
+	titulo="¡Obra eliminada!"
+	anchoMaximo="450px"
+>
+	{#snippet children()}
+		<div style="text-align: center; padding: 1.5rem 0;">
+			<div style="font-size: 4rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">✅</div>
+			<p style="font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 600;">
+				¡La obra ha sido eliminada exitosamente!
+			</p>
+			<p style="color: var(--color-texto-secundario, #666); font-size: 0.9rem;">
+				La obra ha sido removida de tu galería.
+			</p>
+		</div>
+	{/snippet}
+
+	{#snippet acciones()}
+		<button
+			class="modal-boton modal-boton-confirmar"
+			onclick={() => modalEliminadoExitoso = false}
+			type="button"
+			style="background: #4caf50;"
+		>
+			Aceptar
+		</button>
+	{/snippet}
+</Modal>
+
+<!-- Modal de eliminación exitosa -->
+<Modal
+	bind:abierto={modalEliminadoExitoso}
+	titulo="¡Obra eliminada!"
+	anchoMaximo="450px"
+>
+	{#snippet children()}
+		<div style="text-align: center; padding: 1.5rem 0;">
+			<div style="font-size: 4rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">✅</div>
+			<p style="font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 600;">
+				¡La obra ha sido eliminada exitosamente!
+			</p>
+			<p style="color: var(--color-texto-secundario, #666); font-size: 0.9rem;">
+				La obra ha sido removida de tu galería.
+			</p>
+		</div>
+	{/snippet}
+
+	{#snippet acciones()}
+		<button
+			class="modal-boton modal-boton-confirmar"
+			onclick={() => modalEliminadoExitoso = false}
+			type="button"
+			style="background: #4caf50;"
+		>
+			Aceptar
 		</button>
 	{/snippet}
 </Modal>
