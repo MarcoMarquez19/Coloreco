@@ -437,37 +437,7 @@
 
 	{#snippet acciones()}
 		<button
-			class="modal-boton modal-boton-confirmar"
-			onclick={() => modalEliminadoExitoso = false}
-			type="button"
-			style="background: #4caf50;"
-		>
-			Aceptar
-		</button>
-	{/snippet}
-</Modal>
-
-<!-- Modal de eliminación exitosa -->
-<Modal
-	bind:abierto={modalEliminadoExitoso}
-	titulo="¡Obra eliminada!"
-	anchoMaximo="450px"
->
-	{#snippet children()}
-		<div style="text-align: center; padding: 1.5rem 0;">
-			<div style="font-size: 4rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">✅</div>
-			<p style="font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 600;">
-				¡La obra ha sido eliminada exitosamente!
-			</p>
-			<p style="color: var(--color-texto-secundario, #666); font-size: 0.9rem;">
-				La obra ha sido removida de tu galería.
-			</p>
-		</div>
-	{/snippet}
-
-	{#snippet acciones()}
-		<button
-			class="modal-boton modal-boton-confirmar"
+			class="modal-boton modal-boton-aceptar"
 			onclick={() => modalEliminadoExitoso = false}
 			type="button"
 			style="background: #4caf50;"
@@ -805,5 +775,19 @@
 		outline-offset: 2px;
 	}
 
-	
+	:global(.modal-boton-aceptar) {
+		background: #4caf50;
+		color: white;
+	}
+
+	:global(.modal-boton-aceptar:hover) {
+		background: #388e3c;
+		transform: translateY(-2px);
+	}
+
+	:global(.modal-boton-aceptar:focus) {
+		outline: 2px solid #000000;
+		background: #388e3c;
+		outline-offset: 2px;
+	}	
 </style>
