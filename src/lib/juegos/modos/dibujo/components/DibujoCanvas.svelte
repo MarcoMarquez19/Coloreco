@@ -199,6 +199,7 @@
 			contextoDibujo.lineCap = 'round';
 			contextoDibujo.lineJoin = 'round';
 			contextoDibujo.globalCompositeOperation = 'source-over';
+			contextoDibujo.globalAlpha = 0.5; // Reducir opacidad para colores menos vibrantes
 		}
 	}
 
@@ -214,6 +215,7 @@
 			contextoDibujo.lineCap = 'round';
 			contextoDibujo.lineJoin = 'round';
 			contextoDibujo.globalCompositeOperation = 'destination-out';
+			contextoDibujo.globalAlpha = 1.0; // Borrador con opacidad completa
 		}
 	}
 

@@ -44,16 +44,16 @@
 
 	// Colores predefinidos
 	const coloresPredefinidos = [
-		'#000000', // Negro
-		'#FF0000', // Rojo
-		'#00FF00', // Verde
-		'#0000FF', // Azul
-		'#FFFF00', // Amarillo
-		'#FF00FF', // Magenta
-		'#00FFFF', // Cian
-		'#FFA500', // Naranja
-		'#800080', // Púrpura
-		'#FFC0CB'  // Rosa
+	'#222121ff', // Negro
+	'#f53c3cff', // Rojo
+	'#45d145ff', // Verde
+	'#0000FF', // Azul
+	'#e7e74fff', // Amarillo
+	'#fa64faff', // Magenta
+	'#89ebebff', // Cian
+	'#e2b35dff', // Naranja
+	'#9c359cff', // Púrpura
+	'#FFC0CB'  // Rosa
 	];
 
 	// Todas las herramientas disponibles
