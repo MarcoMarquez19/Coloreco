@@ -664,11 +664,11 @@
 
 	.seccion-lienzo {
 		padding-left: 20vh;
-		min-width: 45%;
+		min-width: 75%;
 		flex: 1;
 		display: flex;
 		flex-direction: row;
-		gap: 4rem;
+		gap: 2rem;
 		min-height: 0;
 	}
 
