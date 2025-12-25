@@ -26,6 +26,14 @@
 	// Estado del taller de dibujo
 	let tallerInicializado = $state<boolean>(false);
 	let mostrarAyuda = $state<boolean>(false);
+	// Valores iniciales para la barra de herramientas
+    let herramientaInicial = $state<string>('pincel');
+    let colorInicial = $state<string>('#000000');
+    let grosorInicial = $state<number>(5);
+	// Configuración de herramientas y acciones visibles
+	// Puedes modificar estos arrays para controlar qué se muestra en la barra
+	const herramientasVisibles = ['pincel', 'borrador']; // Sin stickers por ahora
+	const accionesVisibles = ['deshacer', 'guardar', 'terminar']; // Sin mover por ahora
 
 	// Estado del drag & drop de partes del cuerpo
 	let arrastrando = $state<boolean>(false);
@@ -67,14 +75,27 @@
 	/**
 	 * Inicializa el taller de dibujo
 	 */
+	/**
+	 * Inicializa el taller de dibujo
+	 */
 	function inicializarTaller() {
 		if (!canvasRef) {
 			console.error('[TallerDibujo] Canvas no disponible');
 			return;
 		}
 
+		// Resetear el servicio a valores por defecto antes de inicializar
+		servicioDibujo.resetear();
+
 		// Inicializar el servicio con las referencias de los componentes
 		servicioDibujo.inicializar(canvasRef, overlayRef);
+		
+		// Obtener el estado inicial del servicio y sincronizar con la barra
+		const estado = servicioDibujo.obtenerEstado();
+		herramientaInicial = estado.herramientaActual.id;
+		colorInicial = estado.colorActual;
+		grosorInicial = estado.grosorActual;
+		
 		tallerInicializado = true;
 		
 		console.log('[TallerDibujo] Taller inicializado correctamente');
@@ -340,7 +361,7 @@
 		const maxHeight = 1080;
 		const rawScale = window.innerHeight / maxHeight;
 		// limitar entre 0.6 y 1 para evitar escalados excesivos
-		const scale = Math.max(1, Math.min(1, rawScale));
+		const scale = Math.max(0.8, Math.min(1, rawScale));
 		contenedorModoDibujoRef.style.transform = `scale(${scale})`;
 		contenedorModoDibujoRef.style.transformOrigin = 'top center';
 	}
@@ -363,7 +384,7 @@
 <!-- Event listeners globales -->
 <svelte:window onkeydown={manejarAtajosTeclado} />
 
-<div class="taller-dibujo" bind:this={contenedorModoDibujoRef}>
+<div class="taller-dibujo">
 	<!-- Panel de ayuda -->
 	{#if mostrarAyuda}
 		<aside class="panel-ayuda" aria-label="Panel de ayuda">
@@ -386,8 +407,13 @@
 	<!-- Área principal del taller -->
 	<main class="area-principal">
 		<!-- Barra de herramientas -->
-		<section class="seccion-herramientas" aria-label="Herramientas de dibujo" data-magnificable>
+		<section class="seccion-herramientas" aria-label="Herramientas de dibujo"  bind:this={contenedorModoDibujoRef} data-magnificable>
 			<DibujoBarraHerramientas
+				herramientasVisibles={herramientasVisibles}
+				accionesVisibles={accionesVisibles}
+				herramientaInicial={herramientaInicial}
+				colorInicial={colorInicial}
+				grosorInicial={grosorInicial}
 				on:cambiarHerramienta={manejarEventoBarra}
 				on:cambiarColor={manejarEventoBarra}
 				on:cambiarGrosor={manejarEventoBarra}

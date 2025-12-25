@@ -14,6 +14,7 @@
     import Modal from '$lib/components/modales/Modal.svelte';
     import type { EscenaCatalogo } from '$lib/db/schemas';
 	import { buscarPorEscenaId } from '$lib/db/escenas.service';
+	import MensajeFeedback from '$lib/juegos/modos/cuerpo-humano/components/MensajeFeedback.svelte';
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 
@@ -29,12 +30,22 @@
 	// Puedes modificar estos arrays para controlar qué se muestra en la barra
 	const herramientasVisibles = ['pincel', 'borrador','stickers']; // Sin stickers por ahora
 	const accionesVisibles = ['mover','deshacer', 'guardar', 'terminar']; // Sin mover por ahora
-    let guardarObra = $state<boolean>(false);
+
+	// Estado de modales de guardado
+	let modalConfirmarGuardado = $state<boolean>(false);
+	let modalGuardadoExitoso = $state<boolean>(false);
+	let guardandoObra = $state<boolean>(false);
 
     // Valores iniciales para la barra de herramientas
     let herramientaInicial = $state<string>('pincel');
     let colorInicial = $state<string>('#000000');
     let grosorInicial = $state<number>(5);
+
+	// Estado de mensajes de feedback
+	let mostrarMensaje = $state<boolean>(false);
+	let mensajeTexto = $state<string>('');
+	let mensajeTipo = $state<'success' | 'error'>('success');
+	let timeoutMensaje: ReturnType<typeof setTimeout> | null = null;
 
     //Propiedades de la escena actual
 	let escena: EscenaCatalogo | null = $state<EscenaCatalogo | null>(null);
@@ -71,19 +82,59 @@
         void cargarEscena();
     });
 
-    function abrirModalGuardar() {
-        guardarObra = true;
-    }
+	/**
+	 * Confirma y ejecuta el guardado de la obra
+	 */
+	async function confirmarGuardarObra() {
+		modalConfirmarGuardado = false;
+		guardandoObra = true;
 
-    async function confirmarGuardar(){
-        try {
-            await servicioDibujo.guardarDibujo();
-            console.log('[TallerDibujo] Obra guardada exitosamente');
-            guardarObra = false;
-        } catch (e) {
-            console.error('[TallerDibujo] Error al guardar la obra:', e);
-        }
-    }
+		try {
+			// Llamar al método de guardado del canvas
+			await canvasRef.guardarDibujo();
+			
+			// Mostrar modal de éxito
+			modalGuardadoExitoso = true;
+		} catch (error) {
+			console.error('[CuerpoHumano] Error al guardar:', error);
+			mostrarMensajeFeedback('Error al guardar la obra', 'error');
+		} finally {
+			guardandoObra = false;
+		}
+	}
+	/**
+	 * Cancela el guardado de la obra
+	 */
+	function cancelarGuardarObra() {
+		modalConfirmarGuardado = false;
+	}
+
+	/**
+	 * Cierra el modal de guardado exitoso
+	 */
+	function cerrarModalExito() {
+		modalGuardadoExitoso = false;
+	}
+
+	/**
+	 * Muestra un mensaje al usuario
+	 */
+	function mostrarMensajeFeedback(texto: string, tipo: 'success' | 'error') {
+		// Limpiar timeout anterior si existe
+		if (timeoutMensaje) {
+			clearTimeout(timeoutMensaje);
+		}
+
+		// Mostrar mensaje
+		mensajeTexto = texto;
+		mensajeTipo = tipo;
+		mostrarMensaje = true;
+
+		// Ocultar después de 2 segundos
+		timeoutMensaje = setTimeout(() => {
+			mostrarMensaje = false;
+		}, 2000);
+	}
 
 	/**
 	 * Inicializa el taller de dibujo
@@ -135,7 +186,8 @@
 				break;
 			
 			case 'accionGuardar':
-				abrirModalGuardar();
+				// Abrir modal de confirmación
+				modalConfirmarGuardado = true;
 				break;
 			
 			case 'accionTerminar':
@@ -256,7 +308,7 @@
 		const maxHeight = 1080;
 		const rawScale = window.innerHeight / maxHeight;
 		// limitar entre 0.6 y 1 para evitar escalados excesivos
-		const scale = Math.max(1, Math.min(1, rawScale));
+		const scale = Math.max(0.8, Math.min(1, rawScale));
 		contenedorModoDibujoRef.style.transform = `scale(${scale})`;
 		contenedorModoDibujoRef.style.transformOrigin = 'top center';
 	}
@@ -279,7 +331,7 @@
 <!-- Event listeners globales -->
 <svelte:window onkeydown={manejarAtajosTeclado} />
 
-<div class="taller-dibujo" bind:this={contenedorModoDibujoRef}>
+<div class="taller-dibujo">
 	<!-- Panel de ayuda -->
 	{#if mostrarAyuda}
 		<aside class="panel-ayuda" aria-label="Panel de ayuda">
@@ -302,7 +354,7 @@
 	<!-- Área principal del taller -->
 	<main class="area-principal">
 		<!-- Barra de herramientas -->
-		<section class="seccion-herramientas" aria-label="Herramientas de dibujo" data-magnificable>
+		<section class="seccion-herramientas" aria-label="Herramientas de dibujo"  bind:this={contenedorModoDibujoRef} data-magnificable>
 			<DibujoBarraHerramientas
 				herramientasVisibles={herramientasVisibles}
 				accionesVisibles={accionesVisibles}
@@ -343,50 +395,83 @@
 			Cargando taller de dibujo...
 		{/if}
 	</div>
+
+	<!-- Mensaje de feedback -->
+	<MensajeFeedback 
+		visible={mostrarMensaje}
+		mensaje={mensajeTexto}
+		tipo={mensajeTipo}
+	/>
+
+	<!-- Modal de confirmación para guardar -->
+	<Modal
+		bind:abierto={modalConfirmarGuardado}
+		titulo="Guardar obra"
+		anchoMaximo="500px"
+		cerrarAlClickearFuera={!guardandoObra}
+		mostrarBotonCerrar={!guardandoObra}
+	>
+		<div style="padding: 1.5rem 0; text-align: center;">
+			<div style="font-size: 4rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">💾</div>
+			<p style="font-size: 1.2rem; margin-bottom: 1rem; font-weight: 600; color: var(--color-texto, #333);">
+				¿Deseas guardar tu obra en la galería?
+			</p>
+			<p style="color: var(--color-texto-secundario, #666); font-size: 1rem; line-height: 1.5;">
+				Tu dibujo se guardará y podrás verlo más tarde en la galería de obras.
+			</p>
+		</div>
+
+		{#snippet acciones()}
+			<button
+				class="boton-modal boton-secundario"
+				onclick={cancelarGuardarObra}
+				disabled={guardandoObra}
+				type="button"
+			>
+				Cancelar
+			</button>
+			<button
+				class="boton-modal boton-primario"
+				onclick={confirmarGuardarObra}
+				disabled={guardandoObra}
+				type="button"
+			>
+				{#if guardandoObra}
+					Guardando...
+				{:else}
+					Guardar
+				{/if}
+			</button>
+		{/snippet}
+	</Modal>
+
+	<!-- Modal de guardado exitoso -->
+	<Modal
+		bind:abierto={modalGuardadoExitoso}
+		titulo="¡Obra guardada!"
+		anchoMaximo="450px"
+	>
+		<div style="padding: 1.5rem 0; text-align: center;">
+			<div style="font-size: 4rem; margin-bottom: 1rem;">🎨</div>
+			<p style="font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 600;">
+				¡Tu obra ha sido guardada exitosamente!
+			</p>
+			<p style="color: var(--color-texto-secundario, #666); font-size: 0.9rem;">
+				Puedes verla en la galería cuando quieras.
+			</p>
+		</div>
+
+		{#snippet acciones()}
+			<button
+				class="boton-modal boton-primario"
+				onclick={cerrarModalExito}
+				type="button"
+			>
+				Aceptar
+			</button>
+		{/snippet}
+	</Modal>
 </div>
-
-<!-- Modal de confirmación de eliminación -->
-<Modal
-	bind:abierto={guardarObra}
-	titulo="Confirmar guardar obra"
-	anchoMaximo="600px"
-	cerrarAlClickearFuera={false}
->
-	{#snippet children()}
-        {#if !escena}
-			<p style="margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0; font-size: calc(var(--font-size-base, 1rem) * 1);">
-			<strong>sin una escena válida</strong>
-		    </p>
-		{:else}
-            <p style="margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0; font-size: calc(var(--font-size-base, 1rem) * 1);">
-                ¿Estás seguro que deseas guardar la obra <strong>"{escena.nombre}.{escena.modo}"</strong>
-            </p>
-            <p style="margin: 0; color: #d32f2f; font-weight: 600; font-size: calc(var(--font-size-base, 1rem) * 1);">
-                ⚠️ Puede visitar las obras guardadas en la interfaz de galeria.
-            </p>
-		{/if} 
-
-	{/snippet}
-
-	{#snippet acciones()}
-        {#if escena}
-            <button
-                class="modal-boton modal-boton-cancelar"
-                onclick={() => guardarObra = false}
-                type="button"
-            >
-                Cancelar
-            </button>
-            <button
-                class="modal-boton modal-boton-confirmar pattern-red"
-                onclick={confirmarGuardar}
-                type="button"
-            >
-                Guardar obra
-            </button>            
-        {/if}
-	{/snippet}
-</Modal>
 
 <style>
 	/* Contenedor principal */
@@ -513,47 +598,44 @@
     /* ============================================================================
 	   BOTONES DEL MODAL
 	   ============================================================================ */
-	:global(.modal-boton) {
-		padding: calc(var(--spacing-base, 1rem) * 1) calc(var(--spacing-base, 1rem) * 1.5);
-		font-size: calc(var(--font-size-base, 1rem) * 1.1);
+
+	/* Estilos para botones de modales */
+	:global(.boton-modal) {
+		padding: 0.75rem 1.5rem;
+		border-radius: 8px;
 		font-weight: 600;
-		border: none;
-		border-radius: 4px;
+		font-size: 1rem;
 		cursor: pointer;
-		transition: transform 120ms ease, background 120ms ease;
-		min-width: 100px;
+		transition: all 0.2s ease;
+		border: 2px solid transparent;
 	}
 
-	:global(.modal-boton-cancelar) {
-		background: #757575;
+	:global(.boton-modal:disabled) {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+
+	:global(.boton-modal.boton-primario) {
+		background: var(--color-primario, #4CAF50);
 		color: white;
+		border-color: var(--color-primario, #4CAF50);
 	}
 
-	:global(.modal-boton-cancelar:hover) {
-		background: #616161;
+	:global(.boton-modal.boton-primario:hover:not(:disabled)) {
+		background: var(--color-primario-hover, #45a049);
 		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 	}
 
-	:global(.modal-boton-cancelar:focus) {
-		outline: 2px solid #000000;
-		background: #616161;
-		outline-offset: 2px;
+	:global(.boton-modal.boton-secundario) {
+		background: transparent;
+		color: var(--color-texto, #333);
+		border-color: var(--color-borde, #ccc);
 	}
 
-	:global(.modal-boton-confirmar) {
-		background: #15803d;
-		color: white;
-	}
-
-	:global(.modal-boton-confirmar:hover) {
-		background: #13632a !important;
-		transform: translateY(-2px);
-	}
-
-	:global(.modal-boton-confirmar:focus) {
-		outline: 2px solid #000000;
-		background: #13632a !important;
-		outline-offset: 2px;
+	:global(.boton-modal.boton-secundario:hover:not(:disabled)) {
+		background: var(--color-fondo-hover, #f5f5f5);
+		border-color: var(--color-borde-hover, #999);
 	}
 
 </style>
