@@ -246,34 +246,90 @@
 				</div>
 
 				<div class="opcion-grosor">
-					<label for="control-grosor" class="etiqueta-opcion">Grosor: {grosorActual}px</label>
-					<input
-						id="control-grosor"
-						type="range"
-						min="1"
-						max="50"
-						value={grosorActual}
-						oninput={cambiarGrosor}
-						class="control-deslizante"
-						aria-label="Control de grosor del pincel"
-					/>
+					<label class="etiqueta-opcion">Grosor:</label>
+					<div class="botones-grosor" role="radiogroup" aria-label="Selector de grosor">
+						<button
+							class="boton-grosor"
+							class:seleccionado={grosorActual === 5}
+							onclick={() => { grosorActual = 5; dispatch('cambiarGrosor', { grosor: 5 }); }}
+							aria-label="Grosor pequeño"
+							role="radio"
+							aria-checked={grosorActual === 5}
+							title="Pequeño (5px)"
+						>
+							<div class="circulo-grosor pequeno"></div>
+							<span class="texto-grosor">Pequeño</span>
+						</button>
+						<button
+							class="boton-grosor"
+							class:seleccionado={grosorActual === 15}
+							onclick={() => { grosorActual = 15; dispatch('cambiarGrosor', { grosor: 15 }); }}
+							aria-label="Grosor mediano"
+							role="radio"
+							aria-checked={grosorActual === 15}
+							title="Mediano (15px)"
+						>
+							<div class="circulo-grosor mediano"></div>
+							<span class="texto-grosor">Mediano</span>
+						</button>
+						<button
+							class="boton-grosor"
+							class:seleccionado={grosorActual === 30}
+							onclick={() => { grosorActual = 30; dispatch('cambiarGrosor', { grosor: 30 }); }}
+							aria-label="Grosor grande"
+							role="radio"
+							aria-checked={grosorActual === 30}
+							title="Grande (30px)"
+						>
+							<div class="circulo-grosor grande"></div>
+							<span class="texto-grosor">Grande</span>
+						</button>
+					</div>
 				</div>
 			</div>
 		{:else if herramientaActual === 'borrador'}
 			<!-- Opciones del Borrador: Solo Grosor -->
 			<div class="grupo-opciones">
 				<div class="opcion-grosor">
-					<label for="control-grosor-borrador" class="etiqueta-opcion">Grosor: {grosorActual}px</label>
-					<input
-						id="control-grosor-borrador"
-						type="range"
-						min="5"
-						max="100"
-						value={grosorActual}
-						oninput={cambiarGrosor}
-						class="control-deslizante"
-						aria-label="Control de grosor del borrador"
-					/>
+					<label class="etiqueta-opcion">Grosor:</label>
+					<div class="botones-grosor" role="radiogroup" aria-label="Selector de grosor del borrador">
+						<button
+							class="boton-grosor"
+							class:seleccionado={grosorActual === 15}
+							onclick={() => { grosorActual = 15; dispatch('cambiarGrosor', { grosor: 15 }); }}
+							aria-label="Grosor pequeño"
+							role="radio"
+							aria-checked={grosorActual === 15}
+							title="Pequeño (15px)"
+						>
+							<div class="circulo-grosor pequeno"></div>
+							<span class="texto-grosor">Pequeño</span>
+						</button>
+						<button
+							class="boton-grosor"
+							class:seleccionado={grosorActual === 40}
+							onclick={() => { grosorActual = 40; dispatch('cambiarGrosor', { grosor: 40 }); }}
+							aria-label="Grosor mediano"
+							role="radio"
+							aria-checked={grosorActual === 40}
+							title="Mediano (40px)"
+						>
+							<div class="circulo-grosor mediano"></div>
+							<span class="texto-grosor">Mediano</span>
+						</button>
+						<button
+							class="boton-grosor"
+							class:seleccionado={grosorActual === 70}
+							onclick={() => { grosorActual = 70; dispatch('cambiarGrosor', { grosor: 70 }); }}
+							aria-label="Grosor grande"
+							role="radio"
+							aria-checked={grosorActual === 70}
+							title="Grande (70px)"
+						>
+							<div class="circulo-grosor grande"></div>
+							<span class="texto-grosor">Grande</span>
+						</button>
+					</div>
 				</div>
 			</div>
 		{:else if herramientaActual === 'stickers'}
@@ -426,16 +482,17 @@
 
 	/* Paleta de Colores */
 	.paleta-colores {
-		display: flex;
+		display: grid;
+		grid-template-columns: repeat(5, 30px);
+		grid-template-rows: repeat(2, 30px);
 		gap: 0.25rem;
-		flex-wrap: wrap;
 		justify-content: center;
 	}
 
 	.color-muestra {
 		width: 30px;
 		height: 30px;
-		border: 2px solid #fff;
+		border: 2px solid var(--fondo-botones-hover, #000000);;
 		border-radius: 50%;
 		cursor: pointer;
 		transition: all 0.2s ease;
@@ -445,53 +502,81 @@
 	.color-muestra:hover {
 		transform: scale(1.1);
 		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+		outline: 2px solid var(--fondo-botones-hover, #000000);
 	}
 
 	.color-muestra.seleccionado {
-		border-color: var(--color-seleccionado, #007bff);
+		border-color: var(--fondo-botones-hover, #000000);
 		border-width: 3px;
 		transform: scale(1.1);
 	}
 
 	.color-muestra:focus {
-		outline: 2px solid var(--color-focus, #007bff);
+		outline: 2px solid var(--fondo-botones-hover, #000000);
+		outline-offset: 0.3vh;
+	}
+
+	/* Botones de Grosor */
+	.botones-grosor {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+
+	.boton-grosor {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0.5rem;
+		border: 2px solid var(--icono-color-borde, #ccc);
+		border-radius: 8px;
+		background: var(--bg, #fff);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		min-width: 60px;
+	}
+
+	.boton-grosor:hover {
+		background: var(--fondo-botones-hover, #000000);
+		transform: translateY(-2px);
+	}
+
+	.boton-grosor.seleccionado {
+		border-color: var(--fondo-botones-hover, #000000);
+		border-width: 3px;
+	}
+
+	.boton-grosor:focus {
+		outline: 2px solid var(--fondo-botones-hover, #000000);
 		outline-offset: 2px;
 	}
 
-	/* Control Deslizante */
-	.control-deslizante {
-		width: 120px;
+	.circulo-grosor {
+		border-radius: 50%;
+		background: var(--icono-color-relleno, #333);
+		border: 4px solid var(--icono-color-borde,#000000);
+	}
+
+	.circulo-grosor.pequeno {
+		width: 8px;
 		height: 8px;
-		border-radius: 5px;
-		background: var(--color-fondo-slider, #ddd);
-		outline: none;
-		appearance: none;
-		cursor: pointer;
 	}
 
-	.control-deslizante::-webkit-slider-thumb {
-		appearance: none;
-		width: 20px;
-		height: 20px;
-		border-radius: 50%;
-		background: var(--color-thumb-slider, #007bff);
-		cursor: pointer;
-		border: 2px solid white;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	.circulo-grosor.mediano {
+		width: 16px;
+		height: 16px;
 	}
 
-	.control-deslizante::-moz-range-thumb {
-		width: 20px;
-		height: 20px;
-		border-radius: 50%;
-		background: var(--color-thumb-slider, #007bff);
-		cursor: pointer;
-		border: 2px solid white;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	.circulo-grosor.grande {
+		width: 24px;
+		height: 24px;
 	}
 
-	.control-deslizante:focus {
-		box-shadow: 0 0 0 2px var(--color-focus, #007bff);
+	.texto-grosor {
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--color-texto, #333);
 	}
 
 	/* Textos */
