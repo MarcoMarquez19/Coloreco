@@ -64,6 +64,7 @@ class ServicioDibujo {
 	private componenteCanvas: any = null;
 	private componenteOverlay: any = null;
 	private estado: EstadoDibujo;
+	private bloqueado: boolean = false;
 
 	constructor() {
 		this.estado = {
@@ -296,6 +297,37 @@ class ServicioDibujo {
 		this.componenteCanvas = null;
 		this.componenteOverlay = null;
 		console.log('[ServicioDibujo] Servicio destruido');
+	}
+
+	/**
+	 * Bloquea temporalmente el canvas durante drag & drop
+	 */
+	bloquear(): void {
+		this.bloqueado = true;
+		if (this.componenteCanvas) {
+			// Deshabilitar eventos del canvas
+			this.componenteCanvas.deshabilitarEventos?.();
+		}
+		console.log('[ServicioDibujo] Canvas bloqueado');
+	}
+
+	/**
+	 * Desbloquea el canvas
+	 */
+	desbloquear(): void {
+		this.bloqueado = false;
+		if (this.componenteCanvas) {
+			// Rehabilitar eventos del canvas
+			this.componenteCanvas.habilitarEventos?.();
+		}
+		console.log('[ServicioDibujo] Canvas desbloqueado');
+	}
+
+	/**
+	 * Verifica si el canvas está bloqueado
+	 */
+	estaBloqueado(): boolean {
+		return this.bloqueado;
 	}
 }
 

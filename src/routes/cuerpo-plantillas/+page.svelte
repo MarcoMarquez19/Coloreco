@@ -197,10 +197,10 @@
 
     <button class="boton-selección"
 		aria-label="Selecciona la escena a utilizar en el taller de dibujo" 
-		title="Ver Descripción de la escena seleccionada"
+		title="Usar la escena seleccionada"
 		onclick={verDescripcionEscena}
 	>
-		Ver descripción
+		Usar esta escena
 	</button>
 </div>
 

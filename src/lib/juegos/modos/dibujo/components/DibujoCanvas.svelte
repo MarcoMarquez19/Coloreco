@@ -319,11 +319,10 @@
 			const obraId = await guardarObra(datosObra);
 			
 			console.log(`[DibujoCanvas] Obra guardada exitosamente con ID: ${obraId}`);
-			alert(`¡Dibujo guardado exitosamente en la galería! 🎨`);
 
 		} catch (error) {
 			console.error('[DibujoCanvas] Error al guardar el dibujo:', error);
-			alert('Ocurrió un error al guardar el dibujo. Por favor, inténtalo de nuevo.');
+			throw error; // Propagar el error para manejarlo en el componente padre
 		}
 	}
 

@@ -41,9 +41,9 @@
 	},
 	{
 		"modo": "cuerpoHumano",
-		"escenaId": "cuerpo-completo",
+		"escenaId": "cuerpo-humano",
 		"nombre": "Cuerpo Humano Completo",
-		"ruta": "/escenas/cuerpo-completo.svg",
+		"ruta": "/escenas/cuerpo-humano.svg",
 		"version": 1
 	},
 	{
@@ -62,16 +62,44 @@
 	},
 	{
 		"modo": "cuerpoHumano",
-		"escenaId": "sistema-oseo",
-		"nombre": "Sistema Óseo",
-		"ruta": "/escenas/sistema-oseo.svg",
+		"escenaId": "sistema-oseo-superior",
+		"nombre": "Sistema Óseo Superior",
+		"ruta": "/escenas/oseo-superior.svg",
 		"version": 1
 	},
 	{
 		"modo": "cuerpoHumano",
-		"escenaId": "organos-internos",
-		"nombre": "Órganos Internos",
-		"ruta": "/escenas/organos-internos.svg",
+		"escenaId": "sistema-oseo-inferior",
+		"nombre": "Sistema Óseo Inferior",
+		"ruta": "/escenas/oseo-inferior.svg",
+		"version": 1
+	},
+	{
+		"modo": "cuerpoHumano",
+		"escenaId": "cabeza",
+		"nombre": "Cabeza Humana",
+		"ruta": "/escenas/cabeza.svg",
+		"version": 1
+	},
+	{
+		"modo": "cuerpoHumano",
+		"escenaId": "cinco-sentidos",
+		"nombre": "Cinco Sentidos",
+		"ruta": "/escenas/cinco-sentidos.svg",
+		"version": 1
+	},
+	{
+		"modo": "cuerpoHumano",
+		"escenaId": "mano",
+		"nombre": "Mano",
+		"ruta": "/escenas/mano.svg",
+		"version": 1
+	},
+	{
+		"modo": "cuerpoHumano",
+		"escenaId": "sistema-respiratorio",
+		"nombre": "Sistema Respiratorio",
+		"ruta": "/escenas/sistema-respiratorio.svg",
 		"version": 1
 	}
 ]
