@@ -574,7 +574,7 @@
 	}
 
 	.texto-grosor {
-		font-size: 0.75rem;
+		font-size: calc(var(--font-size-base, 1rem) * 0.8); 
 		font-weight: 500;
 		color: var(--color-texto, #333);
 	}
