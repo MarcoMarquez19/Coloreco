@@ -31,6 +31,11 @@
 	const accionesVisibles = ['mover','deshacer', 'guardar', 'terminar']; // Sin mover por ahora
     let guardarObra = $state<boolean>(false);
 
+    // Valores iniciales para la barra de herramientas
+    let herramientaInicial = $state<string>('pincel');
+    let colorInicial = $state<string>('#000000');
+    let grosorInicial = $state<number>(5);
+
     //Propiedades de la escena actual
 	let escena: EscenaCatalogo | null = $state<EscenaCatalogo | null>(null);
     let error: string | null = $state<string | null>(null);
@@ -89,8 +94,18 @@
 			return;
 		}
 
+		// Resetear el servicio a valores por defecto antes de inicializar
+		servicioDibujo.resetear();
+
 		// Inicializar el servicio con las referencias de los componentes
 		servicioDibujo.inicializar(canvasRef, overlayRef);
+		
+		// Obtener el estado inicial del servicio y sincronizar con la barra
+		const estado = servicioDibujo.obtenerEstado();
+		herramientaInicial = estado.herramientaActual.id;
+		colorInicial = estado.colorActual;
+		grosorInicial = estado.grosorActual;
+		
 		tallerInicializado = true;
 		
 		console.log('[TallerDibujo] Taller inicializado correctamente');
@@ -288,8 +303,13 @@
 	<main class="area-principal">
 		<!-- Barra de herramientas -->
 		<section class="seccion-herramientas" aria-label="Herramientas de dibujo" data-magnificable>
-			<DibujoBarraHerramientas				herramientasVisibles={herramientasVisibles}
-				accionesVisibles={accionesVisibles}				on:cambiarHerramienta={manejarEventoBarra}
+			<DibujoBarraHerramientas
+				herramientasVisibles={herramientasVisibles}
+				accionesVisibles={accionesVisibles}
+				herramientaInicial={herramientaInicial}
+				colorInicial={colorInicial}
+				grosorInicial={grosorInicial}
+				on:cambiarHerramienta={manejarEventoBarra}
 				on:cambiarColor={manejarEventoBarra}
 				on:cambiarGrosor={manejarEventoBarra}
 				on:accionDeshacer={manejarEventoBarra}

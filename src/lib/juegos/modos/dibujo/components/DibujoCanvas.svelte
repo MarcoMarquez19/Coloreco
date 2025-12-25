@@ -14,8 +14,10 @@
 	import { obtenerSesionActual } from '$lib/db/artistas.service';
 
 	// Referencias del canvas y contexto
-	let canvasRef: HTMLCanvasElement;
-	let contexto: CanvasRenderingContext2D;
+	let canvasDibujoRef: HTMLCanvasElement; // Canvas para el dibujo del usuario
+	let canvasEscenaRef: HTMLCanvasElement; // Canvas para la imagen de la escena
+	let contextoDibujo: CanvasRenderingContext2D; // Contexto para dibujar
+	let contextoEscena: CanvasRenderingContext2D; // Contexto para la escena
 	
 	// Estado de la escena
 	let escena: EscenaCatalogo | null = $state<EscenaCatalogo | null>(null);
@@ -65,18 +67,25 @@
 	 * Inicializa el canvas y carga la imagen de fondo
 	 */
 	function inicializarCanvas() {
-		if (!canvasRef || !escena) return;
+		if (!canvasDibujoRef || !canvasEscenaRef || !escena) return;
 
-		contexto = canvasRef.getContext('2d')!;
+		// Inicializar contextos
+		contextoDibujo = canvasDibujoRef.getContext('2d')!;
+		contextoEscena = canvasEscenaRef.getContext('2d')!;
 		
-		// Configurar el tamaño del canvas
-		canvasRef.width = canvasRef.offsetWidth;
-		canvasRef.height = canvasRef.offsetHeight;
+		// Configurar el tamaño de ambos canvas
+		const width = canvasDibujoRef.offsetWidth;
+		const height = canvasDibujoRef.offsetHeight;
 		
-		// Cargar imagen de fondo
+		canvasDibujoRef.width = width;
+		canvasDibujoRef.height = height;
+		canvasEscenaRef.width = width;
+		canvasEscenaRef.height = height;
+		
+		// Cargar imagen de escena en el canvas superior
 		cargarImagenDeFondo();
 		
-		// Guardar estado inicial
+		// Guardar estado inicial del canvas de dibujo
 		guardarEstadoEnHistorial();
 	}
 
@@ -84,18 +93,15 @@
 	 * Carga la imagen de fondo de la escena
 	 */
 	function cargarImagenDeFondo() {
-		if (!contexto || !escena) return;
+		if (!contextoEscena || !escena) return;
 
 		const imagen = new Image();
 		imagen.onload = () => {
-			// Limpiar canvas
-			contexto.clearRect(0, 0, canvasRef.width, canvasRef.height);
+			// Limpiar canvas de escena
+			contextoEscena.clearRect(0, 0, canvasEscenaRef.width, canvasEscenaRef.height);
 			
 			// Dibujar imagen ajustada al 100% del canvas (puede deformarse para ocupar todo el espacio)
-			contexto.drawImage(imagen, 0, 0, canvasRef.width, canvasRef.height);
-			
-			// Actualizar historial después de cargar la imagen
-			guardarEstadoEnHistorial();
+			contextoEscena.drawImage(imagen, 0, 0, canvasEscenaRef.width, canvasEscenaRef.height);
 		};
 		
 		imagen.onerror = () => {
@@ -109,9 +115,9 @@
 	 * Guarda el estado actual del canvas en el historial
 	 */
 	function guardarEstadoEnHistorial() {
-		if (!contexto) return;
+		if (!contextoDibujo) return;
 		
-		const estadoActual = contexto.getImageData(0, 0, canvasRef.width, canvasRef.height);
+		const estadoActual = contextoDibujo.getImageData(0, 0, canvasDibujoRef.width, canvasDibujoRef.height);
 		historialDibujo.push(estadoActual);
 		
 		// Limitar el tamaño del historial
@@ -124,7 +130,7 @@
 	 * Obtiene las coordenadas relativas al canvas
 	 */
 	function obtenerCoordenadas(evento: MouseEvent | TouchEvent): { x: number; y: number } {
-		const rect = canvasRef.getBoundingClientRect();
+		const rect = canvasDibujoRef.getBoundingClientRect();
 		let clientX: number, clientY: number;
 
 		if (evento instanceof MouseEvent) {
@@ -149,8 +155,8 @@
 		estaDibujando = true;
 		
 		const { x, y } = obtenerCoordenadas(evento);
-		contexto.beginPath();
-		contexto.moveTo(x, y);
+		contextoDibujo.beginPath();
+		contextoDibujo.moveTo(x, y);
 	}
 
 	/**
@@ -161,8 +167,8 @@
 		evento.preventDefault();
 		
 		const { x, y } = obtenerCoordenadas(evento);
-		contexto.lineTo(x, y);
-		contexto.stroke();
+		contextoDibujo.lineTo(x, y);
+		contextoDibujo.stroke();
 	}
 
 	/**
@@ -171,7 +177,7 @@
 	function terminarDibujo() {
 		if (!estaDibujando) return;
 		estaDibujando = false;
-		contexto.beginPath();
+		contextoDibujo.beginPath();
 		
 		// Guardar estado después de dibujar
 		guardarEstadoEnHistorial();
@@ -187,12 +193,12 @@
 		grosorActual = grosor;
 		herramientaActual = 'pincel';
 		
-		if (contexto) {
-			contexto.strokeStyle = color;
-			contexto.lineWidth = grosor;
-			contexto.lineCap = 'round';
-			contexto.lineJoin = 'round';
-			contexto.globalCompositeOperation = 'source-over';
+		if (contextoDibujo) {
+			contextoDibujo.strokeStyle = color;
+			contextoDibujo.lineWidth = grosor;
+			contextoDibujo.lineCap = 'round';
+			contextoDibujo.lineJoin = 'round';
+			contextoDibujo.globalCompositeOperation = 'source-over';
 		}
 	}
 
@@ -203,11 +209,11 @@
 		grosorActual = grosor;
 		herramientaActual = 'borrador';
 		
-		if (contexto) {
-			contexto.lineWidth = grosor;
-			contexto.lineCap = 'round';
-			contexto.lineJoin = 'round';
-			contexto.globalCompositeOperation = 'destination-out';
+		if (contextoDibujo) {
+			contextoDibujo.lineWidth = grosor;
+			contextoDibujo.lineCap = 'round';
+			contextoDibujo.lineJoin = 'round';
+			contextoDibujo.globalCompositeOperation = 'destination-out';
 		}
 	}
 
@@ -215,13 +221,14 @@
 	 * Limpia todo el canvas y vuelve a cargar la imagen de fondo
 	 */
 	export function limpiar() {
-		if (!contexto) return;
+		if (!contextoDibujo) return;
 		
-		// Limpiar historial excepto el estado inicial
-		historialDibujo = historialDibujo.slice(0, 1);
+		// Limpiar el canvas de dibujo
+		contextoDibujo.clearRect(0, 0, canvasDibujoRef.width, canvasDibujoRef.height);
 		
-		// Recargar imagen de fondo
-		cargarImagenDeFondo();
+		// Limpiar historial excepto el estado inicial vacío
+		historialDibujo = [];
+		guardarEstadoEnHistorial();
 	}
 
 	/**
@@ -235,8 +242,8 @@
 		
 		// Restaurar el estado anterior
 		const estadoAnterior = historialDibujo[historialDibujo.length - 1];
-		if (estadoAnterior && contexto) {
-			contexto.putImageData(estadoAnterior, 0, 0);
+		if (estadoAnterior && contextoDibujo) {
+			contextoDibujo.putImageData(estadoAnterior, 0, 0);
 		}
 	}
 
@@ -244,14 +251,14 @@
 	 * Obtiene el contexto del canvas (para integración con el servicio)
 	 */
 	export function obtenerContexto(): CanvasRenderingContext2D | null {
-		return contexto || null;
+		return contextoDibujo || null;
 	}
 
 	/**
 	 * Guarda el dibujo como obra en la galería
 	 */
 	export async function guardarDibujo(): Promise<void> {
-		if (!canvasRef || !escena) {
+		if (!canvasDibujoRef || !canvasEscenaRef || !escena) {
 			console.error('[DibujoCanvas] No hay canvas o escena disponible para guardar');
 			return;
 		}
@@ -267,9 +274,20 @@
 				return;
 			}
 
-			// Convertir el canvas a blob
+			// Crear un canvas temporal para combinar ambas capas
+			const canvasTemp = document.createElement('canvas');
+			canvasTemp.width = canvasDibujoRef.width;
+			canvasTemp.height = canvasDibujoRef.height;
+			const ctxTemp = canvasTemp.getContext('2d')!;
+			
+			// Primero dibujar el canvas de dibujo (capa inferior)
+			ctxTemp.drawImage(canvasDibujoRef, 0, 0);
+			// Luego dibujar el canvas de escena encima
+			ctxTemp.drawImage(canvasEscenaRef, 0, 0);
+
+			// Convertir el canvas temporal a blob
 			const blob = await new Promise<Blob>((resolve, reject) => {
-				canvasRef.toBlob((blob) => {
+				canvasTemp.toBlob((blob) => {
 					if (blob) {
 						resolve(blob);
 					} else {
@@ -309,7 +327,7 @@
 
 	// Efectos reactivos
 	$effect(() => {
-		if (escena && canvasRef) {
+		if (escena && canvasDibujoRef && canvasEscenaRef) {
 			inicializarCanvas();
 		}
 	});
@@ -331,8 +349,9 @@
 			<p>{error}</p>
 		</div>
 	{:else if escena}
+		<!-- Canvas de dibujo (capa inferior - donde dibuja el usuario) -->
 		<canvas
-			bind:this={canvasRef}
+			bind:this={canvasDibujoRef}
 			class="lienzo-dibujo"
 			aria-label={`Lienzo para dibujar sobre la escena: ${escena.nombre}`}
 			onmousedown={iniciarDibujo}
@@ -342,6 +361,13 @@
 			ontouchstart={iniciarDibujo}
 			ontouchmove={dibujar}
 			ontouchend={terminarDibujo}
+		></canvas>
+		
+		<!-- Canvas de escena (capa superior - imagen que permanece encima) -->
+		<canvas
+			bind:this={canvasEscenaRef}
+			class="lienzo-escena"
+			aria-hidden="true"
 		></canvas>
 	{/if}
 </div>
@@ -359,12 +385,26 @@
 		overflow: hidden;
 	}
 
-	.lienzo-dibujo {
+	.lienzo-dibujo,
+	.lienzo-escena {
+		position: absolute;
+		top: 0;
+		left: 0;
 		width: 100%;
 		height: 100%;
+		background: transparent;
+	}
+
+	.lienzo-dibujo {
+		z-index: 1; /* Capa inferior para el dibujo del usuario */
 		cursor: crosshair;
 		touch-action: none;
 		background: white;
+	}
+
+	.lienzo-escena {
+		z-index: 200; /* Capa superior para la imagen de la escena */
+		pointer-events: none; /* Permite que los eventos pasen al canvas de dibujo */
 	}
 
 	.lienzo-dibujo:active {

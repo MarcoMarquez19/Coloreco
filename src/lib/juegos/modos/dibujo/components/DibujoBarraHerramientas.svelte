@@ -13,11 +13,17 @@
 	interface Props {
 		herramientasVisibles?: string[];
 		accionesVisibles?: string[];
+		herramientaInicial?: string;
+		colorInicial?: string;
+		grosorInicial?: number;
 	}
 
 	let { 
 		herramientasVisibles = ['pincel', 'borrador', 'stickers'],
-		accionesVisibles = ['mover', 'deshacer', 'guardar', 'terminar']
+		accionesVisibles = ['mover', 'deshacer', 'guardar', 'terminar'],
+		herramientaInicial = 'pincel',
+		colorInicial = '#000000',
+		grosorInicial = 5
 	}: Props = $props();
 
 	// Dispatcher para comunicar cambios a los componentes padre
@@ -32,9 +38,9 @@
 	}>();
 
 	// Estado de la barra de herramientas
-	let herramientaActual = $state<string>('pincel');
-	let colorActual = $state<string>('#000000');
-	let grosorActual = $state<number>(5);
+	let herramientaActual = $state<string>(herramientaInicial);
+	let colorActual = $state<string>(colorInicial);
+	let grosorActual = $state<number>(grosorInicial);
 
 	// Colores predefinidos
 	const coloresPredefinidos = [
@@ -82,6 +88,19 @@
 	 */
 	function seleccionarHerramienta(herramienta: string) {
 		herramientaActual = herramienta;
+		
+		// Establecer valores por defecto según la herramienta
+		if (herramienta === 'pincel') {
+			colorActual = '#000000'; // Negro por defecto
+			grosorActual = 5; // Pequeño por defecto
+			dispatch('cambiarColor', { color: colorActual });
+			dispatch('cambiarGrosor', { grosor: grosorActual });
+		} else if (herramienta === 'borrador') {
+			grosorActual = 15; // Pequeño por defecto para borrador
+			dispatch('cambiarGrosor', { grosor: grosorActual });
+		}
+		// Para stickers, mantener valores actuales
+		
 		dispatch('cambiarHerramienta', { herramienta });
 	}
 
