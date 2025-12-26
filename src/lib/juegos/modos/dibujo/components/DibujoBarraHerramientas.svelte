@@ -51,6 +51,9 @@
 	let stickerSeleccionado = $state<Sticker | null>(null);
 	let tamanoStickerActual = $state<number>(1.0); // Escala mediana por defecto
 	let mostrarPanelStickers = $state<boolean>(false);
+	let botonStickersRef: HTMLButtonElement | null = $state(null);
+	let panelTop = $state<number>(0);
+	let panelLeft = $state<number>(0);
 
 	// Colores predefinidos
 	const coloresPredefinidos = [
@@ -111,8 +114,23 @@
 			dispatch('cambiarGrosor', { grosor: grosorActual });
 			mostrarPanelStickers = false;
 		} else if (herramienta === 'stickers') {
-			// Abrir panel de stickers automáticamente
-			mostrarPanelStickers = true;
+			// Cargar sticker por defecto: primer sticker de Flora en tamaño mediano
+			const categoriaEntornoNatural = CATEGORIAS_STICKERS[0]; // Entorno Natural
+			const subcategoriaFlora = categoriaEntornoNatural.subcategorias[0]; // Flora
+			const stickerPorDefecto = subcategoriaFlora.stickers[0]; // Primer sticker
+			
+			if (stickerPorDefecto) {
+				categoriaActual = categoriaEntornoNatural;
+				subcategoriaActual = subcategoriaFlora;
+				stickerSeleccionado = stickerPorDefecto;
+				tamanoStickerActual = 1.0; // Tamaño mediano por defecto
+				
+				// Disparar eventos
+				dispatch('seleccionarSticker', { sticker: stickerPorDefecto });
+				dispatch('cambiarTamanoSticker', { escala: 1.0 });
+			}
+			
+			mostrarPanelStickers = false;
 		}
 		
 		dispatch('cambiarHerramienta', { herramienta });
@@ -144,6 +162,20 @@
 	}
 
 	/**
+	 * Abre el panel de stickers posicionado desde el botón
+	 */
+	function abrirPanelStickers() {
+		if (!botonStickersRef) return;
+		
+		const rect = botonStickersRef.getBoundingClientRect();
+		// Panel aparece debajo del botón, centrado horizontalmente respecto al botón
+		panelTop = rect.bottom + 10; // 10px de espacio debajo del botón
+		panelLeft = rect.left + rect.width / 2; // Centro horizontal del botón
+		
+		mostrarPanelStickers = true;
+	}
+
+	/**
 	 * Cambia el color activo
 	 */
 	function seleccionarColor(color: string) {
@@ -166,6 +198,17 @@
 	function ejecutarDeshacer() {
 		dispatch('accionDeshacer', {});
 	}
+
+	/**
+	 * Efecto para actualizar las variables CSS de posicionamiento del panel
+	 */
+	$effect(() => {
+		if (typeof window !== 'undefined' && mostrarPanelStickers) {
+			const root = document.documentElement;
+			root.style.setProperty('--panel-top', `${panelTop}px`);
+			root.style.setProperty('--panel-left', `${panelLeft}px`);
+		}
+	});
 
 	/**
 	 * Ejecuta acción de guardar
@@ -394,9 +437,16 @@
 			<div class="grupo-opciones grupo-stickers">
 				<!-- Botón para abrir/cerrar panel de stickers -->
 				<button
+					bind:this={botonStickersRef}
 					class="boton-abrir-stickers"
 					class:activo={mostrarPanelStickers}
-					onclick={() => mostrarPanelStickers = !mostrarPanelStickers}
+					onclick={() => {
+						if (mostrarPanelStickers) {
+							mostrarPanelStickers = false;
+						} else {
+							abrirPanelStickers();
+						}
+					}}
 					aria-label="Abrir panel de stickers"
 					aria-expanded={mostrarPanelStickers}
 				>
@@ -424,10 +474,6 @@
 						{/each}
 					</div>
 				</div>
-
-				{#if stickerSeleccionado}
-					<p class="instruccion-sticker">Haz clic en el lienzo para colocar el sticker</p>
-				{/if}
 			</div>
 
 			<!-- Panel flotante de stickers -->
@@ -850,29 +896,19 @@
 		outline-offset: 2px;
 	}
 
-	.instruccion-sticker {
-		font-size: calc(var(--font-size-base, 1rem) * 0.85);
-		color: var(--color-texto-secundario, #666);
-		margin: 0;
-		font-style: italic;
-		padding: 0.25rem 0.5rem;
-		background: rgba(255, 202, 0, 0.3);
-		border-radius: 4px;
-	}
-
 	/* Panel flotante de stickers */
 	.panel-stickers-flotante {
 		position: fixed;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		width: min(90vw, 500px);
-		max-height: 70vh;
+		top: var(--panel-top, 0px);
+		left: var(--panel-left, 0px);
+		transform: translateX(-50%);
+		width: min(90vw, 420px);
+		max-height: min(80vh, calc(100vh - var(--panel-top, 0px) - 20px));
 		background: var(--bg, #ffffff);
 		border: 3px solid var(--icono-color-borde, #000);
 		border-radius: 16px;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-		z-index: 1000;
+		box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+		z-index: 99999;
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
@@ -882,15 +918,17 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 0.75rem 1rem;
+		padding: 1rem;
 		background: var(--fondo-botones, #ffca00);
 		border-bottom: 2px solid var(--icono-color-borde, #000);
+		flex-shrink: 0;
 	}
 
 	.panel-header h3 {
 		margin: 0;
-		font-size: calc(var(--font-size-base, 1rem) * 1.1);
+		font-size: calc(var(--font-size-base, 1rem) * 1.2);
 		font-weight: 700;
+		color: var(--icono-color-relleno, #000);
 	}
 
 	.boton-cerrar-panel {
@@ -921,24 +959,28 @@
 	/* Tabs de categorías */
 	.tabs-categorias {
 		display: flex;
-		gap: 0.5rem;
-		padding: 0.75rem;
+		gap: 0.4rem;
+		padding: 0.5rem;
 		background: var(--bg-secundario, #f5f5f5);
-		border-bottom: 1px solid var(--icono-color-borde, #ddd);
+		border-bottom: 2px solid var(--icono-color-borde, #ddd);
+		flex-shrink: 0;
+		overflow-x: auto;
+		max-width: 100%;
 	}
 
 	.tab-categoria {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.25rem;
-		padding: 0.5rem 1rem;
-		border: 2px solid transparent;
-		border-radius: 8px;
+		gap: 0.2rem;
+		padding: 0.4rem 0.6rem;
+		border: 2px solid var(--icono-color-borde, #ccc);
+		border-radius: 6px;
 		background: var(--bg, #fff);
 		cursor: pointer;
 		transition: all 0.2s ease;
-		flex: 1;
+		flex-shrink: 0;
+		min-width: fit-content;
 	}
 
 	.tab-categoria:hover {
@@ -946,8 +988,9 @@
 	}
 
 	.tab-categoria.activa {
-		border-color: var(--color-primario, #007bff);
+		border-color: var(--icono-color-borde, #000);
 		background: var(--fondo-botones, #ffca00);
+		border-width: 3px;
 	}
 
 	.tab-categoria:focus {
@@ -956,90 +999,106 @@
 	}
 
 	.icono-tab {
-		font-size: 1.5rem;
+		font-size: 1.1rem;
 	}
 
 	.texto-tab {
-		font-size: calc(var(--font-size-base, 1rem) * 0.75);
+		font-size: calc(var(--font-size-base, 1rem) * 0.7);
 		font-weight: 600;
+		text-align: center;
+		white-space: nowrap;
 	}
 
 	/* Tabs de subcategorías */
 	.tabs-subcategorias {
 		display: flex;
-		gap: 0.5rem;
+		gap: 0.4rem;
 		padding: 0.5rem;
-		background: var(--bg, #fff);
+		background: var(--bg-secundario, #f9f9f9);
 		border-bottom: 1px solid var(--icono-color-borde, #ddd);
 		flex-wrap: wrap;
 		justify-content: center;
+		flex-shrink: 0;
+		max-width: 100%;
 	}
 
 	.tab-subcategoria {
 		display: flex;
+		flex-direction: column;
 		align-items: center;
-		gap: 0.25rem;
-		padding: 0.4rem 0.75rem;
-		border: 2px solid var(--icono-color-borde, #ccc);
-		border-radius: 20px;
+		gap: 0.15rem;
+		padding: 0.3rem 0.5rem;
+		border: 2px solid var(--icono-color-borde, #ddd);
+		border-radius: 6px;
 		background: var(--bg, #fff);
 		cursor: pointer;
 		transition: all 0.2s ease;
-		font-size: calc(var(--font-size-base, 1rem) * 0.85);
+		font-size: calc(var(--font-size-base, 1rem) * 0.7);
+		flex-shrink: 0;
 	}
 
 	.tab-subcategoria:hover {
-		background: var(--fondo-botones-hover, #e0e0e0);
+		background: var(--fondo-botones-hover, #e8e8e8);
 	}
 
 	.tab-subcategoria.activa {
-		border-color: var(--color-primario, #007bff);
+		border-color: var(--icono-color-borde, #000);
 		background: var(--fondo-botones, #ffca00);
+		border-width: 2px;
 	}
 
 	.tab-subcategoria:focus {
 		outline: 2px solid var(--fondo-botones-hover, #000);
-		outline-offset: 2px;
+		outline-offset: 1px;
 	}
 
 	.icono-sub {
-		font-size: 1rem;
+		font-size: 0.9rem;
 	}
 
 	.texto-sub {
-		font-weight: 500;
+		font-weight: 600;
+		text-align: center;
+		white-space: nowrap;
 	}
 
 	/* Grid de stickers */
 	.grid-stickers {
 		display: grid;
-		grid-template-columns: repeat(5, 1fr);
+		grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
 		gap: 0.5rem;
-		padding: 1rem;
+		padding: 0.75rem;
 		overflow-y: auto;
-		max-height: calc(70vh - 200px);
+		overflow-x: hidden;
+		flex: 1;
+		min-height: 0;
 	}
 
 	.boton-sticker {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.25rem;
+		justify-content: center;
+		gap: 0.3rem;
 		padding: 0.5rem;
 		border: 2px solid var(--icono-color-borde, #ddd);
 		border-radius: 8px;
 		background: var(--bg, #fff);
 		cursor: pointer;
 		transition: all 0.2s ease;
+		min-height: 90px;
+		width: 100%;
+		aspect-ratio: 1 / 1.15;
 	}
 
 	.boton-sticker:hover {
-		background: var(--fondo-botones-hover, #e0e0e0);
-		transform: scale(1.05);
+		background: var(--fondo-botones-hover, #f0f0f0);
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	}
 
 	.boton-sticker.seleccionado {
-		border-color: var(--color-primario, #007bff);
+		border-color: var(--icono-color-borde, #000);
 		border-width: 3px;
 		background: var(--fondo-botones, #ffca00);
 	}
@@ -1051,16 +1110,19 @@
 
 	.emoji-sticker {
 		font-size: 2rem;
+		line-height: 1;
+		flex-shrink: 0;
 	}
 
 	.nombre-sticker {
-		font-size: calc(var(--font-size-base, 1rem) * 0.65);
+		font-size: calc(var(--font-size-base, 1rem) * 0.6);
 		text-align: center;
-		font-weight: 500;
-		line-height: 1.1;
+		font-weight: 600;
+		line-height: 1;
 		max-width: 100%;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		hyphens: auto;
+		flex-shrink: 0;
 	}
 </style>

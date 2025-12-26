@@ -585,6 +585,7 @@
 	.seccion-herramientas {
         min-width: 95vw;
 		flex-shrink: 0;
+		z-index: 201;
 	}
 
 	.seccion-lienzo {
