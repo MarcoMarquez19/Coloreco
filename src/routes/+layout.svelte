@@ -4,6 +4,7 @@
 	import { audioStore, clickSound } from '$lib/stores/audio';
 	import { interpolateMatrix } from '$lib/constants/colorMatrices';
 	import EfectoLupa from '$lib/components/a11y/EfectoLupa.svelte';
+	import NarrationControl from '$lib/components/a11y/NarrationControl.svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
@@ -51,7 +52,9 @@
 	let necesitaFondoManchas = $derived($page.url.pathname === '/' 
 	|| $page.url.pathname === '/seleccionar-estudio' 
 	|| $page.url.pathname.startsWith('/galeria')
-);
+	|| $page.url.pathname.startsWith('/menu-juegos')
+	|| $page.url.pathname.startsWith('/taller-escenas')
+	);
 
 	// Funciones de navegación
 	function abrirConfiguracion() {
@@ -67,7 +70,14 @@
 		}
 	}
 	function manejarTecla(event: KeyboardEvent) {
-		if (event.key === 'Escape') volver();
+		// No capturar ESC si hay un modal abierto
+		if (event.key === 'Escape') {
+			const modalAbierto = document.querySelector('[aria-modal="true"]');
+			if (!modalAbierto) {
+				volver();
+			}
+			return;
+		}
 		if ((event.key === 'a' || event.key === 'A') && event.ctrlKey) {
 			event.preventDefault();
 			abrirConfiguracion();
@@ -120,6 +130,285 @@
 			console.error('[Layout] Error verificando sesión:', e);
 		}
 	});
+
+	// Efecto para aplicar atributos data según modos activos
+	$effect(() => {
+		const root = document.documentElement;
+		
+		// Modo biónico
+		if ($configuraciones.bionicMode) {
+			root.setAttribute('data-bionic', 'true');
+		} else {
+			root.removeAttribute('data-bionic');
+		}
+		
+		// Modo rima
+		if ($configuraciones.rhymeMode) {
+			root.setAttribute('data-rhyme', 'true');
+		} else {
+			root.removeAttribute('data-rhyme');
+		}
+		
+		// Modo pictograma
+		if ($configuraciones.pictogramMode) {
+			root.setAttribute('data-pictogram', 'true');
+		} else {
+			root.removeAttribute('data-pictogram');
+		}
+		
+		// Modo narración
+		if ($configuraciones.narrationEnabled) {
+			root.setAttribute('data-narration', 'true');
+		} else {
+			root.removeAttribute('data-narration');
+		}
+
+		// Aplicar efectos combinados
+		setTimeout(() => applyAccessibilityModes(), 100);
+	});
+
+	// Efecto para reaplicar los modos cuando cambia la página
+	$effect(() => {
+		// Escuchar cambios en la ruta
+		const currentPath = $page.url.pathname;
+		
+		// Reaplicar modos después de que el DOM se actualice
+		setTimeout(() => {
+			if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+				applyAccessibilityModes();
+			}
+		}, 200);
+	});
+
+	// Función para aplicar todos los modos activos de forma combinada
+	async function applyAccessibilityModes() {
+		if (!mainEl) return;
+		
+		// Restaurar primero
+		restoreOriginalText();
+		
+		const elements = mainEl.querySelectorAll('h1, h2, h3, h4, h5, h6, .seccion-titulo, p, button:not(.control-button):not(.boton-volver):not(.boton-configuracion):not(.switch-toggle), label:not(.switch-knob), .switch-label, span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-highlight):not(.switch-knob):not(.control-valor), small, div.control-ayuda, .control-label span');
+		
+		// Importar funciones de rima si es necesario
+		let detectRhymes: ((text: string) => any[]) | undefined;
+		let applyRhymeHighlight: ((text: string, patterns: any[], backgroundColor?: string) => string) | undefined;
+		let splitIntoSyllables: ((word: string) => string[]) | undefined;
+		if ($configuraciones.rhymeMode || $configuraciones.bionicMode) {
+			const rhymeModule = await import('$lib/logic/rhyme');
+			detectRhymes = rhymeModule.detectRhymes;
+			applyRhymeHighlight = rhymeModule.applyRhymeHighlight;
+			splitIntoSyllables = rhymeModule.splitIntoSyllables;
+		}
+		
+		elements.forEach((element) => {
+
+			// Evitar procesar elementos ya procesados
+			if (element.querySelector('.bionic-highlight') || element.querySelector('.rhyme-highlight')) return;
+			
+			const text = element.textContent?.trim();
+			if (!text) return;
+			
+			// Guardar HTML original para poder restaurarlo exactamente
+			element.setAttribute('data-original-html', (element as HTMLElement).innerHTML);
+			
+			let processedHTML = text;
+			
+			// Aplicar modo rima primero si está activo
+			if ($configuraciones.rhymeMode && detectRhymes && applyRhymeHighlight) {
+				const patterns = detectRhymes(text);
+				const backgroundColor = $configuraciones.modoNoche 
+					? ($configuraciones.modoInverso ? '#ffffff' : '#121212')
+					: '#ffffff';
+				processedHTML = applyRhymeHighlight(text, patterns, backgroundColor);
+			}
+			
+			// Aplicar modo biónico después si está activo
+			if ($configuraciones.bionicMode) {
+				// Si ya hay HTML del modo rima, procesar respetando los spans de rima
+				if ($configuraciones.rhymeMode) {
+					const tempDiv = document.createElement('div');
+					tempDiv.innerHTML = processedHTML;
+					
+					// Usar función de separación de sílabas importada
+					if (!splitIntoSyllables) return;
+					
+					// Procesar todos los textos, tanto dentro como fuera de spans de rima
+					const processTextNode = (node: Node) => {
+						if (node.nodeType === Node.TEXT_NODE) {
+							const text = node.textContent || '';
+							if (!text.trim()) return;
+							
+							// Dividir en palabras
+							const words = text.split(/(\s+)/);
+							const container = document.createElement('span');
+							
+							words.forEach(word => {
+								if (/^\s+$/.test(word)) {
+									// Es espacio, mantenerlo
+									container.appendChild(document.createTextNode(word));
+								} else if (word.length > 0) {
+									// Es palabra, aplicar formato biónico por sílabas
+									const syllables = splitIntoSyllables(word);
+									
+									if (syllables.length === 0) {
+										container.appendChild(document.createTextNode(word));
+									} else if (syllables.length === 1 && word.length <= 3) {
+										// Palabra corta, resaltar completa
+										const span = document.createElement('span');
+										span.className = 'bionic-highlight';
+										span.style.cssText = 'color: inherit; font-weight: 700;';
+										span.textContent = word;
+										container.appendChild(span);
+									} else {
+										// Resaltar primera sílaba
+										const firstSyllable = syllables[0];
+										const rest = word.slice(firstSyllable.length);
+										
+										const highlightSpan = document.createElement('span');
+										highlightSpan.className = 'bionic-highlight';
+										highlightSpan.style.cssText = 'color: inherit; font-weight: 700;';
+										highlightSpan.textContent = firstSyllable;
+										container.appendChild(highlightSpan);
+										
+										if (rest) {
+											const restSpan = document.createElement('span');
+											restSpan.className = 'bionic-rest';
+											restSpan.style.cssText = 'color: inherit; font-weight: 400;';
+											restSpan.textContent = rest;
+											container.appendChild(restSpan);
+										}
+									}
+								}
+							});
+							
+							if (node.parentNode) {
+								node.parentNode.replaceChild(container, node);
+							}
+						} else if (node.nodeType === Node.ELEMENT_NODE && (node as Element).classList.contains('rhyme-highlight')) {
+							// Procesar texto dentro de spans de rima sin destruir el span
+							Array.from(node.childNodes).forEach(processTextNode);
+						} else if (node.childNodes.length > 0) {
+							// Recursivamente procesar hijos
+							Array.from(node.childNodes).forEach(processTextNode);
+						}
+					};
+					
+					processTextNode(tempDiv);
+					processedHTML = tempDiv.innerHTML;
+				} else {
+					// Aplicar biónico simple sin rima
+					if (!splitIntoSyllables) return;
+					const words = text.split(/(\s+)/);
+					
+					const processedWords = words.map((word) => {
+						if (/^\s+$/.test(word)) {
+							return word;
+						}
+						
+						if (word.length === 0) return word;
+						
+						const syllables = splitIntoSyllables(word);
+						
+						if (syllables.length === 0) {
+							return word;
+						} else if (syllables.length === 1 && word.length <= 3) {
+							// Palabra corta, resaltar completa
+							return `<span class="bionic-highlight" style="font-weight: 700;">${word}</span>`;
+						} else {
+							// Resaltar primera sílaba
+							const firstSyllable = syllables[0];
+							const rest = word.slice(firstSyllable.length);
+							return `<span class="bionic-highlight" style="font-weight: 700;">${firstSyllable}</span><span class="bionic-rest" style="font-weight: 400;">${rest}</span>`;
+						}
+					});
+					
+					processedHTML = processedWords.join('');
+				}
+			}
+
+			// En lugar de reemplazar el innerHTML completo (que rompe la estructura), procesamos
+			// cada nodo de texto individualmente y reemplazamos solo lo necesario.
+			const createBionicFragment = (text: string) => {
+				const frag = document.createDocumentFragment();
+				if (!splitIntoSyllables) { frag.appendChild(document.createTextNode(text)); return frag; }
+				const tokens = text.split(/(\s+)/);
+				tokens.forEach(token => {
+					if (/^\s+$/.test(token)) { frag.appendChild(document.createTextNode(token)); return; }
+					const syllables = splitIntoSyllables(token);
+					if (!syllables || syllables.length === 0) { frag.appendChild(document.createTextNode(token)); return; }
+					if (syllables.length === 1 && token.length <= 3) {
+						const s = document.createElement('span'); s.className = 'bionic-highlight'; s.textContent = token; frag.appendChild(s); return;
+					}
+					const first = syllables[0]; const rest = token.slice(first.length);
+					const h = document.createElement('span'); h.className = 'bionic-highlight'; h.textContent = first; frag.appendChild(h);
+					if (rest) { const r = document.createElement('span'); r.className = 'bionic-rest'; r.textContent = rest; frag.appendChild(r); }
+				});
+				return frag;
+			};
+
+			const processNode = (node: Node) => {
+				if (node.nodeType === Node.TEXT_NODE) {
+					const txt = node.textContent || '';
+					if (!txt.trim()) return;
+					if ($configuraciones.rhymeMode && detectRhymes && applyRhymeHighlight) {
+						const patterns = detectRhymes(txt);
+						const backgroundColor = $configuraciones.modoNoche ? ($configuraciones.modoInverso ? '#ffffff' : '#121212') : '#ffffff';
+						const html = applyRhymeHighlight(txt, patterns, backgroundColor);
+						const tmp = document.createElement('div'); tmp.innerHTML = html;
+						if ($configuraciones.bionicMode) {
+							const walk = (n: Node) => {
+								if (n.nodeType === Node.TEXT_NODE) {
+									const frag = createBionicFragment(n.textContent || ''); n.parentNode?.replaceChild(frag, n);
+								} else if (n.nodeType === Node.ELEMENT_NODE && (n as Element).classList.contains('rhyme-highlight')) {
+									Array.from(n.childNodes).forEach(walk);
+								} else if (n.childNodes && n.childNodes.length) { Array.from(n.childNodes).forEach(walk); }
+							};
+							Array.from(tmp.childNodes).forEach(walk);
+						}
+						const frag = document.createDocumentFragment(); Array.from(tmp.childNodes).forEach(c => frag.appendChild(c.cloneNode(true)));
+						node.parentNode?.replaceChild(frag, node);
+						return;
+					}
+					if ($configuraciones.bionicMode) { const f = createBionicFragment(txt); node.parentNode?.replaceChild(f, node); return; }
+					return;
+				} else if (node.nodeType === Node.ELEMENT_NODE) {
+					if ((node as Element).classList.contains('bionic-highlight') || (node as Element).classList.contains('rhyme-highlight')) return;
+					Array.from(node.childNodes).forEach(processNode);
+				}
+			};
+
+			Array.from(element.childNodes).forEach(processNode);
+		});
+	}
+
+	// Función para restaurar texto original
+	function restoreOriginalText() {
+		if (!mainEl) return;
+		
+		const elements = mainEl.querySelectorAll('[data-original-html]');
+		elements.forEach((element) => {
+			const originalHtml = element.getAttribute('data-original-html');
+			if (originalHtml !== null) {
+				(element as HTMLElement).innerHTML = originalHtml;
+				element.removeAttribute('data-original-html');
+			}
+		});
+	}
+    // Escalado accesible de botones según resolución (mantener tamaño aparente entre 720p y 1080p)
+    function actualizarEscalaBotones() {
+        if (!browser) return;
+        const BASE_HEIGHT = 1080;
+        const MIN_SCALE = 0.6;   // evita que en pantallas muy altas se reduzca demasiado
+        const MAX_SCALE = 1;   // en 720p ≈ 1.5 para igualar tamaño aparente
+        const scale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, BASE_HEIGHT / window.innerHeight));
+        document.documentElement.style.setProperty('--btn-scale', String(scale));
+    }
+
+    onMount(() => {
+        actualizarEscalaBotones();
+        window.addEventListener('resize', actualizarEscalaBotones);
+        return () => window.removeEventListener('resize', actualizarEscalaBotones);
+    });
 </script>
 
 <!-- Escuchamos el evento de teclado en toda la ventana -->
@@ -174,6 +463,9 @@
 		<EfectoLupa />
 	</div>
 	{/if}
+
+	<!-- Control de narración -->
+	<NarrationControl />
 
 	<!-- Botón de volver fijo en la esquina inferior izquierda (oculto en página inicial) -->
 	{#if !estaEnInicio && !estaEnEstudio}
@@ -281,6 +573,7 @@
 	.contenedor-flotante-d { right: calc(var(--spacing-base, 1rem) * 2.5); }
 
 	.texto-tecla {
+		font-size: calc(4vh * var(--btn-scale, 1));
 		font-weight: 500;
 		width: 100%;
 		text-align: center;
@@ -304,8 +597,8 @@
 	/*Botón volver esquina inferior izquierda y botón ajustes esquina inferior derecha*/
 	.boton-volver, .boton-configuracion{
 		position: relative;
-		width: 75px;
-		height: 75px;
+		width: calc(8vw * var(--btn-scale, 1));
+		height: calc(15vh * var(--btn-scale, 1));
 		border-radius: var(--border-radius, 8px);
 		display: inline-flex;
 		align-items: center;

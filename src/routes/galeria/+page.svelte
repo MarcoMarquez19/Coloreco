@@ -5,6 +5,7 @@
 	import { audioStore, clickSound } from '$lib/stores/audio';
 	import { obtenerSesionActual } from '$lib/db/artistas.service';
 	import { obtenerObras, eliminarObra, liberarURLsImagenes, type ObraCompleta } from '$lib/db/obras.service';
+	import Modal from '$lib/components/modales/Modal.svelte';
 
 	// ============================================================================
 	// ESTADO REACTIVO (Svelte 5 Runes)
@@ -21,6 +22,9 @@
 	
 	/** Mensaje de error si falla la carga */
 	let mensajeError = $state<string>('');
+
+	/** Control del modal de confirmación de eliminación */
+	let modalEliminarAbierto = $state<boolean>(false);
 
 	/** Referencia al contenedor para aplicar transform/scale dinámico */
 	let contenedorGaleriaRef: HTMLElement | null = null;
@@ -82,15 +86,20 @@
 	}
 
 	/**
-	 * Maneja la eliminación de una obra
-	 * Muestra confirmación y actualiza la lista tras borrar
+	 * Abre el modal de confirmación para eliminar
 	 */
-	async function manejarEliminar(): Promise<void> {
+	function abrirModalEliminar(): void {
+		if (!obraActual) return;
+		modalEliminarAbierto = true;
+	}
+
+	/**
+	 * Maneja la eliminación de una obra después de confirmar
+	 */
+	async function confirmarEliminar(): Promise<void> {
 		if (!obraActual) return;
 		
-		const confirmar = confirm(`¿Seguro que deseas eliminar "${obraActual.titulo}"?\n\nEsta acción no se puede deshacer.`);
-		
-		if (!confirmar) return;
+		modalEliminarAbierto = false;
 		
 		try {
 			const exito = await eliminarObra(obraActual.id);
@@ -110,8 +119,6 @@
 				} else if (obras.length === 0) {
 					indiceActual = 0;
 				}
-				
-				alert('Obra eliminada correctamente');
 			} else {
 				alert('Error al eliminar la obra. Inténtalo nuevamente.');
 			}
@@ -263,9 +270,9 @@
 		{:else if obraActual}
 		<!-- Botonera de acciones -->
 			<section class="acciones" aria-label="Acciones de la obra">
-				<!-- Botón Editar (Azul) -->
+				<!-- Botón Editar (Amarillo) -->
 				<button
-					class="boton boton-editar pattern-blue"
+					class="boton boton-editar pattern-yellow"
 					onclick={editarObra}
 					aria-label="Editar obra actual"
 					use:clickSound
@@ -286,7 +293,7 @@
 				<!-- Botón Eliminar (Rojo) -->
 				<button
 					class="boton boton-eliminar pattern-red"
-					onclick={manejarEliminar}
+					onclick={abrirModalEliminar}
 					aria-label="Eliminar obra de la galería"
 					use:clickSound
 				>
@@ -298,13 +305,25 @@
 			<div class="carrusel">
 				<!-- Flecha anterior -->
 				<button
-					class="flecha flecha-anterior"
+					class="flecha flecha-anterior pattern-yellow"
 					onclick={irAnterior}
 					disabled={!puedeRetroceder}
 					aria-label="Ver obra anterior"
 					use:clickSound
+					title="Navegar a la obra anterior (← tecla izquierda)"
+
 				>
-					<span aria-hidden="true">‹</span>
+					<svg 
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="currentColor"
+						aria-hidden="true"
+						focusable="false"
+						width="62"
+						height="62"
+					>
+						<path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+					</svg>
 				</button>
 
 				<!-- Marco central con la imagen -->
@@ -318,13 +337,24 @@
 
 				<!-- Flecha siguiente -->
 				<button
-					class="flecha flecha-siguiente"
+					class="flecha flecha-siguiente pattern-yellow"
 					onclick={irSiguiente}
 					disabled={!puedeAvanzar}
 					aria-label="Ver obra siguiente"
 					use:clickSound
+					title="Navegar a la obra siguiente (→ tecla derecha)"
 				>
-					<span aria-hidden="true">›</span>
+					<svg 
+						xmlns="http://www.w3.org/2000/svg"
+						viewBox="0 0 24 24"
+						fill="currentColor"
+						aria-hidden="true"
+						focusable="false"
+						width="62"
+						height="62"
+					>
+						<path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+					</svg>
 				</button>
 			</div>
 
@@ -350,6 +380,40 @@
 	</main>
 	</div>
 </div>
+
+<!-- Modal de confirmación de eliminación -->
+<Modal
+	bind:abierto={modalEliminarAbierto}
+	titulo="Confirmar eliminación"
+	anchoMaximo="600px"
+	cerrarAlClickearFuera={false}
+>
+	{#snippet children()}
+		<p style="margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0; font-size: calc(var(--font-size-base, 1rem) * 1);">
+			¿Estás seguro que deseas eliminar la obra <strong>"{obraActual?.titulo}"</strong>?
+		</p>
+		<p style="margin: 0; color: #d32f2f; font-weight: 600; font-size: calc(var(--font-size-base, 1rem) * 1);">
+			⚠️ Esta acción no se puede deshacer.
+		</p>
+	{/snippet}
+
+	{#snippet acciones()}
+		<button
+			class="modal-boton modal-boton-cancelar"
+			onclick={() => modalEliminarAbierto = false}
+			type="button"
+		>
+			Cancelar
+		</button>
+		<button
+			class="modal-boton modal-boton-confirmar pattern-red"
+			onclick={confirmarEliminar}
+			type="button"
+		>
+			Eliminar
+		</button>
+	{/snippet}
+</Modal>
 
 <style>
 	/* ============================================================================
@@ -399,9 +463,11 @@
 	}
 
 	.contador {
-		font-size: calc(var(--font-size-base, 1rem) * 1.2);
-		color: var(--text-secondary, #666);
+		font-size: calc(var(--font-size-base, 1rem) * 1.5);
+		font-weight: 600;
+		color: var(--color-texto, #333);
 		margin: 0;
+		letter-spacing: 0.05em;
 	}
 
 	.contenido-principal {
@@ -434,65 +500,81 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: calc(var(--espaciado) * 12);
+		gap: calc(var(--font-size-base, 1rem) * 5.5);
 		margin-bottom: 0;
 		flex-shrink: 0;
-		min-height: 110px;
+		min-height: 80px;
 	}
 
 	.flecha {
-		/* Flechas grandes y destacadas */
-		width: 110px;
-		height: 110px;
-		font-size: calc(var(--font-size-base, 1rem) * 5.5);
-		flex-shrink: 0;
-		background: var(--fondo-botones, #f5f5f5);
-		border: 3px solid var(--icono-color-borde, #ccc);
-		border-radius: var(--radio-borde);
-		color: var(--icono-color-relleno, #111);
+		/* Flechas con estilo similar a taller-escenas */
+		background: var(--fondo-botones, #ffca00);
+		color: var(--icono-color-relleno, black);
+		border: none;
+		border-radius: var(--border-radius, 8px);
 		cursor: pointer;
-		transition: all 0.2s ease;
+		box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
+		transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+		padding: 1.5rem;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		padding: 0;
-		line-height: 1;
+		min-width: 80px;
+		min-height: 80px;
 	}
 
 	.flecha:hover:not(:disabled) {
-		background: var(--fondo-botones-hover, #0b6efd);
-		color: var(--icono-color-relleno, white);
-		transform: scale(1.1);
+		background: var(--fondo-botones-hover, #d1a700);
+		transform: translateY(-2px);
+		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 	}
 
-	.flecha:focus-visible {
-		outline: 3px solid var(--fondo-botones-hover, #0b6efd);
-		outline-offset: 2px;
+	.flecha:active:not(:disabled) {
+		transform: translateY(0);
+	}
+
+	.flecha:focus {
+		outline: var(--borde-botones, 4px solid #000000);
+		background: var(--fondo-botones-hover, #d1a700);
+		outline-offset: 7px;
+	}
+
+	.flecha svg {
+		width: calc(var(--font-size-base,1rem)*6);
+		height: calc(var(--font-size-base,1rem)*6);
+		pointer-events: none;
 	}
 
 	.flecha:disabled {
-		opacity: 0.3;
+		opacity: 0.4;
 		cursor: not-allowed;
+		background: var(--fondo-botones, #ffca00);
 	}
 
 	.marco-obra {
-		/* Marco central para la imagen */
+		/* Marco central para la imagen con estilo de tarjeta */
 		flex: 0 0 auto;
 		max-width: 850px;
-		background: var(--fondo-botones, white);
-		border: 4px solid var(--icono-color-borde, #ccc);
-		border-radius: var(--radio-borde);
+		min-width: 32vw;
+		background: white;
+		border-radius: 12px;
 		padding: calc(var(--espaciado) * 1);
-		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 		display: flex;
 		align-items: center;
+		transition: transform 0.3s, box-shadow 0.3s;
+	}
+
+	.marco-obra:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
 	}
 
 	.imagen-obra {
 		width: 100%;
 		max-height: 410px;
 		display: block;
-		border-radius: calc(var(--radio-borde) * 0.5);
+		border-radius: 8px;
 		object-fit: contain;
 		max-width: 100%;
 	}
@@ -502,10 +584,10 @@
 	   ============================================================================ */
 	.metadatos {
 		text-align: center;
-		padding: calc(var(--espaciado) * 0.6);
-		background: var(--fondo-botones, #f5f5f5);
-		border-radius: var(--radio-borde);
-		border: 2px solid var(--icono-color-borde, #e0e0e0);
+		padding: calc(var(--espaciado) * 1.5);
+		background: white;
+		border-radius: 12px;
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 		flex-shrink: 0;
 	}
 
@@ -514,7 +596,8 @@
 		font-weight: 600;
 		margin: 0;
 		margin-bottom: calc(var(--espaciado) * 0.5);
-		color: var(--icono-color-relleno, #111);
+		color: var(--color-texto, #333);
+		letter-spacing: 0.05em;
 	}
 
 	.info-obra {
@@ -547,41 +630,37 @@
 	}
 
 	.boton {
-		/* Botones grandes y accesibles */
-		padding: calc(var(--espaciado) * 0.8) calc(var(--espaciado) * 2);
-		font-size: calc(var(--font-size-base, 1rem) * 1.1);
+		/* Botones con estilo similar a taller-escenas */
+		padding: calc(var(--spacing-base,2rem) * 1.5) calc(var(--spacing-base,2rem) * 2);
+		background: var(--fondo-botones, #ffca00);
+		color: var(--icono-color-relleno, black);
+		border: none;
+		font-size: calc(var(--font-size-base, 1rem) * 1.4);
 		font-weight: 600;
-		border: 3px solid;
-		border-radius: var(--radio-borde);
+		letter-spacing: 0.05em;
+		border-radius: var(--border-radius, 8px);
 		cursor: pointer;
-		transition: all 0.2s ease;
-		min-width: 140px;
-		position: relative;
+		box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
+		text-align: center;
+		transition: transform 120ms ease, box-shadow 120ms ease;
+		min-width: 180px;
+	}
+
+	/* Focus para botón editar (amarillo - por defecto) */
+	.boton:focus {
+		outline: var(--borde-botones, 4px solid #000000);
+		background: var(--fondo-botones-hover, #d1a700);
+		outline-offset: 7px;
 	}
 
 	.boton:hover {
+		background: var(--fondo-botones-hover, #d1a700);
 		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 	}
 
 	.boton:active {
 		transform: translateY(0);
-	}
-
-	.boton:focus-visible {
-		outline: 3px solid var(--fondo-botones-hover, #0b6efd);
-		outline-offset: 2px;
-	}
-
-	/* Botón Editar (Azul) */
-	.boton-editar {
-		background: #2196f3;
-		border-color: #1976d2;
-		color: white;
-	}
-
-	.boton-editar:hover {
-		background: #1976d2;
 	}
 
 	/* Botón Descargar (Verde) */
@@ -595,6 +674,12 @@
 		background: #388e3c;
 	}
 
+	.boton-descargar:focus {
+		outline: var(--borde-botones, 4px solid #000000);
+		background: #388e3c;
+		outline-offset: 7px;
+	}
+
 	/* Botón Eliminar (Rojo) */
 	.boton-eliminar {
 		background: #f44336;
@@ -605,4 +690,58 @@
 	.boton-eliminar:hover {
 		background: #d32f2f;
 	}
+
+	.boton-eliminar:focus {
+		outline: var(--borde-botones, 4px solid #000000);
+		background: #d32f2f;
+		outline-offset: 7px;
+	}
+
+	/* ============================================================================
+	   BOTONES DEL MODAL
+	   ============================================================================ */
+	:global(.modal-boton) {
+		padding: calc(var(--spacing-base, 1rem) * 1) calc(var(--spacing-base, 1rem) * 1.5);
+		font-size: calc(var(--font-size-base, 1rem) * 1.1);
+		font-weight: 600;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		transition: transform 120ms ease, background 120ms ease;
+		min-width: 100px;
+	}
+
+	:global(.modal-boton-cancelar) {
+		background: #757575;
+		color: white;
+	}
+
+	:global(.modal-boton-cancelar:hover) {
+		background: #616161;
+		transform: translateY(-2px);
+	}
+
+	:global(.modal-boton-cancelar:focus) {
+		outline: 2px solid #000000;
+		background: #616161;
+		outline-offset: 2px;
+	}
+
+	:global(.modal-boton-confirmar) {
+		background: #f44336;
+		color: white;
+	}
+
+	:global(.modal-boton-confirmar:hover) {
+		background: #d32f2f;
+		transform: translateY(-2px);
+	}
+
+	:global(.modal-boton-confirmar:focus) {
+		outline: 2px solid #000000;
+		background: #d32f2f;
+		outline-offset: 2px;
+	}
+
+	
 </style>

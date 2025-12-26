@@ -17,7 +17,7 @@
 
     function manejarMesaTrabajo() {
         console.log('Abriendo mesa de trabajo');
-        // TODO: Implementar navegación a la mesa de trabajo
+        goto('/menu-juegos');
     }
 
     function manejarLogros() {
@@ -61,7 +61,7 @@
     >
         <div class="svg-contenedor">
             <img src={Salida} alt="">
-            <span class="texto-elemento" data-magnificable>Salida (ESC)</span>
+            <span class="texto-elemento" data-magnificable>Escoger estudio</span>
         </div>
     </button>
     
@@ -235,7 +235,7 @@
 
     /* Elemento izquierdo: Salida */
     .elemento-salida {
-        left: 3.7%;
+        left: 3%;
         top: 59%;
         transform: translateY(-55%);
     }   

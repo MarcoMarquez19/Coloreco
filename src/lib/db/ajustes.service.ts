@@ -26,6 +26,11 @@ import { configuraciones, type ConfiguracionUI } from '../stores/settings';
  * nivelMagnificacion            →  nivelMagnificacion
  * modoNoche                     →  modoNoche
  * modoInverso                   →  modoInverso
+ * modoBionico                   →  bionicMode
+ * narracionActivada             →  narrationEnabled
+ * velocidadTTS                  →  ttsSpeed
+ * modoRima                      →  rhymeMode
+ * modoPictograma                →  pictogramMode
  * modoVisionColor               →  colorBlindness
  * intensidadFiltro              →  intensity
  * texturasActivas               →  textures
@@ -34,7 +39,6 @@ import { configuraciones, type ConfiguracionUI } from '../stores/settings';
  * Campos solo en BD (para futuras implementaciones):
  * - volumenMusica
  * - volumenEfectos
- * - velocidadTTS
  */
 
 // ============================================================================
@@ -58,6 +62,12 @@ const AJUSTES_POR_DEFECTO: Omit<Ajustes, 'id' | 'artistaId' | 'actualizadoEn'> =
 	modoNoche: false,
 	modoInverso: false,
 	
+	// DISLEXIA / Lectura accesible
+	modoBionico: false,
+	narracionActivada: false,
+	modoRima: false,
+	modoPictograma: false,
+
 	// Daltonismo
 	modoVisionColor: 'none',
 	intensidadFiltro: 1,
@@ -170,6 +180,14 @@ export function sincronizarAjustesAUI(ajustes: Ajustes): void {
 	configuraciones.setModoNoche(ajustes.modoNoche);
 	configuraciones.setModoInverso(ajustes.modoInverso);
 	
+	// DISLEXIA - Mapear campos de BD a UI
+	// Usar setters explícitos para evitar toggles inconsistentes
+	configuraciones.setBionicMode(!!ajustes.modoBionico);
+	configuraciones.setNarrationEnabled(!!ajustes.narracionActivada);
+	configuraciones.setTTSSpeed(ajustes.velocidadTTS ?? 1);
+	configuraciones.setRhymeMode(!!ajustes.modoRima);
+	configuraciones.setPictogramMode(!!ajustes.modoPictograma);
+
 	// Daltonismo - estos tienen setters directos
 	configuraciones.setColorBlindness(ajustes.modoVisionColor);
 	configuraciones.setIntensity(ajustes.intensidadFiltro);
@@ -208,6 +226,12 @@ export function obtenerAjustesDesdeUI(artistaId: number, ajustesId: string): Aju
 		modoNoche: configActual.modoNoche ?? false,
 		modoInverso: configActual.modoInverso ?? false,
 		
+		// DISLEXIA (mapeo UI → BD)
+		modoBionico: configActual.bionicMode,
+		narracionActivada: configActual.narrationEnabled,
+		modoRima: configActual.rhymeMode,
+		modoPictograma: configActual.pictogramMode,
+		
 		// Daltonismo (mapeo de nombres)
 		modoVisionColor: configActual.colorBlindness,
 		intensidadFiltro: configActual.intensity,
@@ -217,7 +241,7 @@ export function obtenerAjustesDesdeUI(artistaId: number, ajustesId: string): Aju
 		// Audio (valores por defecto, aún no en UI)
 		volumenMusica: 1,
 		volumenEfectos: 1,
-		velocidadTTS: 1,
+		velocidadTTS: configActual.ttsSpeed || 1,
 		
 		actualizadoEn: new Date()
 	};

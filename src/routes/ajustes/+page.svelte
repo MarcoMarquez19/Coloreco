@@ -15,6 +15,7 @@
 	let previewMarcoEl: HTMLElement | null = $state(null);
 	let previewContEl: HTMLElement | null = $state(null);
 	let previewScale = 1;
+	let speedDisplay = $state(($configuraciones.ttsSpeed || 1).toFixed(2));
 
 	// Recalcular la escala de la vista previa cuando cambian los ajustes relevantes
 	$effect(() => {
@@ -87,7 +88,7 @@
 					
 					<div class="control-subgrupo">
 						<label for="select-colorblindness" class="control-label">
-							Modo de Visión
+							<span>Modo de Visión</span>
 						</label>
 						<select
 							id="select-colorblindness"
@@ -106,7 +107,7 @@
 
 					<div class="control-subgrupo">
 						<label for="slider-intensity" class="control-label">
-							Intensidad del Filtro
+							<span>Intensidad del Filtro</span>
 							<span class="control-valor">{($configuraciones.intensity * 100).toFixed(0)}%</span>
 						</label>
 						<input
@@ -302,7 +303,6 @@
 						</div>
 					{/if}
 				</div>
-
 				<hr class="separador" />
 
 				<!-- Sección: Audio -->
@@ -405,7 +405,143 @@
 						{/if}
 					</div>
 				</div>
+				<!-- Sección: Modos de Lectura -->
+				<div class="control-grupo">
+					<h3 class="seccion-titulo">Modos de Lectura</h3>
+					
+					<!-- Modo Biónico -->
+					<div class="switch-container">
+						<label for="toggle-bionic" class="switch-label">Modo biónico</label>
+						<button
+							id="toggle-bionic"
+							type="button"
+							role="switch"
+							aria-checked={$configuraciones.bionicMode}
+							aria-describedby="toggle-bionic-desc"
+							class="switch-toggle"
+							class:active={$configuraciones.bionicMode}
+							onclick={() => configuraciones.toggleBionicMode()}
+							aria-label={$configuraciones.bionicMode ? 'Desactivar modo biónico' : 'Activar modo biónico'}
+						>
+							<span class="switch-knob"></span>
+						</button>
+					</div>
+					<div class="control-ayuda" id="toggle-bionic-desc">
+						<small>Resalta las primeras sílabas de cada palabra para facilitar la lectura rápida.</small>
+					</div>
 
+					<!-- Modo Rima -->
+					<div class="switch-container">
+						<label for="toggle-rhyme" class="switch-label">Modo rima</label>
+						<button
+							id="toggle-rhyme"
+							type="button"
+							role="switch"
+							aria-checked={$configuraciones.rhymeMode}
+							aria-describedby="toggle-rhyme-desc"
+							class="switch-toggle"
+							class:active={$configuraciones.rhymeMode}
+							onclick={() => configuraciones.toggleRhymeMode()}
+							aria-label={$configuraciones.rhymeMode ? 'Desactivar modo rima' : 'Activar modo rima'}
+						>
+							<span class="switch-knob"></span>
+						</button>
+					</div>
+					<div class="control-ayuda" id="toggle-rhyme-desc">
+						<small>Colorea las rimas y sílabas para mejorar la comprensión de patrones.</small>
+					</div>
+
+					<!-- Modo Pictográfico -->
+					<div class="switch-container">
+						<label for="toggle-pictogram" class="switch-label">Modo pictográfico</label>
+						<button
+							id="toggle-pictogram"
+							type="button"
+							role="switch"
+							aria-checked={$configuraciones.pictogramMode}
+							aria-describedby="toggle-pictogram-desc"
+							class="switch-toggle"
+							class:active={$configuraciones.pictogramMode}
+							onclick={() => configuraciones.togglePictogramMode()}
+							aria-label={$configuraciones.pictogramMode ? 'Desactivar modo pictográfico' : 'Activar modo pictográfico'}
+						>
+							<span class="switch-knob"></span>
+						</button>
+					</div>
+					<div class="control-ayuda" id="toggle-pictogram-desc">
+						<small>Muestra iconos junto a palabras clave para facilitar la comprensión visual.</small>
+					</div>
+				</div>
+
+				<!-- Sección: Narración Auditiva -->
+				<div class="control-grupo">
+					<h3 class="seccion-titulo">Narración</h3>
+					
+					<!-- Activar Narración -->
+					<div class="switch-container">
+						<label for="toggle-narration" class="switch-label">Activar narración de voz</label>
+						<button
+							id="toggle-narration"
+							type="button"
+							role="switch"
+							aria-checked={$configuraciones.narrationEnabled}
+							aria-describedby="toggle-narration-desc"
+							class="switch-toggle"
+							class:active={$configuraciones.narrationEnabled}
+							onclick={() => configuraciones.toggleNarration()}
+							aria-label={$configuraciones.narrationEnabled ? 'Desactivar narración' : 'Activar narración'}
+						>
+							<span class="switch-knob"></span>
+						</button>
+					</div>
+					<div class="control-ayuda" id="toggle-narration-desc">
+						<small>Lee el texto en voz alta con resaltado palabra por palabra.</small>
+					</div>
+
+				<!-- Velocidad de Narración (solo visible si está activada) -->
+				{#if $configuraciones.narrationEnabled}
+					<div class="control-label">
+						<span>Velocidad de narración</span>
+						<span class="control-valor">{speedDisplay}×</span>
+					</div>
+					<input
+						type="range"
+						min="0.75"
+						max="1.75"
+						step="0.25"
+						bind:value={speedDisplay}
+						oninput={(e) => {
+							const val = (e.target as HTMLInputElement).value;
+							speedDisplay = parseFloat(val).toFixed(2);
+							configuraciones.setTTSSpeed(parseFloat(val));
+							
+							// Leer la velocidad actual
+							if (typeof window !== 'undefined' && window.speechSynthesis) {
+								window.speechSynthesis.cancel();
+								const utterance = new SpeechSynthesisUtterance(`Velocidad ${speedDisplay}`);
+								utterance.lang = 'es-ES';
+								utterance.rate = parseFloat(val);
+								window.speechSynthesis.speak(utterance);
+							}
+							
+							if (typeof window !== 'undefined') {
+								import('$lib/audio/tts.service').then(({ ttsService }) => {
+									ttsService.changeSpeed(parseFloat(val));
+								});
+							}
+						}}
+						aria-label="Velocidad de narración"
+						aria-valuemin="0.75"
+						aria-valuemax="1.75"
+						aria-valuenow={parseFloat(speedDisplay)}
+						aria-valuetext="{speedDisplay} veces la velocidad normal"
+						class="slider"
+					/>
+					<div class="control-ayuda">
+						<small>0.75× (muy lento) - 1× (normal) - 1.25× (rápido) - 1.5× (muy rápido) - 1.75× (máximo)</small>
+					</div>
+				{/if}
+				</div>
 				<!-- Botón para reiniciar valores -->
 				<button class="boton-reset" onclick={configuraciones.reset} use:clickSound>
 					Restaurar valores por defecto
@@ -516,6 +652,55 @@
 	.control-ayuda {
 		color: var(--icono-color-borde, black);
 		font-size: calc(var(--font-size-base, 1rem) * 0.85);
+	}
+
+	/* Slider para controles con rango (como velocidad de narración) */
+	.slider {
+		width: 100%;
+		height: 6px;
+		border-radius: 3px;
+		background: #e0e0e0;
+		outline: none;
+		-webkit-appearance: none;
+		appearance: none;
+		cursor: pointer;
+		margin: calc(var(--spacing-base, 1rem) * 0.5) 0;
+	}
+
+	.slider::-webkit-slider-thumb {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		background: #0b6efd;
+		cursor: pointer;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		transition: background 150ms ease;
+	}
+
+	.slider::-moz-range-thumb {
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		background: #0b6efd;
+		cursor: pointer;
+		border: none;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		transition: background 150ms ease;
+	}
+
+	.slider:hover::-webkit-slider-thumb {
+		background: #0958d9;
+	}
+
+	.slider:hover::-moz-range-thumb {
+		background: #0958d9;
+	}
+
+	.slider:focus {
+		outline: 2px solid #0b6efd;
+		outline-offset: 2px;
 	}
 
 	/* Botón de reset */
