@@ -216,18 +216,15 @@
 		const { type, detail } = evento;
 
 		switch (type) {
-			case 'navegar':
-				// El overlay maneja su propia navegación
-				console.log(`[TallerDibujo] Navegación: ${detail.direccion}`);
-				break;
-			
 			case 'seleccionar':
-				// TODO: Implementar acción de dibujo en coordenadas específicas
-				console.log(`[TallerDibujo] Seleccionar en: ${detail.x}, ${detail.y}`);
+				// Cuando se selecciona una zona, podemos mover el cursor allí o dibujar algo
+				console.log(`[TallerDibujo] Seleccionar zona "${detail.zona}" en: (${detail.x}, ${detail.y})`);
+				mostrarMensajeFeedback(`Zona seleccionada: ${detail.zona}`, 'success');
 				break;
 			
-			case 'escapar':
-				console.log('[TallerDibujo] Salir del modo accesible');
+			case 'zonaEnfocada':
+				// Informar al usuario sobre la zona enfocada (manejado por el overlay)
+				console.log(`[TallerDibujo] Zona enfocada: ${detail.label}`);
 				break;
 		}
 	}
@@ -389,9 +386,9 @@
 				<!-- Overlay de accesibilidad -->
 				<DibujoOverlay
 					bind:this={overlayRef}
-					on:navegar={manejarEventoOverlay}
+					rutaSvgAccesibilidad={escena?.rutaAccesibilidad}
 					on:seleccionar={manejarEventoOverlay}
-					on:escapar={manejarEventoOverlay}
+					on:zonaEnfocada={manejarEventoOverlay}
 				/>
 			</div>
 		</section>

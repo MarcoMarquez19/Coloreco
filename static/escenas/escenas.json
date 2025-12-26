@@ -5,7 +5,8 @@
 		"nombre": "Cabaña en el bosque",
 		"ruta": "/escenas/cabaña-bosque.svg",
 		"version": 1,
-		"descripcion": "Una acogedora cabaña rodeada de árboles y naturaleza, perfecta para una escapada tranquila. Alrededor hay muchos árboles altos cubiertos de nieve blanca. De la chimenea sale humito, lo que significa que adentro está calientito."
+		"descripcion": "Una acogedora cabaña rodeada de árboles y naturaleza, perfecta para una escapada tranquila. Alrededor hay muchos árboles altos cubiertos de nieve blanca. De la chimenea sale humito, lo que significa que adentro está calientito.",
+		"rutaAccesibilidad": "/escenas/accesibilidad/cabaña-bosque-accesible.svg"
 	},
 	{
 		"modo": "dibujo",
@@ -13,7 +14,8 @@
 		"nombre": "Sendero del parque",
 		"ruta": "/escenas/parque-sendero.svg",
 		"version": 1,
-		"descripcion":"Una tranquila banca en un sendero de un parque, rodeada de árboles y naturaleza, con faroles que iluminan el camino como si cuidaran el lugar. Es un espacio calmado donde se puede descansar."
+		"descripcion":"Una tranquila banca en un sendero de un parque, rodeada de árboles y naturaleza, con faroles que iluminan el camino como si cuidaran el lugar. Es un espacio calmado donde se puede descansar.",
+		"rutaAccesibilidad": "/escenas/accesibilidad/parque-sendero-accesible.svg"
 	},
 	{
 		"modo": "dibujo",
@@ -21,7 +23,8 @@
 		"nombre": "Parque en la ciudad",
 		"ruta": "/escenas/parque-ciudad.svg",
 		"version": 1,
-		"descripcion": "Un alegre parque para niños, los columpios suben tan alto que casi tocan las nubes, en la caja de arena cualquiera se divierte y la resbaladera es para los más valientes."
+		"descripcion": "Un alegre parque para niños, los columpios suben tan alto que casi tocan las nubes, en la caja de arena cualquiera se divierte y la resbaladera es para los más valientes.",
+		"rutaAccesibilidad": "/escenas/accesibilidad/parque-ciudad-accesible.svg"
 	},
 	{
 		"modo": "dibujo",
@@ -29,7 +32,8 @@
 		"nombre": "Estanque con patos",
 		"ruta": "/escenas/estanque-patos.svg",
 		"version": 1,
-		"descripcion":"Un tranquilo estanque lleno de agua brillante donde una familia de patos nada muy feliz. Aunque solo se ven ellos, se siente que hay muchos animalitos más viviendo allí, ocultos bajo el agua y entre las plantas."
+		"descripcion":"Un tranquilo estanque lleno de agua brillante donde una familia de patos nada muy feliz. Aunque solo se ven ellos, se siente que hay muchos animalitos más viviendo allí, ocultos bajo el agua y entre las plantas.",
+		"rutaAccesibilidad": "/escenas/accesibilidad/estanque-patos-accesible.svg"
 	},
 	{
 		"modo": "dibujo",
@@ -37,7 +41,8 @@
 		"nombre": "Cielo con arcoíris",
 		"ruta": "/escenas/arcoiris-cielo.svg",
 		"version": 1,
-		"descripcion":"Un cielo amplio y brillante donde el sol ilumina todo con calidez. Algunas nubes suaves flotan tranquilas y, de repente, aparece un hermoso arcoíris lleno de colores que parece sonreírle al mundo."
+		"descripcion":"Un cielo amplio y brillante donde el sol ilumina todo con calidez. Algunas nubes suaves flotan tranquilas y, de repente, aparece un hermoso arcoíris lleno de colores que parece sonreírle al mundo.",
+		"rutaAccesibilidad": "/escenas/accesibilidad/arcoiris-cielo-accesible.svg"
 	},
 	{
 		"modo": "cuerpoHumano",

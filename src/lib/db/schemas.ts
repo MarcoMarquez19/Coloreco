@@ -276,6 +276,8 @@ export interface EscenaCatalogo {
 	version: number;
 	/** Descripción de la escena */
 	descripcion?: string;
+	/** Etiqueta del svg accesible */
+	rutaAccesibilidad?: string;
 }
 
 // ============================================================================

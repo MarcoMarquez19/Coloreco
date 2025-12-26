@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Zonas interactivas de la escena Cabaña en el bosque">
+  <title>Mapa de accesibilidad para Cabaña en el bosque</title>
+  <desc>Este SVG define zonas semánticas para la navegación accesible de la escena</desc>
+  
+  <!-- Cielo -->
+  <rect 
+    id="zona-cielo" 
+    x="0" 
+    y="0" 
+    width="800" 
+    height="200" 
+    fill="transparent"
+    stroke="transparent"
+    data-zona="cielo"
+    aria-label="Cielo despejado sobre la cabaña"
+    role="button"
+    tabindex="0"
+  />
+  
+  <!-- Árboles izquierda -->
+  <path 
+    id="zona-arboles-izquierda" 
+    d="M 0,150 L 0,600 L 150,600 L 150,150 Z" 
+    fill="transparent"
+    stroke="transparent"
+    data-zona="arboles-izquierda"
+    aria-label="Árboles cubiertos de nieve al lado izquierdo"
+    role="button"
+    tabindex="0"
+  />
+  
+  <!-- Árboles derecha -->
+  <path 
+    id="zona-arboles-derecha" 
+    d="M 650,150 L 650,600 L 800,600 L 800,150 Z" 
+    fill="transparent"
+    stroke="transparent"
+    data-zona="arboles-derecha"
+    aria-label="Árboles cubiertos de nieve al lado derecho"
+    role="button"
+    tabindex="0"
+  />
+  
+  <!-- Techo de la cabaña -->
+  <polygon 
+    id="zona-techo" 
+    points="250,200 400,100 550,200" 
+    fill="transparent"
+    stroke="transparent"
+    data-zona="techo"
+    aria-label="Techo triangular de la cabaña"
+    role="button"
+    tabindex="0"
+  />
+  
+  <!-- Chimenea -->
+  <rect 
+    id="zona-chimenea" 
+    x="450" 
+    y="80" 
+    width="40" 
+    height="120" 
+    fill="transparent"
+    stroke="transparent"
+    data-zona="chimenea"
+    aria-label="Chimenea con humo caliente saliendo"
+    role="button"
+    tabindex="0"
+  />
+  
+  <!-- Pared de la cabaña -->
+  <rect 
+    id="zona-pared-cabana" 
+    x="250" 
+    y="200" 
+    width="300" 
+    height="250" 
+    fill="transparent"
+    stroke="transparent"
+    data-zona="pared-cabana"
+    aria-label="Paredes de madera de la cabaña"
+    role="button"
+    tabindex="0"
+  />
+  
+  <!-- Ventana izquierda -->
+  <rect 
+    id="zona-ventana-izquierda" 
+    x="280" 
+    y="240" 
+    width="80" 
+    height="80" 
+    fill="transparent"
+    stroke="transparent"
+    data-zona="ventana-izquierda"
+    aria-label="Ventana del lado izquierdo de la cabaña"
+    role="button"
+    tabindex="0"
+  />
+  
+  <!-- Ventana derecha -->
+  <rect 
+    id="zona-ventana-derecha" 
+    x="440" 
+    y="240" 
+    width="80" 
+    height="80" 
+    fill="transparent"
+    stroke="transparent"
+    data-zona="ventana-derecha"
+    aria-label="Ventana del lado derecho de la cabaña"
+    role="button"
+    tabindex="0"
+  />
+  
+  <!-- Puerta -->
+  <rect 
+    id="zona-puerta" 
+    x="360" 
+    y="320" 
+    width="80" 
+    height="130" 
+    fill="transparent"
+    stroke="transparent"
+    data-zona="puerta"
+    aria-label="Puerta de entrada a la cabaña"
+    role="button"
+    tabindex="0"
+  />
+  
+  <!-- Suelo nevado -->
+  <rect 
+    id="zona-suelo" 
+    x="0" 
+    y="450" 
+    width="800" 
+    height="150" 
+    fill="transparent"
+    stroke="transparent"
+    data-zona="suelo"
+    aria-label="Suelo cubierto de nieve blanca"
+    role="button"
+    tabindex="0"
+  />
+  
+  <!-- Nieve acumulada frente a la cabaña -->
+  <ellipse 
+    id="zona-nieve-frente" 
+    cx="400" 
+    cy="480" 
+    rx="100" 
+    ry="30" 
+    fill="transparent"
+    stroke="transparent"
+    data-zona="nieve-frente"
+    aria-label="Nieve acumulada frente a la entrada"
+    role="button"
+    tabindex="0"
+  />
+</svg>
