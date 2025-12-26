@@ -28,7 +28,10 @@
 	let estaDibujando = $state<boolean>(false);
 	let colorActual = $state<string>('#000000');
 	let grosorActual = $state<number>(5);
-	let herramientaActual = $state<'pincel' | 'borrador'>('pincel');
+	let herramientaActual = $state<'pincel' | 'borrador' | 'stickers'>('pincel');
+	
+	// Estado de stickers
+	let stickerPendiente: { emoji: string; escala: number } | null = $state(null);
 	
 	// Historial para deshacer
 	let historialDibujo: ImageData[] = [];
@@ -148,13 +151,21 @@
 	}
 
 	/**
-	 * Inicia el dibujo
+	 * Inicia el dibujo o coloca sticker según la herramienta activa
 	 */
 	function iniciarDibujo(evento: MouseEvent | TouchEvent) {
 		evento.preventDefault();
-		estaDibujando = true;
 		
 		const { x, y } = obtenerCoordenadas(evento);
+		
+		// Si estamos en modo stickers y hay un sticker pendiente, colocarlo
+		if (herramientaActual === 'stickers' && stickerPendiente) {
+			colocarSticker(stickerPendiente.emoji, x, y, stickerPendiente.escala);
+			return;
+		}
+		
+		// Modo dibujo normal (pincel o borrador)
+		estaDibujando = true;
 		contextoDibujo.beginPath();
 		contextoDibujo.moveTo(x, y);
 	}
@@ -217,6 +228,70 @@
 			contextoDibujo.globalCompositeOperation = 'destination-out';
 			contextoDibujo.globalAlpha = 1.0; // Borrador con opacidad completa
 		}
+	}
+
+	/**
+	 * Coloca un sticker (emoji) en las coordenadas indicadas
+	 * @param emoji - El emoji a dibujar
+	 * @param x - Coordenada X en el canvas
+	 * @param y - Coordenada Y en el canvas
+	 * @param escala - Factor de escala (1.0 = tamaño base de 48px)
+	 */
+	export function colocarSticker(emoji: string, x: number, y: number, escala: number = 1.0) {
+		if (!contextoDibujo) return;
+		
+		// Tamaño base del sticker
+		const tamanoBase = 48;
+		const tamanoFinal = tamanoBase * escala;
+		
+		// Guardar estado actual del contexto
+		contextoDibujo.save();
+		
+		// Configurar para dibujo de texto (emoji)
+		contextoDibujo.globalCompositeOperation = 'source-over';
+		contextoDibujo.globalAlpha = 1.0;
+		contextoDibujo.font = `${tamanoFinal}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
+		contextoDibujo.textAlign = 'center';
+		contextoDibujo.textBaseline = 'middle';
+		
+		// Dibujar el emoji centrado en las coordenadas
+		contextoDibujo.fillText(emoji, x, y);
+		
+		// Restaurar estado del contexto
+		contextoDibujo.restore();
+		
+		// Guardar en historial después de colocar el sticker
+		guardarEstadoEnHistorial();
+		
+		console.log(`[DibujoCanvas] Sticker "${emoji}" colocado en (${x}, ${y}) con escala ${escala}`);
+	}
+
+	/**
+	 * Establece el sticker pendiente para colocar al hacer click
+	 * @param emoji - El emoji del sticker
+	 * @param escala - Factor de escala
+	 */
+	export function establecerStickerPendiente(emoji: string, escala: number) {
+		stickerPendiente = { emoji, escala };
+		herramientaActual = 'stickers';
+		console.log(`[DibujoCanvas] Sticker pendiente: ${emoji} con escala ${escala}`);
+	}
+
+	/**
+	 * Actualiza la escala del sticker pendiente
+	 * @param escala - Nueva escala
+	 */
+	export function actualizarEscalaSticker(escala: number) {
+		if (stickerPendiente) {
+			stickerPendiente = { ...stickerPendiente, escala };
+		}
+	}
+
+	/**
+	 * Limpia el sticker pendiente (al cambiar de herramienta)
+	 */
+	export function limpiarStickerPendiente() {
+		stickerPendiente = null;
 	}
 
 	/**

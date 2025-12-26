@@ -198,6 +198,14 @@
 				// TODO: Implementar funcionalidad de mover/pan
 				console.log('[TallerDibujo] Función mover no implementada aún');
 				break;
+			
+			case 'seleccionarSticker':
+				servicioDibujo.seleccionarSticker(detail.sticker);
+				break;
+			
+			case 'cambiarTamanoSticker':
+				servicioDibujo.cambiarTamanoSticker(detail.escala);
+				break;
 		}
 	}
 
@@ -364,6 +372,8 @@
 				on:cambiarHerramienta={manejarEventoBarra}
 				on:cambiarColor={manejarEventoBarra}
 				on:cambiarGrosor={manejarEventoBarra}
+				on:seleccionarSticker={manejarEventoBarra}
+				on:cambiarTamanoSticker={manejarEventoBarra}
 				on:accionDeshacer={manejarEventoBarra}
 				on:accionGuardar={manejarEventoBarra}
 				on:accionTerminar={manejarEventoBarra}

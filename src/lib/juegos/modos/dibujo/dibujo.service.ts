@@ -5,6 +5,8 @@
  * la barra de herramientas y el overlay de accesibilidad.
  */
 
+import type { Sticker } from './stickers.data';
+
 // Tipos e interfaces
 export interface HerramientaDibujo {
 	id: 'pincel' | 'borrador' | 'stickers';
@@ -19,6 +21,9 @@ export interface EstadoDibujo {
 	grosorActual: number;
 	estaDibujando: boolean;
 	modoAccesible: boolean;
+	// Estado de stickers
+	stickerActual: Sticker | null;
+	escalaSticker: number;
 }
 
 // Herramientas disponibles
@@ -39,7 +44,7 @@ const HERRAMIENTAS_DISPONIBLES: HerramientaDibujo[] = [
 		id: 'stickers',
 		nombre: 'Stickers',
 		icono: '🌟',
-		descripcion: 'Añadir stickers decorativos (próximamente)'
+		descripcion: 'Añadir stickers decorativos al dibujo'
 	}
 ];
 
@@ -72,7 +77,9 @@ class ServicioDibujo {
 			colorActual: '#000000',
 			grosorActual: 5,
 			estaDibujando: false,
-			modoAccesible: false
+			modoAccesible: false,
+			stickerActual: null,
+			escalaSticker: 1.0
 		};
 	}
 
@@ -98,6 +105,12 @@ class ServicioDibujo {
 		if (!nuevaHerramienta) {
 			console.error(`[ServicioDibujo] Herramienta no encontrada: ${idHerramienta}`);
 			return;
+		}
+
+		// Limpiar sticker pendiente si se cambia a otra herramienta
+		if (idHerramienta !== 'stickers' && this.componenteCanvas) {
+			this.componenteCanvas.limpiarStickerPendiente?.();
+			this.estado.stickerActual = null;
 		}
 
 		this.estado.herramientaActual = nuevaHerramienta;
@@ -143,6 +156,76 @@ class ServicioDibujo {
 		this.aplicarEstiloActualAlCanvas();
 		
 		console.log(`[ServicioDibujo] Grosor cambiado a: ${grosorValidado}px`);
+	}
+
+	/**
+	 * Selecciona un sticker para colocar
+	 */
+	seleccionarSticker(sticker: Sticker) {
+		this.estado.stickerActual = sticker;
+		
+		// Cambiar automáticamente a herramienta stickers si no está seleccionada
+		if (this.estado.herramientaActual.id !== 'stickers') {
+			this.cambiarHerramienta('stickers');
+		}
+		
+		// Configurar el sticker pendiente en el canvas
+		if (this.componenteCanvas) {
+			this.componenteCanvas.establecerStickerPendiente(sticker.emoji, this.estado.escalaSticker);
+		}
+		
+		console.log(`[ServicioDibujo] Sticker seleccionado: ${sticker.nombre}`);
+	}
+
+	/**
+	 * Cambia la escala del sticker
+	 */
+	cambiarTamanoSticker(escala: number) {
+		// Validar límites de escala (0.25 a 2.0)
+		const escalaValidada = Math.max(0.25, Math.min(2.0, escala));
+		this.estado.escalaSticker = escalaValidada;
+		
+		// Actualizar escala en el canvas si hay sticker pendiente
+		if (this.componenteCanvas) {
+			this.componenteCanvas.actualizarEscalaSticker(escalaValidada);
+		}
+		
+		console.log(`[ServicioDibujo] Escala de sticker cambiada a: ${escalaValidada}`);
+	}
+
+	/**
+	 * Coloca el sticker seleccionado en las coordenadas indicadas
+	 */
+	colocarSticker(x: number, y: number): boolean {
+		if (!this.componenteCanvas || !this.estado.stickerActual) {
+			console.error('[ServicioDibujo] No hay canvas o sticker seleccionado');
+			return false;
+		}
+
+		// Llamar al método del canvas para colocar el sticker
+		this.componenteCanvas.colocarSticker(
+			this.estado.stickerActual.emoji,
+			x,
+			y,
+			this.estado.escalaSticker
+		);
+		
+		console.log(`[ServicioDibujo] Sticker colocado en (${x}, ${y})`);
+		return true;
+	}
+
+	/**
+	 * Obtiene el sticker actualmente seleccionado
+	 */
+	obtenerStickerActual(): Sticker | null {
+		return this.estado.stickerActual;
+	}
+
+	/**
+	 * Obtiene la escala actual del sticker
+	 */
+	obtenerEscalaSticker(): number {
+		return this.estado.escalaSticker;
 	}
 
 	/**
@@ -283,7 +366,9 @@ class ServicioDibujo {
 			colorActual: '#000000',
 			grosorActual: 5,
 			estaDibujando: false,
-			modoAccesible: false
+			modoAccesible: false,
+			stickerActual: null,
+			escalaSticker: 1.0
 		};
 		
 		this.aplicarEstiloActualAlCanvas();

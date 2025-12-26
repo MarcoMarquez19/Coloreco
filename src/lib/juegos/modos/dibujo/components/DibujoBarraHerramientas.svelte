@@ -8,6 +8,7 @@
 
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import { CATEGORIAS_STICKERS, TAMANOS_STICKER, type Sticker, type Categoria, type Subcategoria } from '../stickers.data';
 
 	// Props para configurar herramientas y acciones visibles
 	interface Props {
@@ -31,6 +32,8 @@
 		cambiarHerramienta: { herramienta: string };
 		cambiarColor: { color: string };
 		cambiarGrosor: { grosor: number };
+		seleccionarSticker: { sticker: Sticker };
+		cambiarTamanoSticker: { escala: number };
 		accionDeshacer: {};
 		accionGuardar: {};
 		accionTerminar: {};
@@ -41,6 +44,13 @@
 	let herramientaActual = $state<string>(herramientaInicial);
 	let colorActual = $state<string>(colorInicial);
 	let grosorActual = $state<number>(grosorInicial);
+
+	// Estado para stickers
+	let categoriaActual = $state<Categoria>(CATEGORIAS_STICKERS[0]);
+	let subcategoriaActual = $state<Subcategoria>(CATEGORIAS_STICKERS[0].subcategorias[0]);
+	let stickerSeleccionado = $state<Sticker | null>(null);
+	let tamanoStickerActual = $state<number>(1.0); // Escala mediana por defecto
+	let mostrarPanelStickers = $state<boolean>(false);
 
 	// Colores predefinidos
 	const coloresPredefinidos = [
@@ -95,13 +105,42 @@
 			grosorActual = 5; // Pequeño por defecto
 			dispatch('cambiarColor', { color: colorActual });
 			dispatch('cambiarGrosor', { grosor: grosorActual });
+			mostrarPanelStickers = false;
 		} else if (herramienta === 'borrador') {
 			grosorActual = 15; // Pequeño por defecto para borrador
 			dispatch('cambiarGrosor', { grosor: grosorActual });
+			mostrarPanelStickers = false;
+		} else if (herramienta === 'stickers') {
+			// Abrir panel de stickers automáticamente
+			mostrarPanelStickers = true;
 		}
-		// Para stickers, mantener valores actuales
 		
 		dispatch('cambiarHerramienta', { herramienta });
+	}
+
+	/**
+	 * Selecciona una categoría principal de stickers
+	 */
+	function seleccionarCategoria(categoria: Categoria) {
+		categoriaActual = categoria;
+		subcategoriaActual = categoria.subcategorias[0];
+	}
+
+	/**
+	 * Selecciona un sticker específico
+	 */
+	function seleccionarStickerItem(sticker: Sticker) {
+		stickerSeleccionado = sticker;
+		mostrarPanelStickers = false;
+		dispatch('seleccionarSticker', { sticker });
+	}
+
+	/**
+	 * Cambia el tamaño del sticker
+	 */
+	function seleccionarTamanoSticker(escala: number) {
+		tamanoStickerActual = escala;
+		dispatch('cambiarTamanoSticker', { escala });
 	}
 
 	/**
@@ -227,7 +266,6 @@
 				aria-label={herramienta.descripcion}
 				aria-pressed={herramientaActual === herramienta.id}
 				title={herramienta.nombre}
-				disabled={herramienta.id === 'stickers'}
 			>
 				<span class="icono">{herramienta.icono}</span>
 				<span class="texto">{herramienta.nombre}</span>
@@ -352,10 +390,115 @@
 				</div>
 			</div>
 		{:else if herramientaActual === 'stickers'}
-			<!-- Opciones de Stickers: Placeholder -->
-			<div class="grupo-opciones">
-				<p class="mensaje-proximamente">Stickers disponibles próximamente</p>
+			<!-- Opciones de Stickers: Panel completo -->
+			<div class="grupo-opciones grupo-stickers">
+				<!-- Botón para abrir/cerrar panel de stickers -->
+				<button
+					class="boton-abrir-stickers"
+					class:activo={mostrarPanelStickers}
+					onclick={() => mostrarPanelStickers = !mostrarPanelStickers}
+					aria-label="Abrir panel de stickers"
+					aria-expanded={mostrarPanelStickers}
+				>
+					<span class="icono-sticker">{stickerSeleccionado?.emoji ?? '🎨'}</span>
+					<span class="texto-sticker">{stickerSeleccionado ? stickerSeleccionado.nombre : 'Elegir sticker'}</span>
+					<span class="flecha-sticker">{mostrarPanelStickers ? '▲' : '▼'}</span>
+				</button>
+
+				<!-- Selector de tamaño de sticker -->
+				<div class="selector-tamano-sticker">
+					<label class="etiqueta-opcion">Tamaño:</label>
+					<div class="botones-tamano" role="radiogroup" aria-label="Selector de tamaño de sticker">
+						{#each TAMANOS_STICKER as tamano}
+							<button
+								class="boton-tamano"
+								class:seleccionado={tamanoStickerActual === tamano.escala}
+								onclick={() => seleccionarTamanoSticker(tamano.escala)}
+								aria-label={tamano.descripcion}
+								role="radio"
+								aria-checked={tamanoStickerActual === tamano.escala}
+								title={tamano.descripcion}
+							>
+								{tamano.nombre}
+							</button>
+						{/each}
+					</div>
+				</div>
+
+				{#if stickerSeleccionado}
+					<p class="instruccion-sticker">Haz clic en el lienzo para colocar el sticker</p>
+				{/if}
 			</div>
+
+			<!-- Panel flotante de stickers -->
+			{#if mostrarPanelStickers}
+				<div class="panel-stickers-flotante" role="dialog" aria-label="Selector de stickers">
+					<!-- Header del panel -->
+					<div class="panel-header">
+						<h3>Selecciona un sticker</h3>
+						<button
+							class="boton-cerrar-panel"
+							onclick={() => mostrarPanelStickers = false}
+							aria-label="Cerrar panel de stickers"
+						>
+							✕
+						</button>
+					</div>
+
+					<!-- Tabs de categorías principales -->
+					<div class="tabs-categorias" role="tablist" aria-label="Categorías de stickers">
+						{#each CATEGORIAS_STICKERS as categoria}
+							<button
+								class="tab-categoria"
+								class:activa={categoriaActual.id === categoria.id}
+								onclick={() => seleccionarCategoria(categoria)}
+								role="tab"
+								aria-selected={categoriaActual.id === categoria.id}
+								aria-label={categoria.nombre}
+								title={categoria.descripcion}
+							>
+								<span class="icono-tab">{categoria.icono}</span>
+								<span class="texto-tab">{categoria.nombre}</span>
+							</button>
+						{/each}
+					</div>
+
+					<!-- Tabs de subcategorías -->
+					<div class="tabs-subcategorias" role="tablist" aria-label="Subcategorías">
+						{#each categoriaActual.subcategorias as subcategoria}
+							<button
+								class="tab-subcategoria"
+								class:activa={subcategoriaActual.id === subcategoria.id}
+								onclick={() => subcategoriaActual = subcategoria}
+								role="tab"
+								aria-selected={subcategoriaActual.id === subcategoria.id}
+								aria-label={subcategoria.nombre}
+							>
+								<span class="icono-sub">{subcategoria.icono}</span>
+								<span class="texto-sub">{subcategoria.nombre}</span>
+							</button>
+						{/each}
+					</div>
+
+					<!-- Grid de stickers -->
+					<div class="grid-stickers" role="listbox" aria-label="Stickers disponibles">
+						{#each subcategoriaActual.stickers as sticker}
+							<button
+								class="boton-sticker"
+								class:seleccionado={stickerSeleccionado?.id === sticker.id}
+								onclick={() => seleccionarStickerItem(sticker)}
+								role="option"
+								aria-selected={stickerSeleccionado?.id === sticker.id}
+								aria-label={sticker.nombre}
+								title={sticker.descripcion}
+							>
+								<span class="emoji-sticker">{sticker.emoji}</span>
+								<span class="nombre-sticker">{sticker.nombre}</span>
+							</button>
+						{/each}
+					</div>
+				</div>
+			{/if}
 		{/if}
 	</section>
 </div>
@@ -617,5 +760,307 @@
 		margin: 0;
 		text-align: center;
 		padding: 1rem;
+	}
+
+	/* ====== Estilos para Stickers ====== */
+	
+	.grupo-stickers {
+		position: relative;
+		flex-wrap: wrap;
+	}
+
+	.boton-abrir-stickers {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 1rem;
+		border: 2px solid var(--icono-color-borde, #000);
+		border-radius: 8px;
+		background: var(--fondo-botones, #ffca00);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		min-width: 150px;
+	}
+
+	.boton-abrir-stickers:hover {
+		background: var(--fondo-botones-hover, #d1a700);
+		transform: translateY(-2px);
+	}
+
+	.boton-abrir-stickers.activo {
+		border-color: var(--color-primario, #007bff);
+		border-width: 3px;
+	}
+
+	.boton-abrir-stickers:focus {
+		outline: 2px solid var(--fondo-botones-hover, #000);
+		outline-offset: 2px;
+	}
+
+	.icono-sticker {
+		font-size: 1.5rem;
+	}
+
+	.texto-sticker {
+		font-size: calc(var(--font-size-base, 1rem) * 0.9);
+		font-weight: 600;
+		flex: 1;
+	}
+
+	.flecha-sticker {
+		font-size: 0.8rem;
+	}
+
+	.selector-tamano-sticker {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		align-items: center;
+	}
+
+	.botones-tamano {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	.boton-tamano {
+		padding: 0.4rem 0.8rem;
+		border: 2px solid var(--icono-color-borde, #ccc);
+		border-radius: 6px;
+		background: var(--bg, #fff);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		font-size: calc(var(--font-size-base, 1rem) * 0.85);
+		font-weight: 500;
+	}
+
+	.boton-tamano:hover {
+		background: var(--fondo-botones-hover, #e0e0e0);
+		transform: translateY(-1px);
+	}
+
+	.boton-tamano.seleccionado {
+		border-color: var(--color-primario, #007bff);
+		border-width: 3px;
+		background: var(--fondo-botones, #ffca00);
+	}
+
+	.boton-tamano:focus {
+		outline: 2px solid var(--fondo-botones-hover, #000);
+		outline-offset: 2px;
+	}
+
+	.instruccion-sticker {
+		font-size: calc(var(--font-size-base, 1rem) * 0.85);
+		color: var(--color-texto-secundario, #666);
+		margin: 0;
+		font-style: italic;
+		padding: 0.25rem 0.5rem;
+		background: rgba(255, 202, 0, 0.3);
+		border-radius: 4px;
+	}
+
+	/* Panel flotante de stickers */
+	.panel-stickers-flotante {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: min(90vw, 500px);
+		max-height: 70vh;
+		background: var(--bg, #ffffff);
+		border: 3px solid var(--icono-color-borde, #000);
+		border-radius: 16px;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+		z-index: 1000;
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.panel-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.75rem 1rem;
+		background: var(--fondo-botones, #ffca00);
+		border-bottom: 2px solid var(--icono-color-borde, #000);
+	}
+
+	.panel-header h3 {
+		margin: 0;
+		font-size: calc(var(--font-size-base, 1rem) * 1.1);
+		font-weight: 700;
+	}
+
+	.boton-cerrar-panel {
+		width: 32px;
+		height: 32px;
+		border: 2px solid var(--icono-color-borde, #000);
+		border-radius: 50%;
+		background: var(--bg, #fff);
+		cursor: pointer;
+		font-size: 1rem;
+		font-weight: bold;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.2s ease;
+	}
+
+	.boton-cerrar-panel:hover {
+		background: var(--color-error, #ff4444);
+		color: white;
+	}
+
+	.boton-cerrar-panel:focus {
+		outline: 2px solid var(--fondo-botones-hover, #000);
+		outline-offset: 2px;
+	}
+
+	/* Tabs de categorías */
+	.tabs-categorias {
+		display: flex;
+		gap: 0.5rem;
+		padding: 0.75rem;
+		background: var(--bg-secundario, #f5f5f5);
+		border-bottom: 1px solid var(--icono-color-borde, #ddd);
+	}
+
+	.tab-categoria {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0.5rem 1rem;
+		border: 2px solid transparent;
+		border-radius: 8px;
+		background: var(--bg, #fff);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		flex: 1;
+	}
+
+	.tab-categoria:hover {
+		background: var(--fondo-botones-hover, #e0e0e0);
+	}
+
+	.tab-categoria.activa {
+		border-color: var(--color-primario, #007bff);
+		background: var(--fondo-botones, #ffca00);
+	}
+
+	.tab-categoria:focus {
+		outline: 2px solid var(--fondo-botones-hover, #000);
+		outline-offset: 2px;
+	}
+
+	.icono-tab {
+		font-size: 1.5rem;
+	}
+
+	.texto-tab {
+		font-size: calc(var(--font-size-base, 1rem) * 0.75);
+		font-weight: 600;
+	}
+
+	/* Tabs de subcategorías */
+	.tabs-subcategorias {
+		display: flex;
+		gap: 0.5rem;
+		padding: 0.5rem;
+		background: var(--bg, #fff);
+		border-bottom: 1px solid var(--icono-color-borde, #ddd);
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+
+	.tab-subcategoria {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0.4rem 0.75rem;
+		border: 2px solid var(--icono-color-borde, #ccc);
+		border-radius: 20px;
+		background: var(--bg, #fff);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		font-size: calc(var(--font-size-base, 1rem) * 0.85);
+	}
+
+	.tab-subcategoria:hover {
+		background: var(--fondo-botones-hover, #e0e0e0);
+	}
+
+	.tab-subcategoria.activa {
+		border-color: var(--color-primario, #007bff);
+		background: var(--fondo-botones, #ffca00);
+	}
+
+	.tab-subcategoria:focus {
+		outline: 2px solid var(--fondo-botones-hover, #000);
+		outline-offset: 2px;
+	}
+
+	.icono-sub {
+		font-size: 1rem;
+	}
+
+	.texto-sub {
+		font-weight: 500;
+	}
+
+	/* Grid de stickers */
+	.grid-stickers {
+		display: grid;
+		grid-template-columns: repeat(5, 1fr);
+		gap: 0.5rem;
+		padding: 1rem;
+		overflow-y: auto;
+		max-height: calc(70vh - 200px);
+	}
+
+	.boton-sticker {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0.5rem;
+		border: 2px solid var(--icono-color-borde, #ddd);
+		border-radius: 8px;
+		background: var(--bg, #fff);
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.boton-sticker:hover {
+		background: var(--fondo-botones-hover, #e0e0e0);
+		transform: scale(1.05);
+	}
+
+	.boton-sticker.seleccionado {
+		border-color: var(--color-primario, #007bff);
+		border-width: 3px;
+		background: var(--fondo-botones, #ffca00);
+	}
+
+	.boton-sticker:focus {
+		outline: 2px solid var(--fondo-botones-hover, #000);
+		outline-offset: 2px;
+	}
+
+	.emoji-sticker {
+		font-size: 2rem;
+	}
+
+	.nombre-sticker {
+		font-size: calc(var(--font-size-base, 1rem) * 0.65);
+		text-align: center;
+		font-weight: 500;
+		line-height: 1.1;
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 </style>
