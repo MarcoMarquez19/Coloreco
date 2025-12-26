@@ -51,7 +51,7 @@ export const SOUND_EFFECTS = {
 const INITIAL_STATE: AudioState = {
 	musicEnabled: true,
 	soundEnabled: true,
-	musicVolume: 0.3,
+	musicVolume: 0.5,
 	soundVolume: 0.5,
 	currentMusic: null
 };

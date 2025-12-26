@@ -230,15 +230,55 @@ function crearEstadoConfiguraciones() {
 			bionicMode: !config.bionicMode
 		})),
 		// HU-03: Narración auditiva
-		toggleNarration: () => update(config => ({
-			...config,
-			narrationEnabled: !config.narrationEnabled
-		})),
+		toggleNarration: () => {
+			update(config => {
+				const nuevoEstado = !config.narrationEnabled;
+				
+				// Ajustar volúmenes según el estado de narración
+				if (browser) {
+					import('$lib/stores/audio').then(({ audioStore }) => {
+						if (nuevoEstado) {
+							// Activar narración: reducir música y efectos al 10%
+							audioStore.setMusicVolume(0.1);
+							audioStore.setSoundVolume(0.1);
+						} else {
+							// Desactivar narración: restaurar volúmenes predeterminados
+							audioStore.setMusicVolume(0.5);
+							audioStore.setSoundVolume(0.5);
+						}
+					});
+				}
+				
+				return {
+					...config,
+					narrationEnabled: nuevoEstado
+				};
+			});
+		},
 		// Setter explícito para narración (usado por sincronización BD → UI)
-		setNarrationEnabled: (value: boolean) => update(config => ({
-			...config,
-			narrationEnabled: value
-		})),
+		setNarrationEnabled: (value: boolean) => {
+			update(config => {
+				// Ajustar volúmenes según el estado de narración
+				if (browser) {
+					import('$lib/stores/audio').then(({ audioStore }) => {
+						if (value) {
+							// Activar narración: reducir música y efectos al 10%
+							audioStore.setMusicVolume(0.1);
+							audioStore.setSoundVolume(0.1);
+						} else {
+							// Desactivar narración: restaurar volúmenes predeterminados
+							audioStore.setMusicVolume(0.5);
+							audioStore.setSoundVolume(0.5);
+						}
+					});
+				}
+				
+				return {
+					...config,
+					narrationEnabled: value
+				};
+			});
+		},
 		
 		setTTSSpeed: (speed: number) => update(config => ({
 			...config,
