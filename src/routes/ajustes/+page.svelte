@@ -5,6 +5,7 @@
 	
 	import type { ColorBlindnessMode } from '$lib/stores/settings';
 	import { configuraciones } from '$lib/stores/settings';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 	import { onMount } from 'svelte';
 
 	// Nota: En una 'page.svelte' normal no recibimos 'children' como snippet de contenido principal,
@@ -309,6 +310,7 @@
 						</div>
 					{/if}
 				</div>
+				<hr class="separador" />
 
 				<!-- Sección: Modos de Lectura -->
 				<div class="control-grupo">
@@ -448,8 +450,111 @@
 				{/if}
 				</div>
 
+				<hr class="separador" />
+
+				<!-- Sección: Audio -->
+				<div class="control-grupo seccion-grupo">
+					<h3 class="seccion-titulo">Audio</h3>
+					
+					<!-- Control: Música de Fondo -->
+					<div class="control-subgrupo">
+						<div class="switch-container">
+							<label for="toggle-music" class="switch-label">Música de Fondo</label>
+							<button
+								id="toggle-music"
+								type="button"
+								role="switch"
+								aria-checked={$audioStore.musicEnabled}
+								aria-describedby="toggle-music-desc"
+								class="switch-toggle"
+								class:active={$audioStore.musicEnabled}
+								class:pattern-green={$audioStore.musicEnabled}
+								onclick={() => audioStore.toggleMusic()}
+								aria-label={$audioStore.musicEnabled ? 'Desactivar música de fondo' : 'Activar música de fondo'}
+							>
+								<span class="switch-knob"></span>
+							</button>
+						</div>
+						<div class="control-ayuda" id="toggle-music-desc">
+							<small>Reproduce música ambiental mientras usas la aplicación.</small>
+						</div>
+						
+						{#if $audioStore.musicEnabled}
+							<div class="control-volumen">
+								<label for="slider-music-volume" class="control-label">
+									Volumen de Música
+									<span class="control-valor">{($audioStore.musicVolume * 100).toFixed(0)}%</span>
+								</label>
+								<input
+									id="slider-music-volume"
+									type="range"
+									min="0"
+									max="1"
+									step="0.1"
+									value={$audioStore.musicVolume}
+									oninput={(e) => audioStore.setMusicVolume(parseFloat(e.currentTarget.value))}
+									class="slider"
+									aria-label="Ajustar volumen de la música de fondo"
+									aria-valuemin="0"
+									aria-valuemax="1"
+									aria-valuenow={$audioStore.musicVolume}
+									aria-valuetext="{($audioStore.musicVolume * 100).toFixed(0)} por ciento"
+								/>
+							</div>
+						{/if}
+					</div>
+
+					<!-- Control: Efectos de Sonido -->
+					<div class="control-subgrupo">
+						<div class="switch-container">
+							<label for="toggle-sound" class="switch-label">Efectos de Sonido</label>
+							<button
+								id="toggle-sound"
+								type="button"
+								role="switch"
+								aria-checked={$audioStore.soundEnabled}
+								aria-describedby="toggle-sound-desc"
+								class="switch-toggle"
+								class:active={$audioStore.soundEnabled}
+								class:pattern-yellow={$audioStore.soundEnabled}
+								onclick={() => audioStore.toggleSound()}
+								aria-label={$audioStore.soundEnabled ? 'Desactivar efectos de sonido' : 'Activar efectos de sonido'}
+							>
+								<span class="switch-knob"></span>
+							</button>
+						</div>
+						<div class="control-ayuda" id="toggle-sound-desc">
+							<small>Reproduce sonidos al interactuar con botones y acciones.</small>
+						</div>
+						
+						{#if $audioStore.soundEnabled}
+							<div class="control-volumen">
+								<label for="slider-sound-volume" class="control-label">
+									Volumen de Efectos
+									<span class="control-valor">{($audioStore.soundVolume * 100).toFixed(0)}%</span>
+								</label>
+								<input
+									id="slider-sound-volume"
+									type="range"
+									min="0"
+									max="1"
+									step="0.1"
+									value={$audioStore.soundVolume}
+									oninput={(e) => audioStore.setSoundVolume(parseFloat(e.currentTarget.value))}
+									class="slider"
+									aria-label="Ajustar volumen de los efectos de sonido"
+									aria-valuemin="0"
+									aria-valuemax="1"
+									aria-valuenow={$audioStore.soundVolume}
+									aria-valuetext="{($audioStore.soundVolume * 100).toFixed(0)} por ciento"
+								/>
+							</div>
+						{/if}
+					</div>
+				</div>
+
 				<!-- Botón para reiniciar valores -->
-				<button class="boton-reset" onclick={configuraciones.reset}>
+				<button class="boton-reset" onclick={() => { configuraciones.reset(); audioStore.reset(); }} use:clickSound>
 					Restaurar valores por defecto
 				</button>
 			</section>

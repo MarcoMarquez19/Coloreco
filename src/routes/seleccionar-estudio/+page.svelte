@@ -1,5 +1,6 @@
 <script lang="ts">
     import RegistrarArtista from '$lib/components/modales/RegistrarArtista.svelte';
+    import { clickSound } from '$lib/stores/audio';
     import { goto } from '$app/navigation';
     import { onMount } from 'svelte';
     import {obtenerArtistas,cambiarArtista} from '$lib/db/artistas.service';
@@ -55,6 +56,7 @@
                         aria-label={`Estudio de ${artista.nombre}`}
                         title={`Ir al estudio de ${artista.nombre}`}
                         onclick={() => irAlEstudio(artista.id)}
+                        use:clickSound
                         >
                             Estudio de {artista.nombre}
                         </button>
@@ -66,6 +68,7 @@
 			aria-label="Crear un nuevo estudio" 
 			title="Crea un estudio nuevo"
 			onclick={crearEstudio}
+			use:clickSound
 			>
 			SOY NUEVO
 		</button>

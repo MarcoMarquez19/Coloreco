@@ -6,6 +6,7 @@
     import Galeria from '$lib/components/iconos/Galeria.png';
     import Logros from '$lib/components/iconos/Logros.png';
     import FondoHabitacion from '$lib/components/fondos/FondoHabitacion.svelte';
+    import { clickSound } from '$lib/stores/audio';
     import { goto } from '$app/navigation';
 
     // Funciones para manejar las interacciones de cada elemento
@@ -56,6 +57,7 @@
         on:click={manejarSalida}
         aria-label="Salir del estudio - Presione Escape"
         tabindex="0"
+        use:clickSound
     >
         <div class="svg-contenedor">
             <img src={Salida} alt="">
@@ -69,6 +71,7 @@
         on:click={manejarGaleria}
         aria-label="Visitar la galería de arte"
         tabindex="0"
+        use:clickSound
     >
         <div class="svg-contenedor">
             <img src={Galeria} alt="">
@@ -82,6 +85,7 @@
         on:click={manejarMesaTrabajo}
         aria-label="Ir a la mesa de trabajo"
         tabindex="0"
+        use:clickSound
     >
         <div class="svg-contenedor">
             <img src={MesaCentral} alt="">
@@ -95,6 +99,7 @@
         on:click={manejarLogros}
         aria-label="Ver logros obtenidos"
         tabindex="0"
+        use:clickSound
     >
         <div class="svg-contenedor">
             <img src={Logros} alt="">
@@ -108,6 +113,7 @@
         on:click={manejarAjustes}
         aria-label="Abrir ajustes - Presione Control más A"
         tabindex="0"
+        use:clickSound
     >
         <div class="svg-contenedor">
             <img src={Ajustes} alt="">
@@ -260,7 +266,7 @@
         top: 30%;
         transform: translate(-50%, -50%);
     }
-    
+
     /* Título del estudio */
     .titulo-estudio {
         position: absolute;
