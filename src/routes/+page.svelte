@@ -3,6 +3,7 @@
 	// Importar imágenes desde assets 
 	import logoColoreco from '$lib/assets/Logo_coloreco.png';
 	import {configuraciones} from '$lib/stores/settings';
+	import { clickSound } from '$lib/stores/audio';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
@@ -62,6 +63,7 @@
 			aria-label="Iniciar aplicación" 
 			title="Iniciar"
 			onclick={iniciar}
+			use:clickSound
 			>
 			Iniciar
 		</button>
