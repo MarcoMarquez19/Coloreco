@@ -336,6 +336,55 @@ export interface Progreso {
 }
 
 // ============================================================================
+// SISTEMA DE HISTORIAS
+// ============================================================================
+
+/**
+ * Progreso de un capítulo individual
+ */
+export interface ProgresoCapitulo {
+	/** Número del capítulo (1, 2, 3...) */
+	numeroCapitulo: number;
+	/** Si el capítulo está desbloqueado para jugar */
+	desbloqueado: boolean;
+	/** Si el capítulo fue completado */
+	completado: boolean;
+	/** Fecha de desbloqueo (si aplica) */
+	fechaDesbloqueo?: Date;
+	/** Fecha de completado (si aplica) */
+	fechaCompletado?: Date;
+	/** Número de intentos realizados */
+	intentos: number;
+}
+
+/**
+ * Progreso de una historia completa para un artista
+ * Clave primaria: id (UUID)
+ */
+export interface ProgresoHistoria {
+	/** UUID único del registro */
+	id: string;
+	/** FK al artista */
+	artistaId: number;
+	/** ID de la historia (ej: 'cantuna', 'padre-almeida') */
+	historiaId: string;
+	/** Capítulos con su progreso */
+	capitulos: ProgresoCapitulo[];
+	/** Capítulo actual (último desbloqueado) */
+	capituloActual: number;
+	/** Número total de capítulos de la historia */
+	totalCapitulos: number;
+	/** Si la historia fue completada */
+	completada: boolean;
+	/** Fecha de inicio de la historia */
+	fechaInicio: Date;
+	/** Fecha de última actividad */
+	ultimaActividad: Date;
+	/** Fecha de completado (si aplica) */
+	fechaCompletado?: Date;
+}
+
+// ============================================================================
 // TIPOS AUXILIARES
 // ============================================================================
 

@@ -4,6 +4,8 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { configuraciones } from '$lib/stores/settings';
+	import { obtenerArtistaActivo } from '$lib/db/artistas.service';
+	import * as logicaHistorias from '$lib/logic/historias';
 
 	interface Opcion {
 		id: string;
@@ -43,9 +45,19 @@
 	let capituloActual = $state<number>(0);
 	let mostrarModal = $state<boolean>(false);
 	let pista = $state<string>('');
+	let artistaId = $state<number | null>(null);
 
 	onMount(async () => {
 		try {
+			// Obtener el artista actual
+			const artista = await obtenerArtistaActivo();
+			if (!artista || !artista.id) {
+				error = 'No hay artista activo. Por favor, crea un perfil primero.';
+				cargando = false;
+				return;
+			}
+			artistaId = artista.id;
+
 			const historiaId = $page.params.historiaId;
 			const capituloId = $page.params.capituloId;
 			
@@ -95,14 +107,22 @@
 		};
 	});
 
-	function enviarRespuesta() {
-		if (!capitulo || respuestaEnviada) return;
+	async function enviarRespuesta() {
+		if (!capitulo || respuestaEnviada || !artistaId) return;
 		const opcionElegida = capitulo.pregunta.opciones[opcionSeleccionadaIndex];
 		respuestaEnviada = true;
 		opcionCorrecta = opcionElegida.esCorrecta;
 		feedbackMostrado = opcionElegida.feedback;
-		pista = opcionElegida.feedback; // Si feedback es la pista, si no, ajusta aquí
+		pista = opcionElegida.feedback;
 		mostrarModal = true;
+
+		// Procesar la respuesta en la BD
+		await logicaHistorias.procesarRespuesta(
+			artistaId,
+			capitulo.historiaId,
+			capituloActual,
+			opcionCorrecta
+		);
 	}
 
 	function continuar() {
