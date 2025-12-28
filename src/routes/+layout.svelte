@@ -1,6 +1,7 @@
 <script lang="ts">
 	import logoColoreco from '$lib/assets/Logo_coloreco.png';
 	import { configuraciones } from '$lib/stores/settings';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 	import { interpolateMatrix } from '$lib/constants/colorMatrices';
 	import EfectoLupa from '$lib/components/a11y/EfectoLupa.svelte';
 	import NarrationControl from '$lib/components/a11y/NarrationControl.svelte';
@@ -93,6 +94,26 @@
 			document.body.setAttribute('data-theme', modoActual);
 		} else {
 			document.body.removeAttribute('data-theme');
+		}
+	});
+
+	// Efecto para reproducir música según la pantalla actual
+	$effect(() => {
+		if (!browser) return;
+		
+		const path = $page.url.pathname;
+		
+		// Determinar qué música reproducir según la ruta
+		if (path === '/' || path === '/seleccionar-estudio') {
+			audioStore.playMusic('menu');
+		} else if (path.startsWith('/estudio')) {
+			audioStore.playMusic('estudio');
+		} else if (path.startsWith('/galeria')) {
+			audioStore.playMusic('galeria');
+		} else if (path === '/ajustes') {
+			// En ajustes mantener la música actual
+		} else {
+			audioStore.playMusic('default');
 		}
 	});
 
@@ -482,8 +503,7 @@
 				aria-keyshortcuts="Escape" 
 				title="Volver (Esc)" 
 				type="button"
-				onclick={volver}
-			>
+				onclick={volver}				use:clickSound			>
 				<span class="solo-lectores">Volver a la página anterior</span>
 				<IconoVolver />
 			</button>
@@ -503,8 +523,7 @@
 				aria-keyshortcuts="Control + A" 
 				title="Ajustes (Control + A)" 
 				type="button"
-				onclick={abrirConfiguracion}
-			>
+				onclick={abrirConfiguracion}				use:clickSound			>
 				<span class="solo-lectores">Abrir los ajustes</span>
 				<IconoAccesibilidad />
 			</button>
