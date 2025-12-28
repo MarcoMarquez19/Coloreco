@@ -6,10 +6,12 @@
     import Trofeo from '$lib/components/iconos/Trofeo.svelte';
     import { onMount } from 'svelte';
     import { configuraciones } from '$lib/stores/settings';
+    import { obtenerArtistaActivo } from '$lib/db/artistas.service';
+    import { calcularRangoArtista } from '$lib/db/logros.service';
 
     // Props para controlar el trofeo dinámicamente
-    let rangoTrofeo = $state<'oro' | 'plata' | 'bronce'>('oro');
-    let textoRango = $state('Oro');
+    let rangoTrofeo = $state<'oro' | 'plata' | 'bronce'>('bronce');
+    let textoRango = $state('Bronce');
 
     // Detectar si hay filtros de fuente o espaciado activos
     let hayFiltrosActivos = $derived(
@@ -25,8 +27,26 @@
         //TODO: PONER LA PAGINA DE LOGROS CUERPO
     }
 
-    function irALogrosCuentos() {
-        goto(`/logros-dislexia`);
+    function irALogrosHistorias() {
+        goto(`logros/historias`);
+    }
+
+    // Cargar rango del artista
+    async function cargarRango() {
+        const artista = await obtenerArtistaActivo();
+        if (!artista || !artista.id) return;
+        
+        const rango = await calcularRangoArtista(artista.id);
+        if (rango === 'oro') {
+            rangoTrofeo = 'oro';
+            textoRango = 'Oro';
+        } else if (rango === 'plata') {
+            rangoTrofeo = 'plata';
+            textoRango = 'Plata';
+        } else {
+            rangoTrofeo = 'bronce';
+            textoRango = 'Bronce';
+        }
     }
 
     let contenedorLogrosRef: HTMLElement | null = null;
@@ -44,6 +64,7 @@
 
     onMount(() => {
         document.body.style.overflow = 'hidden';
+        cargarRango();
         return () => {
             document.body.style.overflow = ''; // Restaurar al desmontar
         };
@@ -126,11 +147,11 @@
         </button>
         <button class="boton-logro"
             aria-label="Ver logros del rincón de historias" 
-            title="Logros Cuentos"
-            onclick={irALogrosCuentos}
+            title="Logros Historias"
+            onclick={irALogrosHistorias}
             >
             <img src={LibroHistorias} alt="Logo logros historias - Libro de historias">
-            Logros Cuentos
+            Logros Historias
         </button>
     </div>
 </div>

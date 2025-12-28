@@ -43,8 +43,6 @@ export interface Artista {
 	fechaCreacion: Date;
 	/** Última vez que el artista estuvo activo */
 	ultimaActividad: Date;
-	/** Puntuación total acumulada por logros */
-	puntuacion: number;
 }
 
 /**
@@ -128,6 +126,20 @@ export interface Ajustes {
 // ============================================================================
 
 /**
+ * Códigos únicos de logros de historias
+ */
+export const LOGROS_HISTORIAS = {
+	GRAN_LECTOR: 'GRAN_LECTOR',
+	MENTE_BRILLANTE: 'MENTE_BRILLANTE',
+	MAESTRO_HISTORIAS: 'MAESTRO_HISTORIAS'
+} as const;
+
+/**
+ * Tipo para códigos de logros
+ */
+export type CodigoLogro = typeof LOGROS_HISTORIAS[keyof typeof LOGROS_HISTORIAS];
+
+/**
  * Definición de un logro en el catálogo
  * Clave primaria: id (UUID)
  */
@@ -140,8 +152,6 @@ export interface LogroDefinicion {
 	nombre: string;
 	/** Descripción del logro */
 	descripcion: string;
-	/** Puntos otorgados al desbloquear */
-	puntos: number;
 	/** Modo específico del logro (opcional, si aplica a un modo) */
 	modo?: Modo;
 	/** ID de la escena específica (opcional, si el logro está asociado a una escena) */
@@ -172,21 +182,15 @@ export interface LogroArtista {
 }
 
 /**
- * Umbral de medalla basado en puntuación
- * Clave primaria: id (UUID)
+ * SISTEMA DE RANGOS GENERALES
+ * 
+ * Los rangos se calculan automáticamente según la cantidad de logros desbloqueados:
+ * - Bronce: 1-3 logros desbloqueados (color: #CD7F32)
+ * - Plata: 4-7 logros desbloqueados (color: #C0C0C0)
+ * - Oro: 8+ logros desbloqueados (color: #FFD700)
+ * 
+ * No se usa una tabla de base de datos, se calcula dinámicamente.
  */
-export interface UmbralMedalla {
-	/** UUID único del registro */
-	id: string;
-	/** Nombre de la medalla (ej: 'Bronce', 'Plata', 'Oro') */
-	medalla: string;
-	/** Puntuación mínima para obtener la medalla */
-	minPuntos: number;
-	/** Puntuación máxima de la medalla */
-	maxPuntos: number;
-	/** Color representativo (hex) */
-	color?: string;
-}
 
 // ============================================================================
 // GALERÍA DE OBRAS

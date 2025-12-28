@@ -5,8 +5,8 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { obtenerArtistaActivo } from '$lib/db/artistas.service';
-	import * as logicaHistorias from '$lib/logic/historias';
-	import type { HistoriaConProgreso } from '$lib/logic/historias';
+	import * as logicaHistorias from '$lib/stores/historias';
+	import type { HistoriaConProgreso } from '$lib/stores/historias';
 
 	let historias = $state<HistoriaConProgreso[]>([]);
 	let cargando = $state<boolean>(true);

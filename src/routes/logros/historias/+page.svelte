@@ -2,51 +2,98 @@
     import LibroHistorias from '$lib/components/iconos/LibroAbierto.png';
     import Trofeo from '$lib/components/iconos/Trofeo.svelte';
     import { onMount } from 'svelte';
+    import { obtenerArtistaActivo } from '$lib/db/artistas.service';
+    import { obtenerLogrosArtista, calcularRangoArtista } from '$lib/db/logros.service';
+    import { LOGROS_HISTORIAS } from '$lib/db/schemas';
+    import type { LogroArtista } from '$lib/db/schemas';
 
     // Props para controlar el trofeo dinámicamente
-    let rangoTrofeo = $state<'oro' | 'plata' | 'bronce'>('plata');
-    let textoRango = $state('Plata');
+    let rangoTrofeo = $state<'oro' | 'plata' | 'bronce'>('bronce');
+    let textoRango = $state('Bronce');
 
     // Tamaño de la imagen decorativa (ajustable)
     let tamañoImagen = '20rem'; // Puedes cambiar este valor: '8rem', '12rem', etc.
 
-    // Sistema de logros
-    interface Logro {
-        id: string;
+    // Sistema de logros con información real
+    interface LogroDisplay {
+        codigo: string;
         titulo: string;
         descripcion: string;
         icono: string;
+        desbloqueado: boolean;
+        fechaDesbloqueo?: Date;
     }
 
-    const logros: Logro[] = [
+    let logrosDisplay = $state<LogroDisplay[]>([
         {
-            id: 'gran-lector',
+            codigo: LOGROS_HISTORIAS.GRAN_LECTOR,
             titulo: 'Gran Lector',
-            descripcion: 'Lee 10 historias completas',
-            icono: '📚'
+            descripcion: 'Completa tu primera historia',
+            icono: '📚',
+            desbloqueado: false
         },
         {
-            id: 'explorador',
-            titulo: 'Explorador de Mundos',
-            descripcion: 'Visita 5 mundos diferentes',
-            icono: '🗺️'
+            codigo: LOGROS_HISTORIAS.MENTE_BRILLANTE,
+            titulo: 'Mente Brillante',
+            descripcion: 'Responde 3 preguntas correctas seguidas',
+            icono: '🧠',
+            desbloqueado: false
         },
         {
-            id: 'aventurero',
-            titulo: 'Aventurero Valiente',
-            descripcion: 'Completa 3 aventuras',
-            icono: '⚔️'
+            codigo: LOGROS_HISTORIAS.MAESTRO_HISTORIAS,
+            titulo: 'Maestro de Historias',
+            descripcion: 'Completa todas las historias disponibles',
+            icono: '🏆',
+            desbloqueado: false
         }
-    ];
+    ]);
 
     let logroActualIndex = $state(0);
+    let artistaId = $state<number | null>(null);
 
     function logroAnterior() {
-        logroActualIndex = (logroActualIndex - 1 + logros.length) % logros.length;
+        logroActualIndex = (logroActualIndex - 1 + logrosDisplay.length) % logrosDisplay.length;
     }
 
     function logroSiguiente() {
-        logroActualIndex = (logroActualIndex + 1) % logros.length;
+        logroActualIndex = (logroActualIndex + 1) % logrosDisplay.length;
+    }
+
+    // Cargar logros del artista
+    async function cargarLogros() {
+        const artista = await obtenerArtistaActivo();
+        if (!artista || !artista.id) return;
+        
+        artistaId = artista.id;
+        
+        // Cargar logros desbloqueados
+        const logrosArtista = await obtenerLogrosArtista(artista.id);
+        
+        // Actualizar display con información real
+        logrosDisplay = logrosDisplay.map(logro => {
+            const logroData = logrosArtista.find(
+                (la) => la.definicion.codigo === logro.codigo
+            );
+            
+            return {
+                ...logro,
+                desbloqueado: logroData?.estado?.desbloqueado ?? false,
+                fechaDesbloqueo: logroData?.estado?.fechaDesbloqueo
+            };
+        });
+        
+        // Calcular rango
+        const rango = await calcularRangoArtista(artista.id);
+        if (rango === 'oro') {
+            rangoTrofeo = 'oro';
+            textoRango = 'Oro';
+        } else if (rango === 'plata') {
+            rangoTrofeo = 'plata';
+            textoRango = 'Plata';
+        } else {
+            rangoTrofeo = 'bronce';
+            textoRango = 'Bronce';
+        }
     }
 
     // Navegación con teclado
@@ -73,6 +120,9 @@
 
     onMount(() => {
         document.body.style.overflow = 'hidden';
+        
+        // Cargar logros
+        cargarLogros();
         
         // Agregar listener para teclas
         window.addEventListener('keydown', manejarTecla);
@@ -168,10 +218,17 @@
             </svg>
         </button>
 
-        <div class="tarjeta-logro">
-            <div class="icono-logro">{logros[logroActualIndex].icono}</div>
-            <h3 class="titulo-logro-individual">{logros[logroActualIndex].titulo}</h3>
-            <p class="descripcion-logro">{logros[logroActualIndex].descripcion}</p>
+        <div class="tarjeta-logro" class:desbloqueado={logrosDisplay[logroActualIndex].desbloqueado}>
+            <div class="icono-logro">{logrosDisplay[logroActualIndex].icono}</div>
+            <h3 class="titulo-logro-individual">{logrosDisplay[logroActualIndex].titulo}</h3>
+            <p class="descripcion-logro">{logrosDisplay[logroActualIndex].descripcion}</p>
+            <div class="estado-logro">
+                {#if logrosDisplay[logroActualIndex].desbloqueado}
+                    <span class="badge desbloqueado">✓ Desbloqueado</span>
+                {:else}
+                    <span class="badge bloqueado">🔒 Bloqueado</span>
+                {/if}
+            </div>
         </div>
 
         <button 
@@ -362,5 +419,41 @@
         font-weight: 500;
         color: var(--icono-color-relleno, #555);
         letter-spacing: calc(var(--spacing-base, 1rem) * 0.02);
+    }
+
+    .estado-logro {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: calc(var(--spacing-base, 1rem) * 0.5);
+        margin-top: calc(var(--spacing-base, 1rem) * 0.5);
+    }
+
+    .badge {
+        padding: calc(var(--spacing-base, 1rem) * 0.5) calc(var(--spacing-base, 1rem) * 1);
+        border-radius: calc(var(--border-radius, 8px) * 0.5);
+        font-size: calc(var(--font-size-base, 1rem) * 1.2);
+        font-weight: 600;
+        letter-spacing: calc(var(--spacing-base, 1rem) * 0.02);
+    }
+
+    .badge.desbloqueado {
+        background: #4caf50;
+        color: white;
+    }
+
+    .badge.bloqueado {
+        background: #9e9e9e;
+        color: white;
+    }
+
+    .tarjeta-logro:not(.desbloqueado) {
+        opacity: 0.6;
+        filter: grayscale(0.5);
+    }
+
+    .tarjeta-logro.desbloqueado {
+        border-color: #4caf50;
+        box-shadow: 0 8px 24px rgba(76, 175, 80, 0.3);
     }
 </style>

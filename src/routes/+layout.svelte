@@ -10,6 +10,7 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { obtenerSesionActual } from '$lib/db/artistas.service';
+	import { inicializarCatalogoLogros } from '$lib/db/logros.service';
 	import '../lib/styles/themes.css';
 	import IconoVolver from '$lib/components/iconos/IconoVolver.svelte';
 	import IconoAccesibilidad from '$lib/components/iconos/Accesibilidad.svelte';
@@ -121,6 +122,9 @@
 	onMount(async () => {
 		if (!browser) return;
 		try {
+			// Inicializar catálogo de logros al cargar la aplicación
+			await inicializarCatalogoLogros();
+			
 			const sesion = await obtenerSesionActual();
 			const artistaId = sesion?.artistaActualId ?? null;
 			const path = $page.url.pathname;

@@ -5,8 +5,8 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { obtenerArtistaActivo } from '$lib/db/artistas.service';
-	import * as logicaHistorias from '$lib/logic/historias';
-	import type { CapituloConProgreso } from '$lib/logic/historias';
+	import * as logicaHistorias from '$lib/stores/historias';
+	import type { CapituloConProgreso } from '$lib/stores/historias';
 
 	let historiaId = $state<string>('');
 	let tituloHistoria = $state<string>('');

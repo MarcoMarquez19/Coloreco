@@ -13,7 +13,6 @@ import type {
 	Ajustes,
 	LogroDefinicion,
 	LogroArtista,
-	UmbralMedalla,
 	Obra,
 	ObraBlob,
 	MiniaturaBlob,
@@ -36,7 +35,6 @@ export class ColorecoDB extends Dexie {
 	ajustes!: Table<Ajustes, string>;
 	logrosDefinicion!: Table<LogroDefinicion, string>;
 	logrosArtista!: Table<LogroArtista, string>;
-	umbralesMedalla!: Table<UmbralMedalla, string>;
 	obras!: Table<Obra, string>;
 	obrasBlobs!: Table<ObraBlob, string>;
 	miniaturasBlobs!: Table<MiniaturaBlob, string>;
@@ -75,8 +73,7 @@ export class ColorecoDB extends Dexie {
 			obrasBlobs: 'idObra',
 			// Nuevos stores
 			logrosDefinicion: 'id, codigo',
-			logrosArtista: 'id, artistaId, logroId',
-			umbralesMedalla: 'id, medalla'
+			logrosArtista: 'id, artistaId, logroId'
 		}).upgrade(async (trans) => {
 			// Migración v1 → v2: inicializar catálogo de logros si está vacío
 			const logrosCount = await trans.table('logrosDefinicion').count();
@@ -98,7 +95,6 @@ export class ColorecoDB extends Dexie {
 			obrasBlobs: 'idObra',
 			logrosDefinicion: 'id, codigo',
 			logrosArtista: 'id, artistaId, logroId',
-			umbralesMedalla: 'id, medalla',
 			// Nuevos stores
 			progreso: 'id, artistaId, modo',
 			miniaturasBlobs: 'idObra'
@@ -122,7 +118,6 @@ export class ColorecoDB extends Dexie {
 			obrasBlobs: 'idObra',
 			logrosDefinicion: 'id, codigo',
 			logrosArtista: 'id, artistaId, logroId',
-			umbralesMedalla: 'id, medalla',
 			progreso: 'id, artistaId, modo',
 			miniaturasBlobs: 'idObra',
 			// Nuevo store
@@ -147,7 +142,6 @@ export class ColorecoDB extends Dexie {
 			obrasBlobs: 'idObra',
 			logrosDefinicion: 'id, codigo',
 			logrosArtista: 'id, artistaId, logroId',
-			umbralesMedalla: 'id, medalla',
 			progreso: 'id, artistaId, modo',
 			miniaturasBlobs: 'idObra',
 			escenasCatalogo: 'id, modo, escenaId',
@@ -224,7 +218,6 @@ export async function limpiarBaseDeDatos(): Promise<void> {
 		database.obrasBlobs,
 		database.logrosDefinicion,
 		database.logrosArtista,
-		database.umbralesMedalla,
 		database.progreso,
 		database.miniaturasBlobs,
 		database.escenasCatalogo,
@@ -237,7 +230,6 @@ export async function limpiarBaseDeDatos(): Promise<void> {
 		await database.obrasBlobs.clear();
 		await database.logrosDefinicion.clear();
 		await database.logrosArtista.clear();
-		await database.umbralesMedalla.clear();
 		await database.progreso.clear();
 		await database.miniaturasBlobs.clear();
 		await database.escenasCatalogo.clear();

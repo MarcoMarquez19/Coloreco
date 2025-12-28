@@ -274,3 +274,24 @@ export async function esUltimoCapitulo(
 	if (!historia) return false;
 	return numeroCapitulo === historia.totalCapitulos;
 }
+
+/**
+ * Cuenta cuántas historias ha completado un artista
+ * 
+ * @param artistaId - ID del artista
+ * @returns Número de historias completadas
+ */
+export async function contarHistoriasCompletadas(artistaId: number): Promise<number> {
+	const historias = await obtenerHistoriasConProgreso(artistaId);
+	return historias.filter(h => h.completada).length;
+}
+
+/**
+ * Obtiene el total de historias disponibles
+ * 
+ * @returns Total de historias
+ */
+export async function contarTotalHistorias(): Promise<number> {
+	const historias = await cargarHistoriasJSON();
+	return historias.length;
+}

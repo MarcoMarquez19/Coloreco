@@ -1,11 +1,14 @@
 <script lang="ts">
 	import FeedbackHistoria from '$lib/components/modales/FeedbackHistoria.svelte';
+	import LogroDesbloqueado from '$lib/components/modales/LogroDesbloqueado.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { configuraciones } from '$lib/stores/settings';
 	import { obtenerArtistaActivo } from '$lib/db/artistas.service';
-	import * as logicaHistorias from '$lib/logic/historias';
+	import * as logicaHistorias from '$lib/stores/historias';
+	import * as logrosStore from '$lib/stores/logros';
+	import type { LogroDefinicion } from '$lib/db/schemas';
 
 	interface Opcion {
 		id: string;
@@ -46,6 +49,8 @@
 	let mostrarModal = $state<boolean>(false);
 	let pista = $state<string>('');
 	let artistaId = $state<number | null>(null);
+	let logroDesbloqueadoActual = $state<LogroDefinicion | null>(null);
+	let mostrarModalLogro = $state<boolean>(false);
 
 	onMount(async () => {
 		try {
@@ -90,6 +95,14 @@
 	onMount(() => {
 		document.body.style.overflow = 'hidden';
 		
+		// Suscribirse al store de logros desbloqueados
+		const unsubscribe = logrosStore.logroDesbloqueado.subscribe((logro) => {
+			if (logro) {
+				logroDesbloqueadoActual = logro;
+				mostrarModalLogro = true;
+			}
+		});
+		
 		// Interceptar el botón de volver del navegador/layout para ir a progreso
 		const handlePopState = (event: PopStateEvent) => {
 			event.preventDefault();
@@ -104,6 +117,7 @@
 		return () => {
 			document.body.style.overflow = '';
 			window.removeEventListener('popstate', handlePopState);
+			unsubscribe();
 		};
 	});
 
@@ -123,6 +137,28 @@
 			capituloActual,
 			opcionCorrecta
 		);
+
+		// Verificar logros
+		// Verificar si se completó la historia
+		const esUltimo = capituloActual === totalCapitulos;
+		
+		// Contar historias completadas (se cuenta DESPUÉS de marcar como completa)
+		const totalHistorias = await logicaHistorias.contarTotalHistorias();
+		const historiasCompletadas = await logicaHistorias.contarHistoriasCompletadas(artistaId);
+		
+		// Procesar logros (solo si la respuesta es correcta)
+		await logrosStore.procesarLogrosHistorias(
+			artistaId,
+			opcionCorrecta,
+			esUltimo && opcionCorrecta,
+			totalHistorias,
+			historiasCompletadas
+		);
+		
+		// Si la respuesta es incorrecta, resetear racha
+		if (!opcionCorrecta) {
+			logrosStore.resetearRespuestasConsecutivas();
+		}
 	}
 
 	function continuar() {
@@ -144,6 +180,11 @@
 			opcionCorrecta = false;
 			feedbackMostrado = '';
 		}
+	}
+
+	function cerrarModalLogro() {
+		mostrarModalLogro = false;
+		logroDesbloqueadoActual = null;
 	}
 
 	function manejarTeclaPresionada(event: KeyboardEvent) {
@@ -274,6 +315,10 @@
 		pista={!opcionCorrecta ? feedbackMostrado : ''}
 		on:close={continuar}
 	/>
+{/if}
+
+{#if mostrarModalLogro && logroDesbloqueadoActual}
+	<LogroDesbloqueado logro={logroDesbloqueadoActual} on:close={cerrarModalLogro} />
 {/if}
 
 
