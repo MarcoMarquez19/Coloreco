@@ -2,8 +2,10 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { configuraciones } from '$lib/stores/settings';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 	import { obtenerSesionActual } from '$lib/db/artistas.service';
 	import { obtenerObras, eliminarObra, liberarURLsImagenes, type ObraCompleta } from '$lib/db/obras.service';
+	import Modal from '$lib/components/modales/Modal.svelte';
 
 	// ============================================================================
 	// ESTADO REACTIVO (Svelte 5 Runes)
@@ -20,6 +22,9 @@
 	
 	/** Mensaje de error si falla la carga */
 	let mensajeError = $state<string>('');
+
+	/** Control del modal de confirmación de eliminación */
+	let modalEliminarAbierto = $state<boolean>(false);
 
 	/** Referencia al contenedor para aplicar transform/scale dinámico */
 	let contenedorGaleriaRef: HTMLElement | null = null;
@@ -81,15 +86,20 @@
 	}
 
 	/**
-	 * Maneja la eliminación de una obra
-	 * Muestra confirmación y actualiza la lista tras borrar
+	 * Abre el modal de confirmación para eliminar
 	 */
-	async function manejarEliminar(): Promise<void> {
+	function abrirModalEliminar(): void {
+		if (!obraActual) return;
+		modalEliminarAbierto = true;
+	}
+
+	/**
+	 * Maneja la eliminación de una obra después de confirmar
+	 */
+	async function confirmarEliminar(): Promise<void> {
 		if (!obraActual) return;
 		
-		const confirmar = confirm(`¿Seguro que deseas eliminar "${obraActual.titulo}"?\n\nEsta acción no se puede deshacer.`);
-		
-		if (!confirmar) return;
+		modalEliminarAbierto = false;
 		
 		try {
 			const exito = await eliminarObra(obraActual.id);
@@ -109,8 +119,6 @@
 				} else if (obras.length === 0) {
 					indiceActual = 0;
 				}
-				
-				alert('Obra eliminada correctamente');
 			} else {
 				alert('Error al eliminar la obra. Inténtalo nuevamente.');
 			}
@@ -267,6 +275,7 @@
 					class="boton boton-editar pattern-yellow"
 					onclick={editarObra}
 					aria-label="Editar obra actual"
+					use:clickSound
 				>
 					✏️ Editar
 				</button>
@@ -276,6 +285,7 @@
 					class="boton boton-descargar pattern-green"
 					onclick={descargarObra}
 					aria-label="Descargar imagen de la obra"
+					use:clickSound
 				>
 					💾 Descargar
 				</button>
@@ -283,8 +293,9 @@
 				<!-- Botón Eliminar (Rojo) -->
 				<button
 					class="boton boton-eliminar pattern-red"
-					onclick={manejarEliminar}
+					onclick={abrirModalEliminar}
 					aria-label="Eliminar obra de la galería"
+					use:clickSound
 				>
 					🗑️ Eliminar
 				</button>
@@ -298,7 +309,9 @@
 					onclick={irAnterior}
 					disabled={!puedeRetroceder}
 					aria-label="Ver obra anterior"
+					use:clickSound
 					title="Navegar a la obra anterior (← tecla izquierda)"
+
 				>
 					<svg 
 						xmlns="http://www.w3.org/2000/svg"
@@ -328,6 +341,7 @@
 					onclick={irSiguiente}
 					disabled={!puedeAvanzar}
 					aria-label="Ver obra siguiente"
+					use:clickSound
 					title="Navegar a la obra siguiente (→ tecla derecha)"
 				>
 					<svg 
@@ -366,6 +380,40 @@
 	</main>
 	</div>
 </div>
+
+<!-- Modal de confirmación de eliminación -->
+<Modal
+	bind:abierto={modalEliminarAbierto}
+	titulo="Confirmar eliminación"
+	anchoMaximo="600px"
+	cerrarAlClickearFuera={false}
+>
+	{#snippet children()}
+		<p style="margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0; font-size: calc(var(--font-size-base, 1rem) * 1);">
+			¿Estás seguro que deseas eliminar la obra <strong>"{obraActual?.titulo}"</strong>?
+		</p>
+		<p style="margin: 0; color: #d32f2f; font-weight: 600; font-size: calc(var(--font-size-base, 1rem) * 1);">
+			⚠️ Esta acción no se puede deshacer.
+		</p>
+	{/snippet}
+
+	{#snippet acciones()}
+		<button
+			class="modal-boton modal-boton-cancelar"
+			onclick={() => modalEliminarAbierto = false}
+			type="button"
+		>
+			Cancelar
+		</button>
+		<button
+			class="modal-boton modal-boton-confirmar pattern-red"
+			onclick={confirmarEliminar}
+			type="button"
+		>
+			Eliminar
+		</button>
+	{/snippet}
+</Modal>
 
 <style>
 	/* ============================================================================
@@ -647,6 +695,52 @@
 		outline: var(--borde-botones, 4px solid #000000);
 		background: #d32f2f;
 		outline-offset: 7px;
+	}
+
+	/* ============================================================================
+	   BOTONES DEL MODAL
+	   ============================================================================ */
+	:global(.modal-boton) {
+		padding: calc(var(--spacing-base, 1rem) * 1) calc(var(--spacing-base, 1rem) * 1.5);
+		font-size: calc(var(--font-size-base, 1rem) * 1.1);
+		font-weight: 600;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		transition: transform 120ms ease, background 120ms ease;
+		min-width: 100px;
+	}
+
+	:global(.modal-boton-cancelar) {
+		background: #757575;
+		color: white;
+	}
+
+	:global(.modal-boton-cancelar:hover) {
+		background: #616161;
+		transform: translateY(-2px);
+	}
+
+	:global(.modal-boton-cancelar:focus) {
+		outline: 2px solid #000000;
+		background: #616161;
+		outline-offset: 2px;
+	}
+
+	:global(.modal-boton-confirmar) {
+		background: #f44336;
+		color: white;
+	}
+
+	:global(.modal-boton-confirmar:hover) {
+		background: #d32f2f;
+		transform: translateY(-2px);
+	}
+
+	:global(.modal-boton-confirmar:focus) {
+		outline: 2px solid #000000;
+		background: #d32f2f;
+		outline-offset: 2px;
 	}
 
 	
