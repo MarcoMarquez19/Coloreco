@@ -6,7 +6,7 @@
 -->
 
 <script lang="ts">
-	import { createEventDispatcher, onMount } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 
 	// Props
 	interface Props {
@@ -18,7 +18,7 @@
 
 	// Dispatcher para comunicar eventos de accesibilidad
 	const dispatch = createEventDispatcher<{
-		seleccionar: { x: number; y: number; zona: string };
+		seleccionar: { zona: string };
 		zonaEnfocada: { zona: string; label: string };
 	}>();
 
@@ -26,9 +26,10 @@
 	let contenedorOverlay: HTMLDivElement | null = $state(null);
 	let contenedorSvg: HTMLDivElement | null = $state(null);
 	let svgCargado = $state<boolean>(false);
-	let errorCarga = $state<string | null>(null);
 	let modoNavegacionActivo = $state<boolean>(false);
+	let altoContrasteActivo = $state<boolean>(false);
 	let zonaActualmenteFocusada = $state<string>('');
+	let elementosOriginales: Map<SVGElement, { fill: string }> = new Map();
 
 	/**
 	 * Activa el modo de navegación por teclado
@@ -100,7 +101,6 @@
 
 		try {
 			svgCargado = false;
-			errorCarga = null;
 
 			const respuesta = await fetch(rutaSvgAccesibilidad);
 			
@@ -113,7 +113,7 @@
 			// Inyectar el SVG en el contenedor
 			contenedorSvg.innerHTML = textoSvg;
 
-			// Ajustar tamaño del SVG al contenedor
+			// Ajustar tamaño del SVG al contenedor (similar a DibujoCanvas)
 			ajustarTamanoSvg();
 
 			// Configurar elementos interactivos
@@ -123,13 +123,13 @@
 			console.log('[DibujoOverlay] SVG accesible cargado correctamente');
 		} catch (error) {
 			console.error('[DibujoOverlay] Error al cargar SVG:', error);
-			errorCarga = 'No se pudo cargar el mapa de accesibilidad';
 			svgCargado = false;
 		}
 	}
 
 	/**
-	 * Ajusta el tamaño del SVG al contenedor (similar a DibujoCanvas)
+	 * Ajusta el tamaño del SVG al contenedor (igual que DibujoCanvas con canvas)
+	 * Obtiene las dimensiones reales del contenedor y las aplica al SVG
 	 */
 	function ajustarTamanoSvg() {
 		if (!contenedorSvg || !contenedorOverlay) return;
@@ -137,18 +137,29 @@
 		const svg = contenedorSvg.querySelector('svg');
 		if (!svg) return;
 
-		// Obtener dimensiones del contenedor
+		// Obtener dimensiones REALES del contenedor (como lo hace DibujoCanvas con offsetWidth/offsetHeight)
 		const width = contenedorOverlay.offsetWidth;
 		const height = contenedorOverlay.offsetHeight;
 
-		// Configurar el SVG para que ocupe todo el contenedor
-		svg.setAttribute('width', '100%');
-		svg.setAttribute('height', '100%');
+		// Establecer las dimensiones exactas del SVG en pixels (como canvas.width y canvas.height)
+		svg.setAttribute('width', width.toString());
+		svg.setAttribute('height', height.toString());
+		
+		// Preservar el viewBox original del SVG para escalar el contenido correctamente
+		// Esto permite que el contenido del SVG se escale mientras mantiene sus proporciones internas
+		const viewBoxActual = svg.getAttribute('viewBox');
+		if (viewBoxActual) {
+			// Mantener el viewBox para que el contenido se escale correctamente
+			svg.setAttribute('preserveAspectRatio', 'none');
+		}
+
+		// Estilos CSS para posicionamiento (no para tamaño)
 		svg.style.position = 'absolute';
 		svg.style.top = '0';
 		svg.style.left = '0';
+		svg.style.display = 'block';
 
-		console.log(`[DibujoOverlay] SVG ajustado a ${width}x${height}px`);
+		console.log(`[DibujoOverlay] SVG ajustado a ${width}x${height}px (igual que canvas)`);
 	}
 
 	/**
@@ -162,10 +173,8 @@
 		
 		elementos.forEach((elemento, index) => {
 			// Asegurar que el elemento sea enfocable
-			if (!elemento.hasAttribute('tabindex')) {
-				elemento.setAttribute('tabindex', '0');
-			}
-
+			elemento.setAttribute('tabindex', '0');
+			
 			// Añadir índice para navegación
 			elemento.setAttribute('data-indice', index.toString());
 
@@ -233,8 +242,9 @@
 		const elemento = evento.target as SVGElement;
 
 		// Escape: desactivar modo navegación
-		if (keyEvent.key === 'Escape') {
+		if (keyEvent.shiftKey && (keyEvent.key === 'X' || keyEvent.key === 'x')) {
 			keyEvent.preventDefault();
+			desactivarAltoContraste();
 			desactivarNavegacion();
 			return;
 		}
@@ -242,6 +252,7 @@
 		// Shift + D: navegar al siguiente elemento
 		if (keyEvent.shiftKey && (keyEvent.key === 'D' || keyEvent.key === 'd')) {
 			keyEvent.preventDefault();
+			desactivarAltoContraste();
 			navegarSiguiente();
 			return;
 		}
@@ -249,6 +260,7 @@
 		// Shift + A: navegar al elemento anterior
 		if (keyEvent.shiftKey && (keyEvent.key === 'A' || keyEvent.key === 'a')) {
 			keyEvent.preventDefault();
+			desactivarAltoContraste();
 			navegarAnterior();
 			return;
 		}
@@ -256,6 +268,7 @@
 		// Home: ir a primera zona
 		if (keyEvent.key === 'Home') {
 			keyEvent.preventDefault();
+			desactivarAltoContraste();
 			enfocarPrimeraZona();
 			return;
 		}
@@ -263,6 +276,7 @@
 		// End: ir a última zona
 		if (keyEvent.key === 'End') {
 			keyEvent.preventDefault();
+			desactivarAltoContraste();
 			enfocarUltimaZona();
 			return;
 		}
@@ -316,29 +330,62 @@
 			return;
 		}
 		
-		// Obtener el bounding box del elemento
-		const bbox = (elemento as SVGGraphicsElement).getBBox();
-		const centerX = bbox.x + bbox.width / 2;
-		const centerY = bbox.y + bbox.height / 2;
+		// Activar alto contraste pasando el elemento seleccionado
+		activarAltoContraste(elemento);
+		
+		// Emitir evento de selección
+		dispatch('seleccionar', { zona });
+		console.log(`[DibujoOverlay] Zona seleccionada: ${zona}`);
+	}
 
-		// Convertir coordenadas SVG a coordenadas del canvas
-		const svg = contenedorSvg?.querySelector('svg');
-		if (svg) {
-			const viewBox = svg.viewBox.baseVal;
-			const contenedorRect = contenedorSvg?.getBoundingClientRect();
+	/**
+	 * Activa el modo de alto contraste oscureciendo todos los elementos SVG excepto el seleccionado
+	 */
+	export function activarAltoContraste(elementoSeleccionado: SVGElement) {
+		if (altoContrasteActivo || !contenedorSvg) return;
+
+		altoContrasteActivo = true;
+		elementosOriginales.clear();
+
+		// Obtener todos los elementos con tabindex (zonas navegables)
+		const elementos = contenedorSvg.querySelectorAll('[aria-label]');
+		
+		elementos.forEach((elemento) => {
+			const svgElemento = elemento as SVGElement;
 			
-			if (contenedorRect) {
-				// Escalar coordenadas SVG a coordenadas de pantalla
-				const scaleX = contenedorRect.width / viewBox.width;
-				const scaleY = contenedorRect.height / viewBox.height;
-				
-				const x = centerX * scaleX;
-				const y = centerY * scaleY;
-
-				dispatch('seleccionar', { x, y, zona });
-				console.log(`[DibujoOverlay] Zona seleccionada: ${zona} en (${x}, ${y})`);
+			// Guardar estado original
+			elementosOriginales.set(svgElemento, {
+				fill: svgElemento.style.fill || 'none'
+			});
+			
+			// Si NO es el elemento seleccionado, oscurecerlo
+			if (svgElemento !== elementoSeleccionado) {
+				svgElemento.style.fill = 'rgba(0, 0, 0,0.5)';
+			} else {
+				// El elemento seleccionado mantiene su brillo
+				svgElemento.style.opacity = '1';
+				svgElemento.style.filter = 'brightness(1.2) drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))';
 			}
-		}
+		});
+
+		console.log('[DibujoOverlay] Modo de alto contraste activado');
+	}
+
+	/**
+	 * Desactiva el modo de alto contraste y restaura el estado original de todos los elementos
+	 */
+	export function desactivarAltoContraste() {
+		if (!altoContrasteActivo || !contenedorSvg) return;
+
+		altoContrasteActivo = false;
+
+		// Restaurar estado original de todos los elementos
+		elementosOriginales.forEach((estadoOriginal, elemento) => {
+			elemento.style.fill = estadoOriginal.fill;
+		});
+
+		elementosOriginales.clear();
+		console.log('[DibujoOverlay] Modo de alto contraste desactivado');
 	}
 
 	/**
@@ -384,14 +431,18 @@
 		}
 	});
 
-	// Efecto reactivo: ajustar tamaño cuando cambia el contenedor
+	// Efecto reactivo: ajustar tamaño cuando cambia el contenedor o se redimensiona la ventana
 	$effect(() => {
 		if (contenedorOverlay && svgCargado) {
-			// Escuchar cambios de tamaño
+			// Ajustar inmediatamente
+			ajustarTamanoSvg();
+
+			// Escuchar cambios de tamaño del contenedor
 			const resizeObserver = new ResizeObserver(() => {
 				ajustarTamanoSvg();
 			});
 			resizeObserver.observe(contenedorOverlay);
+			
 			return () => resizeObserver.disconnect();
 		}
 	});
@@ -414,7 +465,7 @@
 		{#if zonaActualmenteFocusada}
 			<p>Zona enfocada: {zonaActualmenteFocusada}</p>
 		{:else if modoNavegacionActivo}
-			<p>Modo de navegación por zonas activado. Use Shift+D para siguiente, Shift+A para anterior, Enter para seleccionar, Escape para salir.</p>
+			<p>Modo de navegación por zonas activado. Use Shift+D para siguiente, Shift+A para anterior, Enter para seleccionar, Ctrl+X para salir.</p>
 		{/if}
 	</div>
 
@@ -424,15 +475,6 @@
 		bind:this={contenedorSvg}
 		aria-label="Mapa interactivo de la escena"
 	>
-		{#if !svgCargado && !errorCarga && rutaSvgAccesibilidad}
-			<div class="mensaje-carga" role="status" aria-live="polite">
-				<p>Cargando mapa de accesibilidad...</p>
-			</div>
-		{:else if errorCarga}
-			<div class="mensaje-error" role="alert">
-				<p>{errorCarga}</p>
-			</div>
-		{/if}
 		<!-- El SVG se inyectará aquí dinámicamente -->
 	</div>
 
@@ -443,24 +485,15 @@
 				<span class="icono-zona">📍</span>
 				<span class="texto-zona">{zonaActualmenteFocusada}</span>
 			</div>
-			<div class="instruccion-rapida">
-				<kbd>Shift+D</kbd> siguiente • <kbd>Shift+A</kbd> anterior
-			</div>
+			<ul class="instruccion-rapida">
+				<li><kbd>Shift+D</kbd> siguiente</li>
+				<li><kbd>Shift+A</kbd> anterior</li>
+				<li><kbd>Enter</kbd> seleccionar</li>
+				<li><kbd>Ctrl+X</kbd> salir</li>
+			</ul>
 		</div>
 	{/if}
 
-	<!-- Indicador de accesibilidad disponible (esquina) -->
-	{#if svgCargado && !modoNavegacionActivo}
-		<button
-			class="indicador-accesibilidad"
-			onclick={activarNavegacion}
-			aria-label="Activar navegación por zonas (Shift+A)"
-			title="Presiona Shift+A para navegar por zonas"
-		>
-			<span aria-hidden="true">♿</span>
-			<span class="texto-indicador">Navegar por zonas</span>
-		</button>
-	{/if}
 </div>
 
 <style>
@@ -505,13 +538,11 @@
 
 	/* Estilos para el SVG en sí */
 	.contenedor-svg-accesible :global(svg) {
-		width: 100%;
-		height: 100%;
 		position: absolute;
 		top: 0;
 		left: 0;
-		/* Asegurar que el SVG se ajuste correctamente */
-		object-fit: contain;
+		/* NO establecer width/height en CSS - se controlan en JavaScript */
+		display: block;
 		pointer-events: none;
 	}
 
@@ -561,46 +592,6 @@
 		}
 	}
 
-	/* Mensaje de carga */
-	.mensaje-carga {
-		position: absolute;
-		top: 1rem;
-		right: 1rem;
-		background: rgba(255, 255, 255, 0.95);
-		padding: 0.75rem 1rem;
-		border-radius: 6px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-		font-size: 0.85rem;
-		color: #666;
-		pointer-events: auto;
-		z-index: 101;
-	}
-
-	.mensaje-carga p {
-		margin: 0;
-	}
-
-	/* Mensaje de error */
-	.mensaje-error {
-		position: absolute;
-		top: 1rem;
-		right: 1rem;
-		background: rgba(255, 243, 205, 0.95);
-		border: 2px solid #ff9800;
-		padding: 0.75rem 1rem;
-		border-radius: 6px;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-		max-width: 250px;
-		font-size: 0.85rem;
-		pointer-events: auto;
-		z-index: 101;
-	}
-
-	.mensaje-error p {
-		margin: 0.25rem 0;
-		color: #e65100;
-	}
-
 	/* Panel de información compacto */
 	.panel-informacion {
 		position: absolute;
@@ -638,108 +629,14 @@
 	.instruccion-rapida {
 		font-size: 0.8rem;
 		opacity: 0.9;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
+		display: block;
+		list-style: none;
+		padding: 0;
+		margin: 0;
 	}
 
-	.instruccion-rapida kbd {
-		background: rgba(255, 255, 255, 0.2);
-		border: 1px solid rgba(255, 255, 255, 0.3);
-		border-radius: 3px;
-		padding: 0.15rem 0.4rem;
-		font-size: 0.75rem;
-		font-family: monospace;
-	}
-
-	/* Indicador de accesibilidad disponible */
-	.indicador-accesibilidad {
-		position: absolute;
-		top: 1rem;
-		right: 1rem;
-		background: rgba(76, 175, 80, 0.95);
-		color: white;
-		border: 2px solid rgba(255, 255, 255, 0.5);
-		border-radius: 8px;
-		padding: 0.5rem 0.75rem;
-		font-size: 0.85rem;
-		font-weight: 600;
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		transition: all 0.2s ease;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-		pointer-events: auto;
-		z-index: 101;
-		backdrop-filter: blur(10px);
-	}
-
-	.indicador-accesibilidad:hover {
-		background: rgba(67, 160, 71, 0.95);
-		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
-	}
-
-	.indicador-accesibilidad:focus {
-		outline: 3px solid #fff;
-		outline-offset: 2px;
-	}
-
-	.texto-indicador {
-		font-size: 0.8rem;
-		white-space: nowrap;
-	}
-
-	/* Responsividad */
-	@media (max-width: 768px) {
-		.panel-informacion {
-			left: 0.5rem;
-			bottom: 0.5rem;
-			max-width: 200px;
-			padding: 0.6rem 0.8rem;
-		}
-
-		.indicador-accesibilidad {
-			top: 0.5rem;
-			right: 0.5rem;
-			padding: 0.4rem 0.6rem;
-		}
-
-		.texto-indicador {
-			display: none;
-		}
-
-		.zona-info {
-			font-size: 0.85rem;
-		}
-	}
-
-	/* Reducir animaciones si el usuario lo prefiere */
-	@media (prefers-reduced-motion: reduce) {
-		.contenedor-svg-accesible :global([tabindex]),
-		.indicador-accesibilidad {
-			transition: none;
-		}
-		
-		.contenedor-svg-accesible :global(.zona-enfocada),
-		.contenedor-svg-accesible :global([tabindex]:focus) {
-			animation: none;
-		}
-	}
-
-	/* Alto contraste */
-	@media (prefers-contrast: high) {
-		.contenedor-svg-accesible :global(.zona-enfocada),
-		.contenedor-svg-accesible :global([tabindex]:focus) {
-			stroke: #000 !important;
-			stroke-width: 4 !important;
-			outline: 4px solid #000;
-		}
-
-		.panel-informacion {
-			background: #000;
-			border: 2px solid #fff;
-		}
+	.instruccion-rapida li {
+		margin: 0;
+		padding: 0;
 	}
 </style>

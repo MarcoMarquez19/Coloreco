@@ -218,8 +218,8 @@
 		switch (type) {
 			case 'seleccionar':
 				// Cuando se selecciona una zona, podemos mover el cursor allí o dibujar algo
-				console.log(`[TallerDibujo] Seleccionar zona "${detail.zona}" en: (${detail.x}, ${detail.y})`);
-				mostrarMensajeFeedback(`Zona seleccionada: ${detail.zona}`, 'success');
+				console.log(`[TallerDibujo] Seleccionar zona "${detail.zona}"`);
+				mostrarMensajeFeedback(`Zona seleccionada: ${detail.zona}`, 'error');
 				break;
 			
 			case 'zonaEnfocada':

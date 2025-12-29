@@ -5,7 +5,7 @@
 -->
 
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 	import { buscarPorEscenaId } from '$lib/db/escenas.service';
@@ -14,8 +14,8 @@
 	import { obtenerSesionActual } from '$lib/db/artistas.service';
 
 	// Referencias del canvas y contexto
-	let canvasDibujoRef: HTMLCanvasElement; // Canvas para el dibujo del usuario
-	let canvasEscenaRef: HTMLCanvasElement; // Canvas para la imagen de la escena
+	let canvasDibujoRef: HTMLCanvasElement | undefined = $state<HTMLCanvasElement | undefined>(undefined); // Canvas para el dibujo del usuario
+	let canvasEscenaRef: HTMLCanvasElement | undefined = $state<HTMLCanvasElement | undefined>(undefined); // Canvas para la imagen de la escena
 	let contextoDibujo: CanvasRenderingContext2D; // Contexto para dibujar
 	let contextoEscena: CanvasRenderingContext2D; // Contexto para la escena
 	
@@ -59,7 +59,6 @@
 			escena = resultados[0];
 			error = null;
 		} catch (e) {
-			console.error('[DibujoCanvas] Error al cargar escena:', e);
 			error = 'Ocurrió un error al cargar la escena.';
 		} finally {
 			cargando = false;
@@ -101,16 +100,12 @@
 		const imagen = new Image();
 		imagen.onload = () => {
 			// Limpiar canvas de escena
-			contextoEscena.clearRect(0, 0, canvasEscenaRef.width, canvasEscenaRef.height);
+			contextoEscena.clearRect(0, 0, canvasEscenaRef!.width, canvasEscenaRef!.height);
 			
 			// Dibujar imagen ajustada al 100% del canvas (puede deformarse para ocupar todo el espacio)
-			contextoEscena.drawImage(imagen, 0, 0, canvasEscenaRef.width, canvasEscenaRef.height);
+			contextoEscena.drawImage(imagen, 0, 0, canvasEscenaRef!.width, canvasEscenaRef!.height);
 		};
-		
-		imagen.onerror = () => {
-			console.error('[DibujoCanvas] Error al cargar la imagen de la escena');
-		};
-		
+
 		imagen.src = escena.ruta;
 	}
 
@@ -120,7 +115,7 @@
 	function guardarEstadoEnHistorial() {
 		if (!contextoDibujo) return;
 		
-		const estadoActual = contextoDibujo.getImageData(0, 0, canvasDibujoRef.width, canvasDibujoRef.height);
+		const estadoActual = contextoDibujo.getImageData(0, 0, canvasDibujoRef!.width, canvasDibujoRef!.height);
 		historialDibujo.push(estadoActual);
 		
 		// Limitar el tamaño del historial
@@ -133,7 +128,7 @@
 	 * Obtiene las coordenadas relativas al canvas
 	 */
 	function obtenerCoordenadas(evento: MouseEvent | TouchEvent): { x: number; y: number } {
-		const rect = canvasDibujoRef.getBoundingClientRect();
+		const rect = canvasDibujoRef!.getBoundingClientRect();
 		let clientX: number, clientY: number;
 
 		if (evento instanceof MouseEvent) {
@@ -171,7 +166,7 @@
 	}
 
 	/**
-	 * Dibuja mientras se mueve el cursor/dedo
+	 * Dibuja mientras se mueve el cursor
 	 */
 	function dibujar(evento: MouseEvent | TouchEvent) {
 		if (!estaDibujando) return;
@@ -241,7 +236,7 @@
 		if (!contextoDibujo) return;
 		
 		// Tamaño base del sticker
-		const tamanoBase = 48;
+		const tamanoBase = 18;
 		const tamanoFinal = tamanoBase * escala;
 		
 		// Guardar estado actual del contexto
@@ -250,7 +245,7 @@
 		// Configurar para dibujo de texto (emoji)
 		contextoDibujo.globalCompositeOperation = 'source-over';
 		contextoDibujo.globalAlpha = 1.0;
-		contextoDibujo.font = `${tamanoFinal}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
+		contextoDibujo.font = `${tamanoFinal}vh "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
 		contextoDibujo.textAlign = 'center';
 		contextoDibujo.textBaseline = 'middle';
 		
@@ -262,8 +257,6 @@
 		
 		// Guardar en historial después de colocar el sticker
 		guardarEstadoEnHistorial();
-		
-		console.log(`[DibujoCanvas] Sticker "${emoji}" colocado en (${x}, ${y}) con escala ${escala}`);
 	}
 
 	/**
@@ -274,7 +267,6 @@
 	export function establecerStickerPendiente(emoji: string, escala: number) {
 		stickerPendiente = { emoji, escala };
 		herramientaActual = 'stickers';
-		console.log(`[DibujoCanvas] Sticker pendiente: ${emoji} con escala ${escala}`);
 	}
 
 	/**
@@ -301,7 +293,7 @@
 		if (!contextoDibujo) return;
 		
 		// Limpiar el canvas de dibujo
-		contextoDibujo.clearRect(0, 0, canvasDibujoRef.width, canvasDibujoRef.height);
+		contextoDibujo.clearRect(0, 0, canvasDibujoRef!.width, canvasDibujoRef!.height);
 		
 		// Limpiar historial excepto el estado inicial vacío
 		historialDibujo = [];
@@ -335,21 +327,14 @@
 	 * Guarda el dibujo como obra en la galería
 	 */
 	export async function guardarDibujo(): Promise<void> {
-		if (!canvasDibujoRef || !canvasEscenaRef || !escena) {
-			console.error('[DibujoCanvas] No hay canvas o escena disponible para guardar');
-			return;
-		}
+		if (!canvasDibujoRef || !canvasEscenaRef || !escena) return;
 
 		try {
 			// Obtener el artistaId actual de los ajustes
 			const sesion = await obtenerSesionActual();
 			const artistaId = sesion?.artistaActualId ?? null;
 
-			if (!artistaId) {
-				console.error('[DibujoCanvas] No hay artista seleccionado');
-				alert('Por favor, selecciona un artista antes de guardar el dibujo.');
-				return;
-			}
+			if (!artistaId) return;
 
 			// Crear un canvas temporal para combinar ambas capas
 			const canvasTemp = document.createElement('canvas');
@@ -392,12 +377,8 @@
 
 			// Guardar la obra en la base de datos
 			const obraId = await guardarObra(datosObra);
-			
-			console.log(`[DibujoCanvas] Obra guardada exitosamente con ID: ${obraId}`);
-
 		} catch (error) {
-			console.error('[DibujoCanvas] Error al guardar el dibujo:', error);
-			throw error; // Propagar el error para manejarlo en el componente padre
+			throw error; // Propagar el error
 		}
 	}
 
@@ -411,6 +392,25 @@
 	// Cargar escena al montar el componente
 	onMount(() => {
 		void cargarEscena();
+	});
+
+	// Registrar listeners con passive: false para permitir preventDefault
+	$effect(() => {
+		if (!canvasDibujoRef) return;
+
+		const touchStartHandler = iniciarDibujo as EventListener;
+		const touchMoveHandler = dibujar as EventListener;
+		const touchEndHandler = terminarDibujo as EventListener;
+
+		canvasDibujoRef.addEventListener('touchstart', touchStartHandler, { passive: false });
+		canvasDibujoRef.addEventListener('touchmove', touchMoveHandler, { passive: false });
+		canvasDibujoRef.addEventListener('touchend', touchEndHandler);
+
+		return () => {
+			canvasDibujoRef!.removeEventListener('touchstart', touchStartHandler);
+			canvasDibujoRef!.removeEventListener('touchmove', touchMoveHandler);
+			canvasDibujoRef!.removeEventListener('touchend', touchEndHandler);
+		};
 	});
 </script>
 
@@ -434,9 +434,7 @@
 			onmousemove={dibujar}
 			onmouseup={terminarDibujo}
 			onmouseleave={terminarDibujo}
-			ontouchstart={iniciarDibujo}
-			ontouchmove={dibujar}
-			ontouchend={terminarDibujo}
+
 		></canvas>
 		
 		<!-- Canvas de escena (capa superior - imagen que permanece encima) -->
@@ -456,7 +454,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: var(--color-fondo-canvas, #f5f5f5);
+		background:#f5f5f5;
 		border-radius: 8px;
 		overflow: hidden;
 	}
@@ -492,11 +490,11 @@
 		padding: 2rem;
 		text-align: center;
 		font-size: 1.2rem;
-		color: var(--color-texto, #333);
+		color: #333;
 	}
 
 	.estado-error {
-		color: var(--color-error, #d32f2f);
+		color: var(--error, #d32f2f);
 	}
 
 	.estado-carga p,

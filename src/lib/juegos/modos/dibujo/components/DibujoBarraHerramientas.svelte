@@ -80,14 +80,14 @@
 		{
 			id: 'borrador',
 			nombre: 'Borrador',
-			icono: '🧽',
+			icono: '🧼​',
 			descripcion: 'Herramienta para borrar partes del dibujo'
 		},
 		{
 			id: 'stickers',
 			nombre: 'Stickers',
-			icono: '🌟',
-			descripcion: 'Añadir stickers decorativos (próximamente)'
+			icono: '🖼️',
+			descripcion: 'Añadir stickers decorativos al dibujo'
 		}
 	];
 
@@ -346,7 +346,7 @@
 				</div>
 
 				<div class="opcion-grosor">
-					<label class="etiqueta-opcion">Grosor:</label>
+					<label class="etiqueta-opcion" for="">Grosor:</label>
 					<div class="botones-grosor" role="radiogroup" aria-label="Selector de grosor">
 						<button
 							class="boton-grosor"
@@ -391,7 +391,7 @@
 			<!-- Opciones del Borrador: Solo Grosor -->
 			<div class="grupo-opciones">
 				<div class="opcion-grosor">
-					<label class="etiqueta-opcion">Grosor:</label>
+					<label class="etiqueta-opcion" for="">Grosor:</label>
 					<div class="botones-grosor" role="radiogroup" aria-label="Selector de grosor del borrador">
 						<button
 							class="boton-grosor"
@@ -457,7 +457,7 @@
 
 				<!-- Selector de tamaño de sticker -->
 				<div class="selector-tamano-sticker">
-					<label class="etiqueta-opcion">Tamaño:</label>
+					<label class="etiqueta-opcion" for="">Tamaño:</label>
 					<div class="botones-tamano" role="radiogroup" aria-label="Selector de tamaño de sticker">
 						{#each TAMANOS_STICKER as tamano}
 							<button
@@ -682,7 +682,7 @@
 	}
 
 	.etiqueta-opcion {
-		font-size: 0.9rem;
+		font-size: calc(var(--font-size-base,1rem)*1.1);
 		font-weight: 600;
 		color: var(--color-texto, #333);
 		margin: 0;
@@ -800,14 +800,6 @@
 		text-align: center;
 	}
 
-	.mensaje-proximamente {
-		font-style: italic;
-		color: var(--color-texto-secundario, #666);
-		margin: 0;
-		text-align: center;
-		padding: 1rem;
-	}
-
 	/* ====== Estilos para Stickers ====== */
 	
 	.grupo-stickers {
@@ -826,6 +818,7 @@
 		cursor: pointer;
 		transition: all 0.2s ease;
 		min-width: 150px;
+		color: var(--icono-color-relleno, #000);
 	}
 
 	.boton-abrir-stickers:hover {
@@ -839,8 +832,9 @@
 	}
 
 	.boton-abrir-stickers:focus {
-		outline: 2px solid var(--fondo-botones-hover, #000);
-		outline-offset: 2px;
+		outline: var(--borde-botones, 4px solid #000000);
+		background: var(--fondo-botones-hover, #d1a700);
+		outline-offset: 7px;
 	}
 
 	.icono-sticker {
@@ -878,6 +872,7 @@
 		transition: all 0.2s ease;
 		font-size: calc(var(--font-size-base, 1rem) * 0.85);
 		font-weight: 500;
+		color: var(--color-texto, #333);
 	}
 
 	.boton-tamano:hover {
@@ -889,6 +884,7 @@
 		border-color: var(--color-primario, #007bff);
 		border-width: 3px;
 		background: var(--fondo-botones, #ffca00);
+		color: var(--icono-color-relleno, #000);
 	}
 
 	.boton-tamano:focus {
@@ -901,17 +897,19 @@
 		position: fixed;
 		top: var(--panel-top, 0px);
 		left: var(--panel-left, 0px);
-		transform: translateX(-50%);
-		width: min(90vw, 420px);
-		max-height: min(80vh, calc(100vh - var(--panel-top, 0px) - 20px));
+		transform: translateX(-100%);
+		width: auto;
+		min-width: 32vw;
+		max-width: min(90vw, 500px);
 		background: var(--bg, #ffffff);
-		border: 3px solid var(--icono-color-borde, #000);
+		border: 3px solid var(--icono-color-relleno, #000);
 		border-radius: 16px;
 		box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
 		z-index: 99999;
 		display: flex;
 		flex-direction: column;
-		overflow: hidden;
+		overflow: visible;
+		box-sizing: border-box;
 	}
 
 	.panel-header {
@@ -920,7 +918,7 @@
 		align-items: center;
 		padding: 1rem;
 		background: var(--fondo-botones, #ffca00);
-		border-bottom: 2px solid var(--icono-color-borde, #000);
+		border-bottom: 2px solid var(--icono-color-relleno, #000);
 		flex-shrink: 0;
 	}
 
@@ -934,9 +932,8 @@
 	.boton-cerrar-panel {
 		width: 32px;
 		height: 32px;
-		border: 2px solid var(--icono-color-borde, #000);
+		border: 2px solid var(--icono-color-relleno, #000);
 		border-radius: 50%;
-		background: var(--bg, #fff);
 		cursor: pointer;
 		font-size: 1rem;
 		font-weight: bold;
@@ -959,13 +956,11 @@
 	/* Tabs de categorías */
 	.tabs-categorias {
 		display: flex;
+		flex-wrap: wrap;
 		gap: 0.4rem;
 		padding: 0.5rem;
-		background: var(--bg-secundario, #f5f5f5);
-		border-bottom: 2px solid var(--icono-color-borde, #ddd);
 		flex-shrink: 0;
-		overflow-x: auto;
-		max-width: 100%;
+		justify-content: center;
 	}
 
 	.tab-categoria {
@@ -974,23 +969,25 @@
 		align-items: center;
 		gap: 0.2rem;
 		padding: 0.4rem 0.6rem;
-		border: 2px solid var(--icono-color-borde, #ccc);
 		border-radius: 6px;
-		background: var(--bg, #fff);
 		cursor: pointer;
 		transition: all 0.2s ease;
 		flex-shrink: 0;
 		min-width: fit-content;
+		color: var(--color-texto, #333);
+		background: var(--bg, #fff);
+		border: 2px solid var(--icono-color-borde, #ccc);
 	}
 
 	.tab-categoria:hover {
-		background: var(--fondo-botones-hover, #e0e0e0);
+		background: var(--fondo-botones-hover, #000000);
+		transform: translateY(-1px);
 	}
 
 	.tab-categoria.activa {
-		border-color: var(--icono-color-borde, #000);
-		background: var(--fondo-botones, #ffca00);
 		border-width: 3px;
+		background: var(--fondo-botones, #ffca00);
+		color: var(--icono-color-relleno, #000);
 	}
 
 	.tab-categoria:focus {
@@ -1003,7 +1000,7 @@
 	}
 
 	.texto-tab {
-		font-size: calc(var(--font-size-base, 1rem) * 0.7);
+		font-size: calc(var(--font-size-base, 1rem) * 0.9);
 		font-weight: 600;
 		text-align: center;
 		white-space: nowrap;
@@ -1014,12 +1011,12 @@
 		display: flex;
 		gap: 0.4rem;
 		padding: 0.5rem;
-		background: var(--bg-secundario, #f9f9f9);
-		border-bottom: 1px solid var(--icono-color-borde, #ddd);
 		flex-wrap: wrap;
 		justify-content: center;
 		flex-shrink: 0;
 		max-width: 100%;
+		border-bottom: 2px solid var(--icono-color-borde, #000000);
+		border-top: 2px solid var(--icono-color-borde, #000000);
 	}
 
 	.tab-subcategoria {
@@ -1028,28 +1025,30 @@
 		align-items: center;
 		gap: 0.15rem;
 		padding: 0.3rem 0.5rem;
-		border: 2px solid var(--icono-color-borde, #ddd);
 		border-radius: 6px;
-		background: var(--bg, #fff);
 		cursor: pointer;
 		transition: all 0.2s ease;
-		font-size: calc(var(--font-size-base, 1rem) * 0.7);
+		font-size: calc(var(--font-size-base, 1rem) * 0.9);
 		flex-shrink: 0;
+		color: var(--color-texto, #333);
+		background: var(--bg, #fff);
+		border: 2px solid var(--icono-color-borde, #ccc);
 	}
 
 	.tab-subcategoria:hover {
-		background: var(--fondo-botones-hover, #e8e8e8);
+		background: var(--fondo-botones-hover, #000000);
+		transform: translateY(-1px);
 	}
 
 	.tab-subcategoria.activa {
-		border-color: var(--icono-color-borde, #000);
+		border-width: 3px;
 		background: var(--fondo-botones, #ffca00);
-		border-width: 2px;
+		color: var(--icono-color-relleno, #000);
 	}
 
 	.tab-subcategoria:focus {
 		outline: 2px solid var(--fondo-botones-hover, #000);
-		outline-offset: 1px;
+		outline-offset: 2px;
 	}
 
 	.icono-sub {
@@ -1065,13 +1064,11 @@
 	/* Grid de stickers */
 	.grid-stickers {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+		grid-template-columns: repeat(4, 1fr);
 		gap: 0.5rem;
-		padding: 0.75rem;
-		overflow-y: auto;
-		overflow-x: hidden;
-		flex: 1;
-		min-height: 0;
+		padding: 0.5rem;
+		width: 100%;
+		box-sizing: border-box;
 	}
 
 	.boton-sticker {
@@ -1081,26 +1078,26 @@
 		justify-content: center;
 		gap: 0.3rem;
 		padding: 0.5rem;
-		border: 2px solid var(--icono-color-borde, #ddd);
 		border-radius: 8px;
-		background: var(--bg, #fff);
 		cursor: pointer;
 		transition: all 0.2s ease;
-		min-height: 90px;
+		min-height: 95px;
+		height: auto;
 		width: 100%;
-		aspect-ratio: 1 / 1.15;
+		color: var(--color-texto, #333);
+		background: var(--bg, #fff);
+		border: 2px solid var(--icono-color-borde, #ccc);
 	}
 
 	.boton-sticker:hover {
-		background: var(--fondo-botones-hover, #f0f0f0);
-		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		background: var(--fondo-botones-hover, #000000);
+		transform: translateY(-1px);
 	}
 
 	.boton-sticker.seleccionado {
-		border-color: var(--icono-color-borde, #000);
 		border-width: 3px;
 		background: var(--fondo-botones, #ffca00);
+		color: var(--icono-color-relleno, #000);
 	}
 
 	.boton-sticker:focus {
@@ -1109,13 +1106,13 @@
 	}
 
 	.emoji-sticker {
-		font-size: 2rem;
+		font-size: calc(var(--font-size-base, 1rem) * 2.5);
 		line-height: 1;
 		flex-shrink: 0;
 	}
 
 	.nombre-sticker {
-		font-size: calc(var(--font-size-base, 1rem) * 0.6);
+		font-size: calc(var(--font-size-base, 1rem) * 0.9);
 		text-align: center;
 		font-weight: 600;
 		line-height: 1;
