@@ -659,7 +659,24 @@
 	   ========================================= */
 	/* Solo se activan si el padre tiene la clase .enable-textures */
 	
-	/* Patrón para ROJO / PELIGRO / ERROR: Rayas diagonales densas */
+	/* Negro (#000000): Cuadrícula de puntos pequeños */
+	:global(.enable-textures .pattern-black) {
+		position: relative;
+	}
+	:global(.enable-textures .pattern-black::after) {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background-image: radial-gradient(
+			rgba(255, 255, 255, 0.3) 15%, 
+			transparent 15%
+		);
+		background-size: 6px 6px;
+		pointer-events: none;
+		z-index: 1;
+	}
+
+	/* Rojo (#FF0000): Rayas diagonales 45° */
 	:global(.enable-textures .pattern-red),
 	:global(.enable-textures .pattern-danger) {
 		position: relative;
@@ -680,7 +697,7 @@
 		z-index: 1;
 	}
 
-	/* Patrón para VERDE / ÉXITO: Puntos */
+	/* Verde (#00FF00): Puntos circulares */
 	:global(.enable-textures .pattern-green),
 	:global(.enable-textures .pattern-success) {
 		position: relative;
@@ -699,7 +716,7 @@
 		z-index: 1;
 	}
 
-	/* Patrón para AZUL / INFO: Líneas verticales */
+	/* Azul (#0000FF): Líneas verticales */
 	:global(.enable-textures .pattern-blue),
 	:global(.enable-textures .pattern-info) {
 		position: relative;
@@ -720,7 +737,7 @@
 		z-index: 1;
 	}
 
-	/* Patrón para AMARILLO / ADVERTENCIA: Zigzag (simulado con gradientes cruzados) */
+	/* Amarillo (#FFFF00): Zigzag diagonal */
 	:global(.enable-textures .pattern-yellow),
 	:global(.enable-textures .pattern-warning) {
 		position: relative;
@@ -738,6 +755,98 @@
 		background-position: 4px 0, 4px 0, 0 0, 0 0;
 		background-size: 8px 8px;
 		background-repeat: repeat;
+		pointer-events: none;
+		z-index: 1;
+	}
+
+	/* Magenta (#FF00FF): Líneas horizontales */
+	:global(.enable-textures .pattern-magenta) {
+		position: relative;
+	}
+	:global(.enable-textures .pattern-magenta::after) {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background-image: repeating-linear-gradient(
+			0deg,
+			rgba(255, 255, 255, 0.25),
+			rgba(255, 255, 255, 0.25) 2px,
+			transparent 2px,
+			transparent 6px
+		);
+		pointer-events: none;
+		z-index: 1;
+	}
+
+	/* Cian (#00FFFF): Tablero de ajedrez */
+	:global(.enable-textures .pattern-cyan) {
+		position: relative;
+	}
+	:global(.enable-textures .pattern-cyan::after) {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background-image: 
+			linear-gradient(45deg, rgba(0, 0, 0, 0.2) 25%, transparent 25%),
+			linear-gradient(-45deg, rgba(0, 0, 0, 0.2) 25%, transparent 25%),
+			linear-gradient(45deg, transparent 75%, rgba(0, 0, 0, 0.2) 75%),
+			linear-gradient(-45deg, transparent 75%, rgba(0, 0, 0, 0.2) 75%);
+		background-size: 8px 8px;
+		background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+		pointer-events: none;
+		z-index: 1;
+	}
+
+	/* Naranja (#FFA500): Rayas diagonales -45° */
+	:global(.enable-textures .pattern-orange) {
+		position: relative;
+	}
+	:global(.enable-textures .pattern-orange::after) {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background-image: repeating-linear-gradient(
+			-45deg,
+			rgba(0, 0, 0, 0.2),
+			rgba(0, 0, 0, 0.2) 2px,
+			transparent 2px,
+			transparent 6px
+		);
+		pointer-events: none;
+		z-index: 1;
+	}
+
+	/* Púrpura (#800080): Cruces (grid) */
+	:global(.enable-textures .pattern-purple) {
+		position: relative;
+	}
+	:global(.enable-textures .pattern-purple::after) {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background-image: 
+			repeating-linear-gradient(0deg, rgba(255,255,255,0.15) 0px, rgba(255,255,255,0.15) 1px, transparent 1px, transparent 8px),
+			repeating-linear-gradient(90deg, rgba(255,255,255,0.15) 0px, rgba(255,255,255,0.15) 1px, transparent 1px, transparent 8px);
+		pointer-events: none;
+		z-index: 1;
+	}
+
+	/* Rosa (#FFC0CB): Ondas concéntricas */
+	:global(.enable-textures .pattern-pink) {
+		position: relative;
+	}
+	:global(.enable-textures .pattern-pink::after) {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background-image: repeating-radial-gradient(
+			circle at 0 0,
+			rgba(0, 0, 0, 0.15) 0px,
+			rgba(0, 0, 0, 0.15) 1px,
+			transparent 1px,
+			transparent 4px
+		);
+		background-size: 10px 10px;
 		pointer-events: none;
 		z-index: 1;
 	}
