@@ -4,7 +4,7 @@
     import { onMount } from 'svelte';
     import { afterNavigate } from '$app/navigation';
     import { obtenerArtistaActivo } from '$lib/db/artistas.service';
-    import { obtenerLogrosArtista, calcularRangoArtista, obtenerDefinicionesLogrosJSON } from '$lib/db/logros.service';
+    import { obtenerLogrosArtista, obtenerDefinicionesLogrosJSON } from '$lib/db/logros.service';
     import { estadisticasLogros, cargarLogrosArtista } from '$lib/stores/logros';
 
     // Props para controlar el trofeo dinámicamente
@@ -178,14 +178,14 @@
 >
 
 <div class="seleccionar-logros-contenedor" bind:this={contenedorLogrosRef} aria-label="Contenedor de logros de historias" data-magnificable>
-    <h1>Rango General</h1>
+    <h1 tabindex="0">Rango General</h1>
     
     <div class="trofeo-contenedor">
         <div class="trofeo-con-texto">
             <div class="trofeo-wrapper" data-tipo-trofeo={rangoTrofeo}>
                 <Trofeo/>
             </div>
-            <p class="texto-trofeo" data-tipo-trofeo={rangoTrofeo}>{textoRango}</p>
+            <p class="texto-trofeo" data-tipo-trofeo={rangoTrofeo} tabindex="0" aria-label="Tu rango actual es {textoRango}">{textoRango}</p>
         </div>
     </div>
 
@@ -220,18 +220,26 @@
             </svg>
         </button>
 
-        <div class="tarjeta-logro" class:desbloqueado={logrosDisplay[logroActualIndex]?.desbloqueado}>
-            <div class="icono-logro">{logrosDisplay[logroActualIndex]?.icono || '🏆'}</div>
+        <article 
+            class="tarjeta-logro" 
+            class:desbloqueado={logrosDisplay[logroActualIndex]?.desbloqueado}
+            tabindex="0"
+            aria-label="{logrosDisplay[logroActualIndex]?.titulo || 'Cargando'}. {logrosDisplay[logroActualIndex]?.descripcion || 'Espera un momento'}. Estado: {logrosDisplay[logroActualIndex]?.desbloqueado ? 'Desbloqueado' : 'Bloqueado'}"
+        >
+
+            <div class="icono-logro" aria-hidden="true">{logrosDisplay[logroActualIndex]?.icono || '🏆'}</div>
             <h3 class="titulo-logro-individual">{logrosDisplay[logroActualIndex]?.titulo || 'Cargando...'}</h3>
             <p class="descripcion-logro">{logrosDisplay[logroActualIndex]?.descripcion || 'Espera un momento...'}</p>
-            <div class="estado-logro">
+            <div class="estado-logro" aria-hidden="true">
+                <p>
                 {#if logrosDisplay[logroActualIndex]?.desbloqueado}
                     <span class="badge desbloqueado">✓ Desbloqueado</span>
                 {:else}
                     <span class="badge bloqueado">🔒 Bloqueado</span>
                 {/if}
+                </p>
             </div>
-        </div>
+        </article>
 
         <button 
             class="flecha-navegacion derecha" 
@@ -290,6 +298,12 @@
         font-weight: 600;
         letter-spacing: calc(var(--spacing-base, 1rem) * 0.1);
         word-spacing: calc(var(--spacing-base, 1rem) * 0.2);
+    }
+
+    h1:focus {
+        outline: 2px solid #0066cc;
+        outline-offset: 4px;
+        border-radius: 4px;
     }
 
     .trofeo-contenedor {
@@ -352,6 +366,12 @@
         color: var(--trofeo-texto-color, #FFD700);
         letter-spacing: calc(var(--spacing-base, 1rem) * 0.05);
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .texto-trofeo:focus {
+        outline: 2px solid #0066cc;
+        outline-offset: 4px;
+        border-radius: 4px;
     }
 
     /* Colores de texto según el rango */
@@ -447,6 +467,9 @@
         min-width: calc(var(--font-size-base, 1rem) * 12.5);
         min-height: calc(var(--font-size-base, 1rem) * 12.5);
     }
+    .tarjeta-logro:focus {
+        border: 5px solid var(--icono-color-borde, #000000)
+    }
 
     .icono-logro {
         font-size: calc(var(--font-size-base, 1rem) * 6);
@@ -458,7 +481,7 @@
         margin: 0;
         font-size: calc(var(--font-size-base, 1rem) * 2.2);
         font-weight: 700;
-        color: var(--icono-color-relleno, #222);
+        color: var(--color-texto, #333);
         letter-spacing: calc(var(--spacing-base, 1rem) * 0.03);
     }
 
@@ -466,7 +489,7 @@
         margin: 0;
         font-size: calc(var(--font-size-base, 1rem) * 1.5);
         font-weight: 500;
-        color: var(--icono-color-relleno, #555);
+        color: var(--color-texto, #666);
         letter-spacing: calc(var(--spacing-base, 1rem) * 0.02);
     }
 
@@ -516,5 +539,18 @@
 
     .mensaje-error {
         color: var(--color-error, #d32f2f);
+    }
+
+    /* Clase para texto solo para lectores de pantalla */
+    .solo-lectores {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
     }
 </style>
