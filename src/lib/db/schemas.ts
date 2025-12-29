@@ -136,9 +136,22 @@ export const LOGROS_HISTORIAS = {
 } as const;
 
 /**
+ * Códigos únicos de logros de cuerpo humano
+ */
+export const LOGROS_CUERPO_HUMANO = {
+	PRIMERA_PARTE: 'PRIMERA_PARTE',
+	ANATOMISTA_NOVATO: 'ANATOMISTA_NOVATO',
+	PRECISION_PERFECTA: 'PRECISION_PERFECTA',
+	MAESTRO_ANATOMIA: 'MAESTRO_ANATOMIA',
+	EXPERTO_ORGANOS: 'EXPERTO_ORGANOS'
+} as const;
+
+/**
  * Tipo para códigos de logros
  */
-export type CodigoLogro = typeof LOGROS_HISTORIAS[keyof typeof LOGROS_HISTORIAS];
+export type CodigoLogro = 
+	| typeof LOGROS_HISTORIAS[keyof typeof LOGROS_HISTORIAS]
+	| typeof LOGROS_CUERPO_HUMANO[keyof typeof LOGROS_CUERPO_HUMANO];
 
 /**
  * Definición de un logro en el catálogo
@@ -309,10 +322,12 @@ export interface ProgresoCultureQuiz {
  * Campos específicos para el modo Human Body
  */
 export interface ProgresoHumanBody {
-	/** Partes del cuerpo ubicadas correctamente */
+	/** Partes del cuerpo ubicadas correctamente (acumulativo) */
 	partesUbicadasCorrectamente: number;
 	/** Número de errores cometidos */
 	errores: number;
+	/** IDs de escenas completadas (para contar escenas únicas) */
+	escenasCompletadas: string[];
 }
 
 /**

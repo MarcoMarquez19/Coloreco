@@ -40,11 +40,39 @@
   ],
   "cuerpoHumano": [
     {
-      "codigo": "PRIMER_CORAZON",
-      "nombre": "Primer Corazón",
-      "descripcion": "Completa tu primera plantilla del corazón",
-      "criterio": "Completar una plantilla del corazón",
-      "icono": "❤️"
+      "codigo": "PRIMERA_PARTE",
+      "nombre": "Primera Parte",
+      "descripcion": "Coloca tu primera parte del cuerpo correctamente",
+      "criterio": "Colocar una parte en su lugar correcto",
+      "icono": "🧩"
+    },
+    {
+      "codigo": "ANATOMISTA_NOVATO",
+      "nombre": "Anatomista Novato",
+      "descripcion": "Completa tu primera plantilla del cuerpo humano",
+      "criterio": "Completar todas las partes de una escena",
+      "icono": "👤"
+    },
+    {
+      "codigo": "PRECISION_PERFECTA",
+      "nombre": "Precisión Perfecta",
+      "descripcion": "Completa una escena sin errores",
+      "criterio": "Completar una escena sin colocar partes incorrectas",
+      "icono": "🎯"
+    },
+    {
+      "codigo": "MAESTRO_ANATOMIA",
+      "nombre": "Maestro de Anatomía",
+      "descripcion": "Completa 3 escenas diferentes del cuerpo humano",
+      "criterio": "Completar 3 plantillas diferentes",
+      "icono": "🏆"
+    },
+    {
+      "codigo": "EXPERTO_ORGANOS",
+      "nombre": "Experto en Órganos",
+      "descripcion": "Coloca correctamente 20 partes del cuerpo",
+      "criterio": "Acumular 20 partes colocadas correctamente",
+      "icono": "🫀"
     }
   ]
 }

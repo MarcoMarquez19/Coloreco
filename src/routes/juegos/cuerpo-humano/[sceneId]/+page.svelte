@@ -15,7 +15,12 @@
 	import ZonasValidasOverlay from '$lib/juegos/modos/cuerpo-humano/components/ZonasValidasOverlay.svelte';
 	import MensajeFeedback from '$lib/juegos/modos/cuerpo-humano/components/MensajeFeedback.svelte';
 	import Modal from '$lib/components/modales/Modal.svelte';
+	import LogroDesbloqueado from '$lib/components/modales/LogroDesbloqueado.svelte';
 	import { servicioDibujo } from '$lib/juegos/modos/dibujo/dibujo.service';
+	import { obtenerArtistaActivo } from '$lib/db/artistas.service';
+	import * as logrosStore from '$lib/stores/logros';
+	import * as progresoService from '$lib/db/progreso.service';
+	import type { LogroDefinicion } from '$lib/db/schemas';
 	import type { EscenaConfig } from '$lib/juegos/modos/cuerpo-humano/types/cuerpo-humano.types';
 	import { obtenerConfiguracionEscena } from '$lib/juegos/modos/cuerpo-humano/configuraciones-escenas';
 
@@ -52,6 +57,13 @@
 	let modalGuardadoExitoso = $state<boolean>(false);
 	let guardandoObra = $state<boolean>(false);
 
+	// Estado de logros (mínimo, solo para tracking)
+	let artistaId: number | null = null;
+	let erroresEnEscenaActual = 0;
+	let partesColocadasTotalesArtista = 0;
+	let logroDesbloqueadoActual = $state<LogroDefinicion | null>(null);
+	let mostrarModalLogro = $state<boolean>(false);
+
 	// Configuración de la escena (cargar según sceneId)
 	let escenaConfig = $state<EscenaConfig | null>(null);
 
@@ -69,6 +81,18 @@
 			console.error('[CuerpoHumano] No se encontró configuración para:', sceneId);
 			// Fallback a cuerpo-humano por defecto
 			escenaConfig = obtenerConfiguracionEscena('cuerpo-humano');
+		}
+
+		// Cargar artista activo para logros (sin bloquear)
+		const artista = await obtenerArtistaActivo();
+		artistaId = artista?.id ?? null;
+		if (artistaId) {
+			console.log('[CuerpoHumano] Artista cargado para logros:', artistaId);
+			
+			// Cargar estadísticas del progreso
+			const stats = await progresoService.obtenerEstadisticasCuerpoHumano(artistaId);
+			partesColocadasTotalesArtista = stats.partesColocadas;
+			console.log('[CuerpoHumano] Estadísticas cargadas - Partes:', stats.partesColocadas, 'Escenas:', stats.escenasCompletadas);
 		}
 	});
 
@@ -201,15 +225,49 @@
 			
 			console.log('[CuerpoHumano] Parte colocada:', parte.nombre, 'Total:', partesColocadas.size);
 			
+			// Procesar logros de forma diferida (no bloquea el render)
+			if (artistaId) {
+				// Incrementar en DB y obtener nuevo total
+				setTimeout(async () => {
+					try {
+						const nuevoTotal = await progresoService.incrementarPartesColocadas(artistaId!);
+						partesColocadasTotalesArtista = nuevoTotal;
+					} catch (error) {
+						console.error('[CuerpoHumano] Error actualizando progreso:', error);
+					}
+				}, 50);
+				
+				// Esperar un poco más para asegurar que el progreso se actualizó
+				setTimeout(async () => {
+					const totalActualizado = partesColocadasTotalesArtista;
+					const esPrimeraParte = totalActualizado === 1;
+					
+					logrosStore.procesarLogroParteColocada(artistaId!, esPrimeraParte, totalActualizado)
+						.then(() => verificarLogroDesbloqueado())
+						.catch(err => console.error('[CuerpoHumano] Error procesando logros:', err));
+				}, 200);
+			}
+			
 			// Verificar si completó todas las partes
 			if (escenaConfig && partesColocadas.size === escenaConfig.partes.length) {
 				setTimeout(() => {
 					mostrarMensajeFeedback('¡Completaste todas las partes!', 'success');
+					// Procesar logros de escena completada
+					procesarEscenaCompletada();
 				}, 500);
 			}
 		} else {
 			// ❌ Incorrecto
+			erroresEnEscenaActual++;
 			mostrarMensajeFeedback('Intenta de nuevo', 'error');
+			
+			// Incrementar errores en DB
+			if (artistaId) {
+				setTimeout(() => {
+					progresoService.incrementarErrores(artistaId!)
+						.catch(err => console.error('[CuerpoHumano] Error registrando error:', err));
+				}, 50);
+			}
 		}
 
 		manejarFinalizarArrastre();
@@ -248,6 +306,61 @@
 	 */
 	function cancelarGuardarObra() {
 		modalConfirmarGuardado = false;
+	}
+
+	/**
+	 * Procesa los logros cuando se completa una escena
+	 */
+	async function procesarEscenaCompletada() {
+		if (!artistaId || !escenaConfig) return;
+		
+		try {
+			const sceneId = $page.params.sceneId || 'default';
+			
+			// Marcar escena como completada en DB
+			const totalEscenas = await progresoService.marcarEscenaCompletada(artistaId, sceneId);
+			
+			const esPrimeraEscena = totalEscenas === 1;
+			const huboErrores = erroresEnEscenaActual > 0;
+			
+			console.log('[CuerpoHumano] Escena completada - Total:', totalEscenas, 'Errores:', huboErrores);
+			
+			await logrosStore.procesarLogrosEscenaCompletada(
+				artistaId,
+				esPrimeraEscena,
+				totalEscenas,
+				huboErrores
+			);
+			
+			await verificarLogroDesbloqueado();
+		} catch (error) {
+			console.error('[CuerpoHumano] Error procesando escena completada:', error);
+		}
+	}
+
+	/**
+	 * Verifica si hay un logro recién desbloqueado y muestra el modal
+	 */
+	async function verificarLogroDesbloqueado() {
+		// Suscribirse brevemente para ver si hay notificación
+		const unsubscribe = logrosStore.logroDesbloqueado.subscribe(logro => {
+			if (logro && !mostrarModalLogro) {
+				logroDesbloqueadoActual = logro;
+				mostrarModalLogro = true;
+				// Limpiar notificación
+				logrosStore.limpiarNotificaciones();
+			}
+		});
+		// Desuscribirse inmediatamente
+		setTimeout(unsubscribe, 100);
+	}
+
+	/**
+	 * Cierra el modal de logro desbloqueado
+	 */
+	function cerrarModalLogro() {
+		mostrarModalLogro = false;
+		logroDesbloqueadoActual = null;
 	}
 
 	/**
@@ -556,6 +669,14 @@
 			</button>
 		{/snippet}
 	</Modal>
+
+	<!-- Modal de logro desbloqueado -->
+	{#if logroDesbloqueadoActual}
+		<LogroDesbloqueado
+			logro={logroDesbloqueadoActual}
+			on:close={cerrarModalLogro}
+		/>
+	{/if}
 </div>
 
 <style>

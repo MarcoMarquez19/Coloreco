@@ -8,7 +8,7 @@
 import { writable, derived, get } from 'svelte/store';
 import { browser } from '$app/environment';
 import * as logrosService from '$lib/db/logros.service';
-import { LOGROS_HISTORIAS } from '$lib/db/schemas';
+import { LOGROS_HISTORIAS, LOGROS_CUERPO_HUMANO } from '$lib/db/schemas';
 import type { LogroDefinicion, LogroArtista } from '$lib/db/schemas';
 
 // ============================================================================
@@ -326,4 +326,174 @@ export function obtenerProgresoLogro(codigoLogro: string): number | null {
 	const logrosActuales = get(logros);
 	const logro = logrosActuales.find(l => l.definicion.codigo === codigoLogro);
 	return logro?.progreso ?? null;
+}
+
+// ============================================================================
+// LOGROS DE CUERPO HUMANO
+// ============================================================================
+
+/**
+ * Verifica y otorga el logro "Primera Parte" cuando se coloca correctamente la primera parte
+ * 
+ * @param artistaId - ID del artista
+ */
+export async function verificarPrimeraParte(artistaId: number): Promise<void> {
+	if (!browser) return;
+
+	const yaDesbloqueado = await logrosService.tieneLogroDesbloqueado(
+		artistaId,
+		LOGROS_CUERPO_HUMANO.PRIMERA_PARTE
+	);
+
+	if (!yaDesbloqueado) {
+		await desbloquearLogro(artistaId, LOGROS_CUERPO_HUMANO.PRIMERA_PARTE);
+	}
+}
+
+/**
+ * Verifica y otorga el logro "Anatomista Novato" cuando se completa la primera escena
+ * 
+ * @param artistaId - ID del artista
+ */
+export async function verificarAnatomistaNovato(artistaId: number): Promise<void> {
+	if (!browser) return;
+
+	const yaDesbloqueado = await logrosService.tieneLogroDesbloqueado(
+		artistaId,
+		LOGROS_CUERPO_HUMANO.ANATOMISTA_NOVATO
+	);
+
+	if (!yaDesbloqueado) {
+		await desbloquearLogro(artistaId, LOGROS_CUERPO_HUMANO.ANATOMISTA_NOVATO);
+	}
+}
+
+/**
+ * Verifica y otorga el logro "Precisión Perfecta" cuando se completa una escena sin errores
+ * 
+ * @param artistaId - ID del artista
+ * @param huboErrores - Si hubo errores durante la escena
+ */
+export async function verificarPrecisionPerfecta(artistaId: number, huboErrores: boolean): Promise<void> {
+	if (!browser || huboErrores) return;
+
+	const yaDesbloqueado = await logrosService.tieneLogroDesbloqueado(
+		artistaId,
+		LOGROS_CUERPO_HUMANO.PRECISION_PERFECTA
+	);
+
+	if (!yaDesbloqueado) {
+		await desbloquearLogro(artistaId, LOGROS_CUERPO_HUMANO.PRECISION_PERFECTA);
+	}
+}
+
+/**
+ * Verifica y otorga el logro "Maestro de Anatomía" cuando se completan 3 escenas diferentes
+ * 
+ * @param artistaId - ID del artista
+ * @param escenasCompletadas - Número de escenas completadas
+ */
+export async function verificarMaestroAnatomia(artistaId: number, escenasCompletadas: number): Promise<void> {
+	if (!browser || escenasCompletadas < 3) return;
+
+	const yaDesbloqueado = await logrosService.tieneLogroDesbloqueado(
+		artistaId,
+		LOGROS_CUERPO_HUMANO.MAESTRO_ANATOMIA
+	);
+
+	if (!yaDesbloqueado) {
+		await desbloquearLogro(artistaId, LOGROS_CUERPO_HUMANO.MAESTRO_ANATOMIA);
+	}
+}
+
+/**
+ * Actualiza el progreso del logro "Experto en Órganos" acumulando partes colocadas
+ * 
+ * @param artistaId - ID del artista
+ * @param partesColocadasTotal - Total acumulado de partes colocadas correctamente
+ */
+export async function verificarExpertoOrganos(artistaId: number, partesColocadasTotal: number): Promise<void> {
+	if (!browser) return;
+
+	// Actualizar progreso
+	await logrosService.actualizarProgresoLogro(
+		artistaId,
+		LOGROS_CUERPO_HUMANO.EXPERTO_ORGANOS,
+		partesColocadasTotal
+	);
+
+	// Verificar si alcanzó las 20 partes
+	if (partesColocadasTotal >= 20) {
+		const yaDesbloqueado = await logrosService.tieneLogroDesbloqueado(
+			artistaId,
+			LOGROS_CUERPO_HUMANO.EXPERTO_ORGANOS
+		);
+
+		if (!yaDesbloqueado) {
+			await desbloquearLogro(artistaId, LOGROS_CUERPO_HUMANO.EXPERTO_ORGANOS);
+		}
+	}
+}
+
+/**
+ * Procesa todos los logros al colocar una parte correctamente
+ * 
+ * @param artistaId - ID del artista
+ * @param esPrimeraParte - Si es la primera parte colocada por el artista
+ * @param partesColocadasTotal - Total acumulado de partes colocadas correctamente
+ */
+export async function procesarLogroParteColocada(
+	artistaId: number,
+	esPrimeraParte: boolean,
+	partesColocadasTotal: number
+): Promise<void> {
+	if (!browser) return;
+
+	try {
+		// Primera Parte (solo la primera vez)
+		if (esPrimeraParte) {
+			await verificarPrimeraParte(artistaId);
+		}
+
+		// Experto en Órganos (acumulativo)
+		await verificarExpertoOrganos(artistaId, partesColocadasTotal);
+	} catch (error) {
+		console.error('[LogrosStore] Error procesando logro de parte colocada:', error);
+	}
+}
+
+/**
+ * Procesa todos los logros al completar una escena del modo Cuerpo Humano
+ * 
+ * @param artistaId - ID del artista
+ * @param esPrimeraEscena - Si es la primera escena completada
+ * @param escenasCompletadas - Total de escenas completadas
+ * @param huboErrores - Si hubo errores durante la escena
+ */
+export async function procesarLogrosEscenaCompletada(
+	artistaId: number,
+	esPrimeraEscena: boolean,
+	escenasCompletadas: number,
+	huboErrores: boolean
+): Promise<void> {
+	if (!browser) return;
+
+	try {
+		// Anatomista Novato (primera escena)
+		if (esPrimeraEscena) {
+			await verificarAnatomistaNovato(artistaId);
+		}
+
+		// Precisión Perfecta (sin errores)
+		if (!huboErrores) {
+			await verificarPrecisionPerfecta(artistaId, false);
+		}
+
+		// Maestro de Anatomía (3 escenas)
+		if (escenasCompletadas >= 3) {
+			await verificarMaestroAnatomia(artistaId, escenasCompletadas);
+		}
+	} catch (error) {
+		console.error('[LogrosStore] Error procesando logros de escena completada:', error);
+	}
 }
