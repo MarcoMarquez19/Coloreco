@@ -6,41 +6,69 @@
  */
 
 import { getDB } from './database';
-import { generarUUID, LOGROS_HISTORIAS, type LogroDefinicion, type LogroArtista } from './schemas';
+import { generarUUID, type LogroDefinicion, type LogroArtista, type Modo } from './schemas';
+import type { CodigoLogro } from './schemas';
 
 // ============================================================================
-// DEFINICIONES DE LOGROS DE HISTORIAS
+// DEFINICIONES DE LOGROS
 // ============================================================================
+
+export interface LogroJSON {
+	codigo: string;
+	nombre: string;
+	descripcion: string;
+	criterio: string;
+	icono: string;
+}
+
+interface LogrosData {
+	historias: LogroJSON[];
+	dibujo: LogroJSON[];
+	cuerpoHumano: LogroJSON[];
+}
+
+let logrosCache: LogrosData | null = null;
 
 /**
- * Catálogo inicial de logros de historias
+ * Carga las definiciones de logros desde el archivo JSON
+ * 
+ * @returns Datos de logros por modo
  */
-const DEFINICIONES_LOGROS_HISTORIAS: Omit<LogroDefinicion, 'id'>[] = [
-	{
-		codigo: LOGROS_HISTORIAS.GRAN_LECTOR,
-		nombre: 'Gran Lector',
-		descripcion: 'Completa todos los capítulos de una historia',
-		modo: 'historias',
-		criterio: 'Completar una historia completa',
-		icono: '📚'
-	},
-	{
-		codigo: LOGROS_HISTORIAS.MENTE_BRILLANTE,
-		nombre: 'Mente Brillante',
-		descripcion: 'Responde correctamente 3 preguntas seguidas',
-		modo: 'historias',
-		criterio: 'Responder 3 preguntas correctas consecutivas',
-		icono: '🧠'
-	},
-	{
-		codigo: LOGROS_HISTORIAS.MAESTRO_HISTORIAS,
-		nombre: 'Maestro de Historias',
-		descripcion: 'Completa todas las historias disponibles',
-		modo: 'historias',
-		criterio: 'Completar todas las historias disponibles',
-		icono: '👑'
+async function cargarDefinicionesLogros(): Promise<LogrosData> {
+	if (logrosCache) return logrosCache;
+
+	try {
+		const response = await fetch('/logros/logros.json');
+		if (!response.ok) {
+			throw new Error(`Error cargando logros: ${response.status}`);
+		}
+		logrosCache = await response.json();
+		return logrosCache as LogrosData;
+	} catch (error) {
+		console.error('[LogrosService] Error cargando definiciones de logros:', error);
+		return { historias: [], dibujo: [], cuerpoHumano: [] };
 	}
-];
+}
+
+/**
+ * Obtiene las definiciones de logros para un modo específico
+ * 
+ * @param modo - Modo del juego
+ * @returns Array de definiciones de logros
+ */
+async function obtenerDefinicionesPorModo(modo: Modo): Promise<Omit<LogroDefinicion, 'id'>[]> {
+	const logrosData = await cargarDefinicionesLogros();
+	const logrosJSON = logrosData[modo] || [];
+
+	return logrosJSON.map(logro => ({
+		codigo: logro.codigo,
+		nombre: logro.nombre,
+		descripcion: logro.descripcion,
+		modo: modo,
+		criterio: logro.criterio,
+		icono: logro.icono
+	}));
+}
 
 // ============================================================================
 // INICIALIZACIÓN
@@ -59,22 +87,28 @@ export async function inicializarCatalogoLogros(): Promise<number> {
 	let logrosCreados = 0;
 
 	try {
-		// Inicializar logros de historias
-		for (const defLogro of DEFINICIONES_LOGROS_HISTORIAS) {
-			// Verificar si ya existe
-			const existente = await db.logrosDefinicion
-				.where('codigo')
-				.equals(defLogro.codigo)
-				.first();
+		// Cargar definiciones desde JSON
+		const modos: Modo[] = ['historias', 'dibujo', 'cuerpoHumano'];
+		
+		for (const modo of modos) {
+			const definiciones = await obtenerDefinicionesPorModo(modo);
+			
+			for (const defLogro of definiciones) {
+				// Verificar si ya existe
+				const existente = await db.logrosDefinicion
+					.where('codigo')
+					.equals(defLogro.codigo)
+					.first();
 
-			if (!existente) {
-				const logroCompleto: LogroDefinicion = {
-					id: generarUUID(),
-					...defLogro
-				};
-				await db.logrosDefinicion.add(logroCompleto);
-				logrosCreados++;
-				console.log(`[LogrosService] Logro creado: ${defLogro.nombre}`);
+				if (!existente) {
+					const logroCompleto: LogroDefinicion = {
+						id: generarUUID(),
+						...defLogro
+					};
+					await db.logrosDefinicion.add(logroCompleto);
+					logrosCreados++;
+					console.log(`[LogrosService] Logro creado: ${defLogro.nombre}`);
+				}
 			}
 		}
 
@@ -91,6 +125,23 @@ export async function inicializarCatalogoLogros(): Promise<number> {
 // ============================================================================
 // CONSULTAS DE LOGROS
 // ============================================================================
+
+/**
+ * Obtiene las definiciones de logros desde el JSON por modo
+ * 
+ * @param modo - Modo del juego (opcional, si no se especifica devuelve todos)
+ * @returns Array de definiciones de logros
+ */
+export async function obtenerDefinicionesLogrosJSON(modo?: Modo): Promise<LogroJSON[]> {
+	const logrosData = await cargarDefinicionesLogros();
+	
+	if (modo) {
+		return logrosData[modo] || [];
+	}
+	
+	// Devolver todos los logros de todos los modos
+	return [...logrosData.historias, ...logrosData.dibujo, ...logrosData.cuerpoHumano];
+}
 
 /**
  * Obtiene todos los logros definidos
@@ -365,9 +416,12 @@ export async function calcularRangoArtista(artistaId: number): Promise<'bronce' 
 	if (!db) return null;
 
 	try {
-		const logrosDesbloqueados = await db.logrosArtista
-			.where({ artistaId, desbloqueado: true })
-			.count();
+		const todosLosLogros = await db.logrosArtista
+			.where('artistaId')
+			.equals(artistaId)
+			.toArray();
+		
+		const logrosDesbloqueados = todosLosLogros.filter(logro => logro.desbloqueado === true).length;
 
 		if (logrosDesbloqueados === 0) return null;
 		if (logrosDesbloqueados <= 3) return 'bronce';
@@ -401,11 +455,17 @@ export async function obtenerEstadisticasLogros(artistaId: number): Promise<{
 
 	try {
 		const totalLogros = await db.logrosDefinicion.count();
-		const desbloqueados = await db.logrosArtista
-			.where({ artistaId, desbloqueado: true })
-			.count();
+		
+		const todosLosLogros = await db.logrosArtista
+			.where('artistaId')
+			.equals(artistaId)
+			.toArray();
+		
+		const desbloqueados = todosLosLogros.filter(logro => logro.desbloqueado === true).length;
 
 		const rango = await calcularRangoArtista(artistaId);
+
+		console.log(`[LogrosService] Estadísticas - Total: ${totalLogros}, Desbloqueados: ${desbloqueados}, Rango: ${rango}`);
 
 		return {
 			totalLogros,

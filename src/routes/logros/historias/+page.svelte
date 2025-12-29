@@ -2,14 +2,14 @@
     import LibroHistorias from '$lib/components/iconos/LibroAbierto.png';
     import Trofeo from '$lib/components/iconos/Trofeo.svelte';
     import { onMount } from 'svelte';
+    import { afterNavigate } from '$app/navigation';
     import { obtenerArtistaActivo } from '$lib/db/artistas.service';
-    import { obtenerLogrosArtista, calcularRangoArtista } from '$lib/db/logros.service';
-    import { LOGROS_HISTORIAS } from '$lib/db/schemas';
-    import type { LogroArtista } from '$lib/db/schemas';
+    import { obtenerLogrosArtista, calcularRangoArtista, obtenerDefinicionesLogrosJSON } from '$lib/db/logros.service';
+    import { estadisticasLogros, cargarLogrosArtista } from '$lib/stores/logros';
 
     // Props para controlar el trofeo dinámicamente
-    let rangoTrofeo = $state<'oro' | 'plata' | 'bronce'>('bronce');
-    let textoRango = $state('Bronce');
+    let rangoTrofeo = $state<'oro' | 'plata' | 'bronce' | null>(null);
+    let textoRango = $state('...');
 
     // Tamaño de la imagen decorativa (ajustable)
     let tamañoImagen = '20rem'; // Puedes cambiar este valor: '8rem', '12rem', etc.
@@ -24,75 +24,68 @@
         fechaDesbloqueo?: Date;
     }
 
-    let logrosDisplay = $state<LogroDisplay[]>([
-        {
-            codigo: LOGROS_HISTORIAS.GRAN_LECTOR,
-            titulo: 'Gran Lector',
-            descripcion: 'Completa tu primera historia',
-            icono: '📚',
-            desbloqueado: false
-        },
-        {
-            codigo: LOGROS_HISTORIAS.MENTE_BRILLANTE,
-            titulo: 'Mente Brillante',
-            descripcion: 'Responde 3 preguntas correctas seguidas',
-            icono: '🧠',
-            desbloqueado: false
-        },
-        {
-            codigo: LOGROS_HISTORIAS.MAESTRO_HISTORIAS,
-            titulo: 'Maestro de Historias',
-            descripcion: 'Completa todas las historias disponibles',
-            icono: '🏆',
-            desbloqueado: false
-        }
-    ]);
+    let logrosDisplay = $state<LogroDisplay[]>([]);
 
     let logroActualIndex = $state(0);
     let artistaId = $state<number | null>(null);
+    let cargando = $state(true);
 
     function logroAnterior() {
+        if (logrosDisplay.length === 0) return;
         logroActualIndex = (logroActualIndex - 1 + logrosDisplay.length) % logrosDisplay.length;
     }
 
     function logroSiguiente() {
+        if (logrosDisplay.length === 0) return;
         logroActualIndex = (logroActualIndex + 1) % logrosDisplay.length;
     }
 
     // Cargar logros del artista
     async function cargarLogros() {
-        const artista = await obtenerArtistaActivo();
-        if (!artista || !artista.id) return;
-        
-        artistaId = artista.id;
-        
-        // Cargar logros desbloqueados
-        const logrosArtista = await obtenerLogrosArtista(artista.id);
-        
-        // Actualizar display con información real
-        logrosDisplay = logrosDisplay.map(logro => {
-            const logroData = logrosArtista.find(
-                (la) => la.definicion.codigo === logro.codigo
-            );
+        try {
+            const artista = await obtenerArtistaActivo();
+            if (!artista || !artista.id) {
+                console.error('No hay artista activo');
+                return;
+            }
             
-            return {
-                ...logro,
-                desbloqueado: logroData?.estado?.desbloqueado ?? false,
-                fechaDesbloqueo: logroData?.estado?.fechaDesbloqueo
-            };
-        });
-        
-        // Calcular rango
-        const rango = await calcularRangoArtista(artista.id);
-        if (rango === 'oro') {
-            rangoTrofeo = 'oro';
-            textoRango = 'Oro';
-        } else if (rango === 'plata') {
-            rangoTrofeo = 'plata';
-            textoRango = 'Plata';
-        } else {
-            rangoTrofeo = 'bronce';
-            textoRango = 'Bronce';
+            artistaId = artista.id;
+            
+            // Cargar logros en el store (esto actualiza estadisticasLogros automáticamente)
+            await cargarLogrosArtista(artista.id);
+            
+            // Cargar definiciones de logros desde JSON
+            const definicionesLogros = await obtenerDefinicionesLogrosJSON('historias');
+            
+            if (!definicionesLogros || definicionesLogros.length === 0) {
+                console.error('No se pudieron cargar las definiciones de logros');
+                return;
+            }
+            
+            // Cargar logros desbloqueados del artista
+            const logrosArtista = await obtenerLogrosArtista(artista.id);
+            
+            // Crear logrosDisplay desde las definiciones JSON
+            logrosDisplay = definicionesLogros.map(defLogro => {
+                const logroData = logrosArtista.find(
+                    (la) => la.definicion.codigo === defLogro.codigo
+                );
+                
+                return {
+                    codigo: defLogro.codigo,
+                    titulo: defLogro.nombre,
+                    descripcion: defLogro.descripcion,
+                    icono: defLogro.icono,
+                    desbloqueado: logroData?.estado?.desbloqueado ?? false,
+                    fechaDesbloqueo: logroData?.estado?.fechaDesbloqueo
+                };
+            });
+            
+            // El rango se actualiza automáticamente por el $effect que escucha estadisticasLogros
+        } catch (error) {
+            console.error('Error cargando logros:', error);
+        } finally {
+            cargando = false;
         }
     }
 
@@ -133,6 +126,35 @@
         };
     });
 
+    // Recargar cuando se navega de vuelta a esta página
+    afterNavigate(async () => {
+        if (artistaId) {
+            await cargarLogrosArtista(artistaId);
+        }
+    });
+
+    // Reaccionar a cambios en estadísticas de logros para actualizar rango
+    $effect(() => {
+        const stats = $estadisticasLogros;
+        console.log('[LogrosHistorias] Estadísticas actualizadas:', stats);
+        
+        if (stats.rango === 'oro') {
+            rangoTrofeo = 'oro';
+            textoRango = 'Oro';
+        } else if (stats.rango === 'plata') {
+            rangoTrofeo = 'plata';
+            textoRango = 'Plata';
+        } else if (stats.rango === 'bronce') {
+            rangoTrofeo = 'bronce';
+            textoRango = 'Bronce';
+        } else {
+            rangoTrofeo = null;
+            textoRango = 'Sin Rango';
+        }
+        
+        console.log('[LogrosHistorias] Rango asignado:', rangoTrofeo, textoRango);
+    });
+
     $effect(() => {
         actualizarEscala();
         window.addEventListener('resize', actualizarEscala);
@@ -145,35 +167,6 @@
             }
         };
     })
-
-    // Obtener colores según el rango
-    function obtenerColoresTrofeo(rango: 'oro' | 'plata' | 'bronce') {
-        const colores = {
-            oro: {
-                borde: '#B8860B',
-                relleno: '#FFD700',
-                texto: '#FFD700'
-            },
-            plata: {
-                borde: '#707070',
-                relleno: '#C0C0C0',
-                texto: '#C0C0C0'
-            },
-            bronce: {
-                borde: '#8B4513',
-                relleno: '#CD7F32',
-                texto: '#CD7F32'
-            }
-        };
-        return colores[rango];
-    }
-
-    $effect(() => {
-        const colores = obtenerColoresTrofeo(rangoTrofeo);
-        document.documentElement.style.setProperty('--trofeo-color-borde', colores.borde);
-        document.documentElement.style.setProperty('--trofeo-color-relleno', colores.relleno);
-        document.documentElement.style.setProperty('--trofeo-texto-color', colores.texto);
-    });
 
 </script>
 
@@ -189,15 +182,24 @@
     
     <div class="trofeo-contenedor">
         <div class="trofeo-con-texto">
-            <div class="trofeo-wrapper">
+            <div class="trofeo-wrapper" data-tipo-trofeo={rangoTrofeo}>
                 <Trofeo/>
             </div>
-            <p class="texto-trofeo">{textoRango}</p>
+            <p class="texto-trofeo" data-tipo-trofeo={rangoTrofeo}>{textoRango}</p>
         </div>
     </div>
 
     <h2 class="titulo-logro">Logros de historias</h2>
 
+    {#if cargando}
+        <div class="mensaje-carga">
+            <p>Cargando logros...</p>
+        </div>
+    {:else if logrosDisplay.length === 0}
+        <div class="mensaje-error">
+            <p>No se pudieron cargar los logros. Por favor, recarga la página.</p>
+        </div>
+    {:else}
     <div class="navegacion-logros">
         <button 
             class="flecha-navegacion izquierda" 
@@ -218,12 +220,12 @@
             </svg>
         </button>
 
-        <div class="tarjeta-logro" class:desbloqueado={logrosDisplay[logroActualIndex].desbloqueado}>
-            <div class="icono-logro">{logrosDisplay[logroActualIndex].icono}</div>
-            <h3 class="titulo-logro-individual">{logrosDisplay[logroActualIndex].titulo}</h3>
-            <p class="descripcion-logro">{logrosDisplay[logroActualIndex].descripcion}</p>
+        <div class="tarjeta-logro" class:desbloqueado={logrosDisplay[logroActualIndex]?.desbloqueado}>
+            <div class="icono-logro">{logrosDisplay[logroActualIndex]?.icono || '🏆'}</div>
+            <h3 class="titulo-logro-individual">{logrosDisplay[logroActualIndex]?.titulo || 'Cargando...'}</h3>
+            <p class="descripcion-logro">{logrosDisplay[logroActualIndex]?.descripcion || 'Espera un momento...'}</p>
             <div class="estado-logro">
-                {#if logrosDisplay[logroActualIndex].desbloqueado}
+                {#if logrosDisplay[logroActualIndex]?.desbloqueado}
                     <span class="badge desbloqueado">✓ Desbloqueado</span>
                 {:else}
                     <span class="badge bloqueado">🔒 Bloqueado</span>
@@ -250,6 +252,7 @@
             </svg>
         </button>
     </div>
+    {/if}
 </div>
 
 <style>
@@ -319,6 +322,29 @@
         --icono-color-relleno: var(--trofeo-color-relleno, #FFD700);
     }
 
+    /* Colores de trofeo según el rango */
+    .trofeo-wrapper[data-tipo-trofeo="oro"] :global(svg) {
+        --trofeo-color-borde: #B8860B;
+        --trofeo-color-relleno: #FFD700;
+    }
+
+    .trofeo-wrapper[data-tipo-trofeo="plata"] :global(svg) {
+        --trofeo-color-borde: #888888;
+        --trofeo-color-relleno: #C0C0C0;
+    }
+
+    .trofeo-wrapper[data-tipo-trofeo="bronce"] :global(svg) {
+        --trofeo-color-borde: #804A00;
+        --trofeo-color-relleno: #CD7F32;
+    }
+
+    /* Sin rango - solo borde negro sin relleno */
+    .trofeo-wrapper[data-tipo-trofeo="null"] :global(svg),
+    .trofeo-wrapper:not([data-tipo-trofeo="oro"]):not([data-tipo-trofeo="plata"]):not([data-tipo-trofeo="bronce"]) :global(svg) {
+        --trofeo-color-borde: #000000;
+        --trofeo-color-relleno: transparent;
+    }
+
     .texto-trofeo {
         margin: 0;
         font-size: calc(var(--font-size-base, 1rem) * 2);
@@ -326,6 +352,29 @@
         color: var(--trofeo-texto-color, #FFD700);
         letter-spacing: calc(var(--spacing-base, 1rem) * 0.05);
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Colores de texto según el rango */
+    .texto-trofeo[data-tipo-trofeo="oro"] {
+        --trofeo-texto-color: #FFD700;
+        color: var(--trofeo-texto-color);
+    }
+
+    .texto-trofeo[data-tipo-trofeo="plata"] {
+        --trofeo-texto-color: #C0C0C0;
+        color: var(--trofeo-texto-color);
+    }
+
+    .texto-trofeo[data-tipo-trofeo="bronce"] {
+        --trofeo-texto-color: #CD7F32;
+        color: var(--trofeo-texto-color);
+    }
+
+    /* Sin rango - texto gris */
+    .texto-trofeo[data-tipo-trofeo="null"],
+    .texto-trofeo:not([data-tipo-trofeo="oro"]):not([data-tipo-trofeo="plata"]):not([data-tipo-trofeo="bronce"]) {
+        --trofeo-texto-color: #666666;
+        color: var(--trofeo-texto-color);
     }
 
     .titulo-logro {
@@ -455,5 +504,17 @@
     .tarjeta-logro.desbloqueado {
         border-color: #4caf50;
         box-shadow: 0 8px 24px rgba(76, 175, 80, 0.3);
+    }
+
+    .mensaje-carga,
+    .mensaje-error {
+        padding: calc(var(--spacing-base, 1rem) * 2);
+        text-align: center;
+        font-size: calc(var(--font-size-base, 1rem) * 1.2);
+        color: var(--color-texto, #333);
+    }
+
+    .mensaje-error {
+        color: var(--color-error, #d32f2f);
     }
 </style>

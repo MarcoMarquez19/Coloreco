@@ -1,0 +1,34 @@
+{
+  "historias": [
+    {
+      "codigo": "GRAN_LECTOR",
+      "nombre": "Gran Lector",
+      "descripcion": "Completa todos los capítulos de una historia",
+      "criterio": "Completar una historia completa",
+      "icono": "📚"
+    },
+    {
+      "codigo": "LECTOR_ALOCADO",
+      "nombre": "Lector Alocado",
+      "descripcion": "Completa dos historias diferentes",
+      "criterio": "Completar 2 historias completas",
+      "icono": "🤓"
+    },
+    {
+      "codigo": "MENTE_BRILLANTE",
+      "nombre": "Mente Brillante",
+      "descripcion": "Responde correctamente 3 preguntas seguidas",
+      "criterio": "Responder 3 preguntas correctas consecutivas",
+      "icono": "🧠"
+    },
+    {
+      "codigo": "MAESTRO_HISTORIAS",
+      "nombre": "Maestro de Historias",
+      "descripcion": "Completa todas las historias disponibles",
+      "criterio": "Completar todas las historias disponibles",
+      "icono": "👑"
+    }
+  ],
+  "dibujo": [],
+  "cuerpoHumano": []
+}

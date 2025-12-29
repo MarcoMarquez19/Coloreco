@@ -32,8 +32,7 @@ export async function crearArtista(nombre: string): Promise<number> {
 	const nuevoArtista: Omit<Artista, 'id'> = {
 		nombre: nombre.trim(),
 		fechaCreacion: ahora,
-		ultimaActividad: ahora,
-		puntuacion: 0
+		ultimaActividad: ahora
 	};
 
 	const id = await db.artistas.add(nuevoArtista as Artista);
@@ -102,21 +101,6 @@ export async function actualizarUltimaActividad(artistaId: number): Promise<void
 
 	await db.artistas.update(artistaId, {
 		ultimaActividad: new Date()
-	});
-}
-
-/**
- * Actualiza la puntuación del artista
- * 
- * @param artistaId - ID del artista
- * @param nuevaPuntuacion - Nueva puntuación total
- */
-export async function actualizarPuntuacion(artistaId: number, nuevaPuntuacion: number): Promise<void> {
-	const db = getDB();
-	if (!db) return;
-
-	await db.artistas.update(artistaId, {
-		puntuacion: nuevaPuntuacion
 	});
 }
 

@@ -150,7 +150,10 @@ export async function recargarLogros(artistaId: number): Promise<void> {
 export async function desbloquearLogro(artistaId: number, codigoLogro: string): Promise<boolean> {
 	if (!browser) return false;
 
+	console.log(`[LogrosStore] Intentando desbloquear logro: ${codigoLogro} para artista ${artistaId}`);
 	const desbloqueado = await logrosService.desbloquearLogro(artistaId, codigoLogro);
+	
+	console.log(`[LogrosStore] Resultado de desbloqueo: ${desbloqueado}`);
 	
 	if (desbloqueado) {
 		// Recargar logros
@@ -159,6 +162,7 @@ export async function desbloquearLogro(artistaId: number, codigoLogro: string): 
 		// Mostrar notificación
 		const logro = await logrosService.obtenerLogroPorCodigo(codigoLogro);
 		if (logro) {
+			console.log(`[LogrosStore] Mostrando notificación de logro: ${logro.nombre}`);
 			logroDesbloqueado.set(logro);
 			// Limpiar notificación después de 5 segundos
 			setTimeout(() => {
@@ -219,6 +223,28 @@ export async function verificarMenteBrillante(artistaId: number, respuestaCorrec
 }
 
 /**
+ * Verifica y otorga el logro "Lector Alocado" si se completaron 2 historias
+ * 
+ * @param artistaId - ID del artista
+ * @param historiasCompletadas - Número de historias completadas
+ */
+export async function verificarLectorAlocado(
+	artistaId: number,
+	historiasCompletadas: number
+): Promise<void> {
+	if (historiasCompletadas >= 2) {
+		const yaDesbloqueado = await logrosService.tieneLogroDesbloqueado(
+			artistaId,
+			LOGROS_HISTORIAS.LECTOR_ALOCADO
+		);
+
+		if (!yaDesbloqueado) {
+			await desbloquearLogro(artistaId, LOGROS_HISTORIAS.LECTOR_ALOCADO);
+		}
+	}
+}
+
+/**
  * Verifica y otorga el logro "Maestro de Historias" si se completaron todas las historias
  * 
  * @param artistaId - ID del artista
@@ -268,6 +294,9 @@ export async function procesarLogrosHistorias(
 		if (historiaCompletada) {
 			await verificarGranLector(artistaId, true);
 		}
+
+		// Verificar Lector Alocado si completó 2 historias
+		await verificarLectorAlocado(artistaId, historiasCompletadas);
 
 		// Verificar Maestro de Historias
 		await verificarMaestroHistorias(artistaId, totalHistorias, historiasCompletadas);

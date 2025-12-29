@@ -154,6 +154,28 @@ export class ColorecoDB extends Dexie {
 				console.log('[DB] v5: Tabla de progreso de historias creada');
 			}
 		});
+
+		// ========================================================================
+		// VERSIÓN 6: Optimización con índice compuesto en logrosArtista
+		// ========================================================================
+		this.version(6).stores({
+			// Mantener todos los stores anteriores
+			artistas: '++id, ultimaActividad',
+			sesion: 'id',
+			ajustes: 'id, artistaId',
+			obras: 'id, artistaId, modo, fechaCreacion, titulo',
+			obrasBlobs: 'idObra',
+			logrosDefinicion: 'id, codigo',
+			// Índice compuesto para optimizar consultas de logros desbloqueados
+			logrosArtista: 'id, artistaId, logroId, [artistaId+desbloqueado]',
+			progreso: 'id, artistaId, modo',
+			miniaturasBlobs: 'idObra',
+			escenasCatalogo: 'id, modo, escenaId',
+			progresosHistorias: 'id, artistaId, historiaId'
+		}).upgrade(async (trans) => {
+			// Migración v5 → v6: Solo actualiza índices, no hay datos que migrar
+			console.log('[DB] v6: Índice compuesto agregado a logrosArtista');
+		});
 	}
 }
 
