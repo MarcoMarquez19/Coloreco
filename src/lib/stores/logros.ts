@@ -175,7 +175,7 @@ export async function desbloquearLogro(artistaId: number, codigoLogro: string): 
 }
 
 // ============================================================================
-// VERIFICADORES DE LOGROS DE HISTORIAS
+// LOGROS DE HISTORIAS
 // ============================================================================
 
 /**

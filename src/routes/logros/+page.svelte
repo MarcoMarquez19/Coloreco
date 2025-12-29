@@ -20,11 +20,11 @@
     );
 
     function irALogrosTaller() {
-        //TODO: PONER LA PAGINA DE LOGROS TALLER
+        goto(`logros/escenas`);
     }
 
     function irALogrosCuerpo() {
-        //TODO: PONER LA PAGINA DE LOGROS CUERPO
+        goto(`logros/cuerpo-humano`);
     }
 
     function irALogrosHistorias() {

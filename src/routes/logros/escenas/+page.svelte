@@ -1,19 +1,19 @@
 <script lang="ts">
-    import LibroHistorias from '$lib/components/iconos/LibroAbierto.png';
+    import LibroDibujo from '$lib/components/iconos/LibroDibujo.png';
     import LogrosViewer from '$lib/components/logros/LogrosViewer.svelte';
 
     // Tamaño de la imagen decorativa (ajustable)
-    let tamañoImagen = '20rem'; // Puedes cambiar este valor: '8rem', '12rem', etc.
+    let tamañoImagen = '20rem';
 </script>
 
 <img 
-    src={LibroHistorias} 
-    alt="Libro de historias"
+    src={LibroDibujo} 
+    alt="Libro de dibujo"
     class="imagen-decorativa"
     style="width: {tamañoImagen};"
 >
 
-<LogrosViewer categoria="historias" tituloSeccion="Logros de historias" />
+<LogrosViewer categoria="dibujo" tituloSeccion="Logros de escenas" />
 
 <style>
     .imagen-decorativa {

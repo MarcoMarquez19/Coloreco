@@ -203,6 +203,27 @@ export async function obtenerLogroPorCodigo(codigo: string): Promise<LogroDefini
 	}
 }
 
+/**
+ * Obtiene logros filtrados por escenaId
+ * 
+ * @param escenaId - ID de la escena
+ * @returns Array de logros asociados a la escena especificada
+ */
+export async function obtenerLogrosPorEscenaId(escenaId: string): Promise<LogroDefinicion[]> {
+	const db = getDB();
+	if (!db) return [];
+
+	try {
+		return await db.logrosDefinicion
+			.where('escenaId')
+			.equals(escenaId)
+			.toArray();
+	} catch (error) {
+		console.error('[LogrosService] Error obteniendo logros por escenaId:', error);
+		return [];
+	}
+}
+
 // ============================================================================
 // LOGROS DE ARTISTAS
 // ============================================================================
