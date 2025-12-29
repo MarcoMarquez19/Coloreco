@@ -29,6 +29,22 @@
       "icono": "👑"
     }
   ],
-  "dibujo": [],
-  "cuerpoHumano": []
+  "dibujo": [
+    {
+      "codigo": "PRIMER_DIBUJO",
+      "nombre": "Primer Dibujo",
+      "descripcion": "Completa tu primera escena de dibujo",
+      "criterio": "Completar una escena",
+      "icono": "🎨"
+    }
+  ],
+  "cuerpoHumano": [
+    {
+      "codigo": "PRIMER_CORAZON",
+      "nombre": "Primer Corazón",
+      "descripcion": "Completa tu primera plantilla del corazón",
+      "criterio": "Completar una plantilla del corazón",
+      "icono": "❤️"
+    }
+  ]
 }
