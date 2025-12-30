@@ -593,14 +593,15 @@
 	.marco-obra {
 		/* Marco central para la imagen con estilo de tarjeta */
 		flex: 0 0 auto;
-		max-width: 850px;
-		min-width: 32vw;
+		width: 750px;
+		height: 450px;
 		background: white;
 		border-radius: var(--border-radius, 8px);
 		padding: calc(var(--espaciado) * 1);
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 		display: flex;
 		align-items: center;
+		justify-content: center;
 		transition: transform 0.3s, box-shadow 0.3s;
 	}
 
@@ -610,12 +611,11 @@
 	}
 
 	.imagen-obra {
-		width: 100%;
-		max-height: 410px;
+		max-width: 100%;
+		max-height: 100%;
 		display: block;
 		border-radius: var(--border-radius, 8px);
 		object-fit: contain;
-		max-width: 100%;
 	}
 
 	/* ============================================================================
