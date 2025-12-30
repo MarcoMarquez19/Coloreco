@@ -357,7 +357,7 @@
 		margin-top: calc(var(--spacing-base, 1rem) * 0.5);
 		padding: 0;
 		font-weight: 700;
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
 	}
 
 	h2 {
@@ -365,13 +365,13 @@
 		margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0;
 		padding: 0;
 		font-weight: 600;
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
 	}
 
 	.marco-externo {
 		background: var(--bg, white);
 		border: 3px solid var(--icono-color-borde, #000000);
-		border-radius: 16px;
+		border-radius: var(--border-radius, 8px);
 		padding: calc(var(--spacing-base, 1rem) * 2);
 		box-shadow: var(--sombra-botones, 0 4px 16px rgba(0, 0, 0, 0.15));
 		margin-top: calc(var(--spacing-base, 1rem) * 0.5);
@@ -418,11 +418,11 @@
 	.plantilla-nombre {
 		font-size: calc(var(--font-size-base, 1rem) * 1.3);
 		margin: 0;
-		color: var(--color-texto, #555);
+		color: var(--text-secondary, #555);
 	}
 
 	.plantilla-nombre strong {
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
 		font-weight: 700;
 	}
 
@@ -433,8 +433,8 @@
 		gap: calc(var(--spacing-base, 1rem) * 2);
 		margin: calc(var(--spacing-base, 1rem) * 1) 0;
 		padding: calc(var(--spacing-base, 1rem) * 1.5);
-		background: var(--surface-hover, rgba(0, 0, 0, 0.03));
-		border-radius: 12px;
+		background: transparent;
+		border-radius: var(--border-radius, 8px);
 		border: 2px solid var(--border, #e0e0e0);
 	}
 
@@ -448,20 +448,20 @@
 	.stat-numero {
 		font-size: calc(var(--font-size-base, 1rem) * 3);
 		font-weight: 700;
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
 		line-height: 1;
 	}
 
 	.stat-label {
 		font-size: calc(var(--font-size-base, 1rem) * 1);
-		color: var(--color-texto-secundario, #666);
+		color: var(--text-secondary, #666);
 		font-weight: 600;
 	}
 
 	.stat-divider {
 		font-size: calc(var(--font-size-base, 1rem) * 3);
 		font-weight: 300;
-		color: var(--color-texto-secundario, #999);
+		color: var(--text-secondary, #999);
 	}
 
 	.mensaje-perfecto {
@@ -470,8 +470,8 @@
 		padding: calc(var(--spacing-base, 1rem) * 1.2);
 		background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
 		border: 3px solid #ffd700;
-		border-radius: 12px;
-		color: var(--color-texto, #333);
+		border-radius: var(--border-radius, 8px);
+		color: var(--fg, #333);
 		font-weight: 700;
 		box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 	}
@@ -490,7 +490,7 @@
 		padding: calc(var(--spacing-base, 1rem) * 0.8) calc(var(--spacing-base, 1rem) * 2);
 		background: var(--bg, #fff);
 		border: 3px solid;
-		border-radius: 12px;
+		border-radius: var(--border-radius, 8px);
 		margin-bottom: calc(var(--spacing-base, 1rem) * 1);
 		font-size: calc(var(--font-size-base, 1rem) * 1.3);
 		font-weight: 700;
@@ -502,11 +502,11 @@
 	}
 
 	.rango-nombre {
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
 	}
 
 	.sin-rango {
-		color: var(--color-texto-secundario, #666);
+		color: var(--text-secondary, #666);
 		font-style: italic;
 		margin-bottom: calc(var(--spacing-base, 1rem) * 1);
 	}
@@ -522,12 +522,12 @@
 		align-items: center;
 		margin-bottom: calc(var(--spacing-base, 1rem) * 0.75);
 		font-size: calc(var(--font-size-base, 1rem) * 1);
-		color: var(--color-texto, #555);
+		color: var(--fg, #555);
 		font-weight: 600;
 	}
 
 	.siguiente-rango {
-		color: var(--color-texto-secundario, #666);
+		color: var(--text-secondary, #666);
 		font-size: calc(var(--font-size-base, 1rem) * 0.95);
 	}
 
@@ -535,7 +535,7 @@
 		width: 100%;
 		height: calc(var(--spacing-base, 1rem) * 1.8);
 		background: var(--surface-hover, #e0e0e0);
-		border-radius: 12px;
+		border-radius: var(--border-radius, 8px);
 		overflow: hidden;
 		border: 2px solid var(--border, #ccc);
 		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -561,7 +561,7 @@
 		background: var(--fondo-botones, #ffca00);
 		color: var(--icono-color-relleno, black);
 		border: 3px solid var(--icono-color-borde, #000000);
-		border-radius: 10px;
+		border-radius: var(--border-radius, 8px);
 		padding: calc(var(--spacing-base, 1rem) * 1.2) calc(var(--spacing-base, 1rem) * 2.5);
 		font-size: calc(var(--font-size-base, 1rem) * 1.2);
 		font-weight: 700;
@@ -604,7 +604,7 @@
 		text-align: center;
 		padding: calc(var(--spacing-base, 1rem) * 3);
 		font-size: calc(var(--font-size-base, 1rem) * 1.25);
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
 	}
 
 	.estado-error {
@@ -612,7 +612,7 @@
 	}
 
 	.cargando {
-		color: var(--color-texto-secundario, #666);
+		color: var(--text-secondary, #666);
 		font-style: italic;
 	}
 
