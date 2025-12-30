@@ -8,6 +8,7 @@
 	import { obtenerConfiguracionEscena } from '$lib/juegos/modos/cuerpo-humano/configuraciones-escenas';
 	import type { EscenaConfig } from '$lib/juegos/modos/cuerpo-humano/types/cuerpo-humano.types';
 	import ConfetiImagen from '$lib/components/iconos/Confeti.png';
+	import FondoCuerpoHumano from '$lib/components/fondos/FondoCuerpoHumano.svelte';
 
 	let escenaConfig = $state<EscenaConfig | null>(null);
 	let cargando = $state<boolean>(true);
@@ -654,3 +655,5 @@
 		}
 	}
 </style>
+
+<FondoCuerpoHumano />

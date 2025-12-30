@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { escenasStore, escenasFiltradas, cargando, error } from '$lib/stores/escenas';
 	import type { EscenaCatalogo } from '$lib/db/schemas';
+	import FondoCuerpoHumano from '$lib/components/fondos/FondoCuerpoHumano.svelte';
 
 	let escenasIniciales: Omit<EscenaCatalogo, 'id'>[] = [];
 	let busqueda = '';
@@ -110,6 +111,8 @@
 		};
 	})
 </script>
+
+<FondoCuerpoHumano />
 
 <div class="seleccionar-escenas-contenedor" bind:this={contenedorSeleccionarEscenaRef} aria-label="Contenedor para seleccionar la escena de preferencia del artista" data-magnificable>
     <h1>Elige una escena</h1>
