@@ -219,7 +219,7 @@
 			case 'seleccionar':
 				// Cuando se selecciona una zona, podemos mover el cursor allí o dibujar algo
 				console.log(`[TallerDibujo] Seleccionar zona "${detail.zona}"`);
-				mostrarMensajeFeedback(`Zona seleccionada: ${detail.zona}`, 'error');
+				mostrarMensajeFeedback(`Zona seleccionada: ${detail.zona}`, 'success');
 				break;
 			
 			case 'zonaEnfocada':
