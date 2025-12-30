@@ -133,15 +133,15 @@
 			rangoActual = 'bronce';
 			siguienteRango = 'Plata';
 			logrosFaltantes = 4 - logrosDesbloqueados;
-			// Progreso dentro del rango bronce: de 0 a 100% cuando tiene 1-3 logros
-			porcentajeProgreso = ((logrosDesbloqueados - 1) / 3) * 100;
+			// Progreso: cada logro = 33.33% (1 logro = 33%, 2 = 66%, 3 = 100%)
+			porcentajeProgreso = (logrosDesbloqueados / 3) * 100;
 		} else if (logrosDesbloqueados >= 4 && logrosDesbloqueados <= 7) {
 			// Rango Plata (4-7 logros) → Necesita 8 para Oro
 			rangoActual = 'plata';
 			siguienteRango = 'Oro';
 			logrosFaltantes = 8 - logrosDesbloqueados;
-			// Progreso dentro del rango plata: de 0 a 100% cuando tiene 4-7 logros
-			porcentajeProgreso = ((logrosDesbloqueados - 4) / 4) * 100;
+			// Progreso: cada logro = 25% (4 = 25%, 5 = 50%, 6 = 75%, 7 = 100%)
+			porcentajeProgreso = ((logrosDesbloqueados - 3) / 4) * 100;
 		} else {
 			// Rango Oro (8+ logros) → Máximo alcanzado
 			rangoActual = 'oro';
@@ -155,10 +155,10 @@
 
 	function obtenerColorRango(rango: 'bronce' | 'plata' | 'oro' | null): string {
 		switch (rango) {
-			case 'bronce': return '#cd7f32';
-			case 'plata': return '#c0c0c0';
-			case 'oro': return '#ffd700';
-			default: return '#888';
+			case 'bronce': return '#d2691e';
+			case 'plata': return '#9e9e9e';
+			case 'oro': return '#ffc107';
+			default: return '#607d8b';
 		}
 	}
 
@@ -470,9 +470,14 @@
 		background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
 		border: 3px solid #ffd700;
 		border-radius: var(--border-radius, 8px);
-		color: var(--fg, #333);
+		color: #333 !important;
 		font-weight: 700;
 		box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		white-space: normal;
+		width: 100%;
+		box-sizing: border-box;
 	}
 
 	.seccion-logros {
@@ -532,19 +537,20 @@
 
 	.barra-progreso {
 		width: 100%;
-		height: calc(var(--spacing-base, 1rem) * 1.8);
-		background: var(--surface-hover, #e0e0e0);
+		height: calc(var(--spacing-base, 1rem) * 2.2);
+		background: var(--surface, #f5f5f5);
 		border-radius: var(--border-radius, 8px);
 		overflow: hidden;
 		border: 2px solid var(--border, #ccc);
-		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+		box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.15);
 	}
 
 	.barra-relleno {
 		height: 100%;
 		transition: width 0.8s ease-out;
-		background: linear-gradient(90deg, currentColor 0%, currentColor 100%);
-		box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+		background: currentColor;
+		box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3), 0 0 8px rgba(0, 0, 0, 0.2);
+		min-width: 2%;
 	}
 
 	.botones-contenedor {
