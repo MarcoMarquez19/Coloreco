@@ -528,7 +528,7 @@
 		justify-content: center;
 		min-height: 400px;
 		font-size: calc(var(--font-size-base, 1rem) * 1.3);
-		color: var(--text-secondary, #666);
+		color: var(--fg, #333);
 		text-align: center;
 	}
 
