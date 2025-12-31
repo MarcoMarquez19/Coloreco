@@ -1,6 +1,7 @@
 <script lang="ts">
     import Trofeo from '$lib/components/iconos/Trofeo.svelte';
     import { onMount } from 'svelte';
+    import { fly } from 'svelte/transition';
     import { afterNavigate } from '$app/navigation';
     import { obtenerArtistaActivo } from '$lib/db/artistas.service';
     import { obtenerLogrosArtista, obtenerDefinicionesLogrosJSON } from '$lib/db/logros.service';
@@ -34,14 +35,27 @@
     let artistaId = $state<number | null>(null);
     let cargando = $state(true);
 
+    // Animación de carrusel: clase temporal y duración accesible
+    let animClass = $state<string>('');
+    const CAROUSEL_ANIM_DURATION = 700; // ms, velocidad moderada
+    let animTimer: ReturnType<typeof setTimeout> | null = null;
+
     function logroAnterior() {
         if (logrosDisplay.length === 0) return;
-        logroActualIndex = (logroActualIndex - 1 + logrosDisplay.length) % logrosDisplay.length;
+        const prevIndex = (logrosDisplay.length === 0) ? 0 : (logroActualIndex - 1 + logrosDisplay.length) % logrosDisplay.length;
+        animClass = 'slide-left';
+        if (animTimer) { clearTimeout(animTimer); animTimer = null; }
+        logroActualIndex = prevIndex;
+        animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
     }
 
     function logroSiguiente() {
         if (logrosDisplay.length === 0) return;
-        logroActualIndex = (logroActualIndex + 1) % logrosDisplay.length;
+        const nextIndex = (logrosDisplay.length === 0) ? 0 : (logroActualIndex + 1) % logrosDisplay.length;
+        animClass = 'slide-right';
+        if (animTimer) { clearTimeout(animTimer); animTimer = null; }
+        logroActualIndex = nextIndex;
+        animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
     }
 
     // Cargar logros del artista
@@ -140,7 +154,6 @@
     // Reaccionar a cambios en estadísticas de logros para actualizar rango
     $effect(() => {
         const stats = $estadisticasLogros;
-        console.log(`[Logros${categoria}] Estadísticas actualizadas:`, stats);
         
         if (stats.rango === 'oro') {
             rangoTrofeo = 'oro';
@@ -155,8 +168,6 @@
             rangoTrofeo = null;
             textoRango = 'Sin Rango';
         }
-        
-        console.log(`[Logros${categoria}] Rango asignado:`, rangoTrofeo, textoRango);
     });
 
     $effect(() => {
@@ -174,14 +185,14 @@
 </script>
 
 <div class="seleccionar-logros-contenedor" bind:this={contenedorLogrosRef} aria-label="Contenedor de logros de {categoria}" data-magnificable>
-    <h1 tabindex="0">Rango General</h1>
+    <h1>Rango General</h1>
     
     <div class="trofeo-contenedor">
         <div class="trofeo-con-texto">
             <div class="trofeo-wrapper" data-tipo-trofeo={rangoTrofeo}>
                 <Trofeo/>
             </div>
-            <p class="texto-trofeo" data-tipo-trofeo={rangoTrofeo} tabindex="0" aria-label="Tu rango actual es {textoRango}">{textoRango}</p>
+            <p class="texto-trofeo" data-tipo-trofeo={rangoTrofeo} aria-label="Tu rango actual es {textoRango}">{textoRango}</p>
         </div>
     </div>
 
@@ -198,7 +209,7 @@
     {:else}
     <div class="navegacion-logros">
         <button 
-            class="flecha-navegacion izquierda" 
+            class="boton-flecha boton-izquierda" 
             onclick={logroAnterior}
             aria-label="Logro anterior"
             title="Ver logro anterior (←)"
@@ -216,15 +227,16 @@
             </svg>
         </button>
 
+        {#key logroActualIndex}
         <article 
-            class="tarjeta-logro" 
+            class={"tarjeta-logro " + animClass} 
             class:desbloqueado={logrosDisplay[logroActualIndex]?.desbloqueado}
-            tabindex="0"
             aria-label="{logrosDisplay[logroActualIndex]?.titulo || 'Cargando'}. {logrosDisplay[logroActualIndex]?.descripcion || 'Espera un momento'}. Estado: {logrosDisplay[logroActualIndex]?.desbloqueado ? 'Desbloqueado' : 'Bloqueado'}"
+            in:fly={{ x: animClass === 'slide-right' ? 300 : animClass === 'slide-left' ? -300 : 0, duration: CAROUSEL_ANIM_DURATION }}
         >
 
             <div class="icono-logro" aria-hidden="true">{logrosDisplay[logroActualIndex]?.icono || '🏆'}</div>
-            <h3 class="titulo-logro-individual">{logrosDisplay[logroActualIndex]?.titulo || 'Cargando...'}</h3>
+            <h3 id={"titulo-logro-" + logroActualIndex} class="titulo-logro-individual">{logrosDisplay[logroActualIndex]?.titulo || 'Cargando...'}</h3>
             <p class="descripcion-logro">{logrosDisplay[logroActualIndex]?.descripcion || 'Espera un momento...'}</p>
             <div class="estado-logro" aria-hidden="true">
                 <p>
@@ -236,9 +248,10 @@
                 </p>
             </div>
         </article>
+        {/key}
 
         <button 
-            class="flecha-navegacion derecha" 
+            class="boton-flecha boton-derecha" 
             onclick={logroSiguiente}
             aria-label="Logro siguiente"
             title="Ver siguiente logro (→)"
@@ -261,7 +274,7 @@
 
 <style>
     .seleccionar-logros-contenedor {
-        margin: 2vh auto;
+        margin: 1vh auto 0;
         background: transparent;
         z-index: 1;
         max-width: 1080px;
@@ -271,15 +284,10 @@
         justify-content: flex-start;
         display: flex;
         flex-direction: column;
-        padding: 0 calc(var(--spacing-base, 1rem) * 1);
-        box-sizing: border-box;
     }
-
     h1 {
         font-size: calc(var(--font-size-base, 1rem) * 2.5);
-        margin: 0;
-        margin-top: calc(var(--spacing-base, 1rem) * 0.5);
-        margin-bottom: calc(var(--spacing-base, 1rem) * 0.5);
+        margin: 0 0 calc(var(--spacing-base, 1rem) * 0.25) 0; /* menos espacio inferior */
         padding: 0;
         font-weight: 600;
         letter-spacing: calc(var(--spacing-base, 1rem) * 0.1);
@@ -296,8 +304,8 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-top: calc(var(--spacing-base, 1rem) * 0.5);
-        margin-bottom: calc(var(--spacing-base, 1rem) * 0.5);
+        margin-top: calc(var(--spacing-base, 1rem) * 0.25);
+        margin-bottom: calc(var(--spacing-base, 1rem) * 0.25);
         width: 100%;
     }
 
@@ -305,7 +313,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: calc(var(--spacing-base, 1rem) * 0.5);
+        gap: calc(var(--spacing-base, 1rem) * 0.1); /* aún más juntos sin pegarse del todo */
     }
 
     .trofeo-wrapper {
@@ -318,8 +326,9 @@
     }
 
     .trofeo-wrapper :global(svg) {
-        --icono-color-borde: var(--trofeo-color-borde, #B8860B);
-        --icono-color-relleno: var(--trofeo-color-relleno, #FFD700);
+        /* Aplicar directamente stroke/fill desde variables de tema o del trofeo para evitar referencias circulares */
+        stroke: var(--trofeo-color-borde, var(--icono-color-borde, #B8860B));
+        fill: var(--trofeo-color-relleno, var(--icono-color-relleno, #FFD700));
     }
 
     /* Colores de trofeo según el rango */
@@ -338,11 +347,27 @@
         --trofeo-color-relleno: #CD7F32;
     }
 
-    /* Sin rango - solo borde negro sin relleno */
-    .trofeo-wrapper[data-tipo-trofeo="null"] :global(svg),
-    .trofeo-wrapper:not([data-tipo-trofeo="oro"]):not([data-tipo-trofeo="plata"]):not([data-tipo-trofeo="bronce"]) :global(svg) {
-        --trofeo-color-borde: #000000;
-        --trofeo-color-relleno: transparent;
+    /* Forzar stroke/fill en el PATH (importante) para que los atributos inline no impidan el override */
+    :global(.trofeo-wrapper[data-tipo-trofeo="oro"] svg path) {
+        stroke: var(--trofeo-color-borde, #B8860B);
+        fill: var(--trofeo-color-relleno, #FFD700);
+    }
+
+    :global(.trofeo-wrapper[data-tipo-trofeo="plata"] svg path) {
+        stroke: var(--trofeo-color-borde, #888888);
+        fill: var(--trofeo-color-relleno, #C0C0C0);
+    }
+
+    :global(.trofeo-wrapper[data-tipo-trofeo="bronce"] svg path) {
+        stroke: var(--trofeo-color-borde, #804A00);
+        fill: var(--trofeo-color-relleno, #CD7F32);
+    }
+
+    /* Sin rango - borde según tema, sin relleno */
+    :global(.trofeo-wrapper[data-tipo-trofeo="null"] svg path),
+    :global(.trofeo-wrapper:not([data-tipo-trofeo="oro"]):not([data-tipo-trofeo="plata"]):not([data-tipo-trofeo="bronce"]) svg path) {
+        stroke: var(--icono-color-borde, #000000); /* forzar stroke desde la variable del tema (blanco en dark) */
+        fill: transparent !important; /* asegurarse de que no haya relleno */
     }
 
     .texto-trofeo {
@@ -379,14 +404,14 @@
     /* Sin rango - texto gris */
     .texto-trofeo[data-tipo-trofeo="null"],
     .texto-trofeo:not([data-tipo-trofeo="oro"]):not([data-tipo-trofeo="plata"]):not([data-tipo-trofeo="bronce"]) {
-        --trofeo-texto-color: #666666;
+        --trofeo-texto-color: var(--text-secondary, #666666); /* usar color secundario del tema para sin rango */
         color: var(--trofeo-texto-color);
     }
 
     .titulo-logro {
         font-size: calc(var(--font-size-base, 1rem) * 2);
         font-weight: 600;
-        margin: calc(var(--spacing-base, 1rem) * 1) 0 calc(var(--spacing-base, 1rem) * 0.5) 0;
+        margin: calc(var(--spacing-base, 1rem) * 0.5) 0 calc(var(--spacing-base, 1rem) * 0.25) 0; /* más cerca del trofeo */
         letter-spacing: calc(var(--spacing-base, 1rem) * 0.05);
     }
 
@@ -394,14 +419,12 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: calc(var(--spacing-base, 1rem) * 1.5);
+        gap: calc(var(--font-size-base, 1rem) * 5.5);
         width: 100%;
-        max-width: 1000px;
-        margin-top: calc(var(--spacing-base, 1rem) * 0.5);
-        margin-bottom: calc(var(--spacing-base, 1rem) * 2);
+        margin: 1rem 0; /* menos espacio entre tarjeta y elementos superiores/inferiores */
     }
 
-    .flecha-navegacion {
+    .boton-flecha {
         background: var(--fondo-botones, #ffca00);
         color: var(--icono-color-relleno, black);
         border: none;
@@ -409,53 +432,126 @@
         cursor: pointer;
         box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
         transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
-        padding: 1.5rem;
+        padding: 1rem;
         display: flex;
         align-items: center;
         justify-content: center;
-        min-width: 80px;
-        min-height: 80px;
+        min-width: 140px;
+        min-height: 140px;
     }
 
-    .flecha-navegacion:hover {
+    .boton-flecha:hover {
         background: var(--fondo-botones-hover, #d1a700);
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
     }
 
-    .flecha-navegacion:active {
+    .boton-flecha:active {
         transform: translateY(0);
     }
 
-    .flecha-navegacion:focus {
+    .boton-flecha:focus {
         outline: var(--borde-botones, 4px solid #000000);
         background: var(--fondo-botones-hover, #d1a700);
         outline-offset: 7px;
     }
 
-    .flecha-navegacion svg {
+    .boton-flecha svg {
         width: calc(var(--font-size-base,1rem)*6);
         height: calc(var(--font-size-base,1rem)*6);
         pointer-events: none;
     }
 
     .tarjeta-logro {
-        background: var(--bg, white);
-        border: 2px solid var(--icono-color-borde, #000000);
-        border-radius: 8px;
-        padding: calc(var(--spacing-base, 1rem) * 1.5);
+        background: var(--surface, white); /* usar variable de tema para soportar modo oscuro */
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s, box-shadow 0.3s;
+        flex: 1;
+        min-width: 40vw; /* más ancho para más texto horizontal */
+        max-width: 60vw; /* permitir crecer en pantallas grandes */
+        padding: calc(var(--spacing-base, 1rem) * 0.75); /* menos padding vertical */
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: calc(var(--spacing-base, 1rem) * 0.75);
-        box-shadow: var(--sombra-botones, 0 8px 24px rgba(0, 0, 0, 0.2));
-        min-width: calc(var(--font-size-base, 1rem) * 12.5);
-        min-height: calc(var(--font-size-base, 1rem) * 12.5);
+        gap: calc(var(--spacing-base, 1rem) * 0.5); /* reducir gap para menor altura */
+        border: 2px solid var(--icono-color-borde, #000000);
+        min-height: calc(var(--font-size-base, 1rem) * 8); /* menos altura */
     }
-    .tarjeta-logro:focus {
-        border: 5px solid var(--icono-color-borde, #000000)
+    .tarjeta-logro:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
     }
+
+    :global([data-theme="dark"]) .tarjeta-logro {
+        background: var(--bg, #0a0a0a); /* fondo oscuro en modo dark */
+        border-color: var(--icono-color-borde, #f5f5f5); /* borde claro en dark */
+        box-shadow: 0 4px 16px rgba(255, 255, 255, 0.03);
+    }
+
+@media (max-width: 768px) {
+    .navegacion-logros {
+        padding: 0 1rem;
+        gap: 1rem;
+    }
+
+    .boton-flecha {
+        min-width: 60px;
+        min-height: 60px;
+        padding: 1rem;
+    }
+
+    .boton-flecha svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .tarjeta-logro {
+        max-width: 90%;
+        min-width: auto;
+        padding: calc(var(--spacing-base, 1rem) * 0.75);
+        min-height: calc(var(--font-size-base, 1rem) * 8);
+    }
+    .icono-logro {
+        font-size: calc(var(--font-size-base, 1rem) * 4);
+    }
+}
+
+@media (max-width: 480px) {
+    .navegacion-logros { gap: 0.5rem; }
+    .boton-flecha { min-width: 50px; min-height: 50px; padding: 0.75rem; }
+    .boton-flecha svg { width: 24px; height: 24px; }
+}
+
+/* Animaciones de entrada para simular movimiento de carrusel */
+@keyframes slideInFromRight {
+	from { transform: translateX(30%); opacity: 0; }
+	to   { transform: translateX(0);   opacity: 1; }
+}
+
+@keyframes slideInFromLeft {
+	from { transform: translateX(-30%); opacity: 0; }
+	to   { transform: translateX(0);     opacity: 1; }
+}
+
+.slide-right {
+	animation: slideInFromRight 700ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.slide-left {
+	animation: slideInFromLeft 700ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* Respetar preferencias de reducción de movimiento */
+@media (prefers-reduced-motion: reduce) {
+	.slide-right,
+	.slide-left {
+		animation: none !important;
+		transition: none !important;
+	}
+}
 
     .icono-logro {
         font-size: calc(var(--font-size-base, 1rem) * 6);
@@ -475,7 +571,7 @@
         margin: 0;
         font-size: calc(var(--font-size-base, 1rem) * 1.5);
         font-weight: 500;
-        color: var(--color-texto, #666);
+        color: var(--color-texto, #333); /* usar mismo color que el título del logro */
         letter-spacing: calc(var(--spacing-base, 1rem) * 0.02);
     }
 

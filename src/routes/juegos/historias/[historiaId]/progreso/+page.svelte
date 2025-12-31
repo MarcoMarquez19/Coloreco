@@ -394,7 +394,7 @@
 	}
 
 	.flecha-conectora {
-		color: var(--icono-color-relleno, #333);
+		color: var(--icono-color-borde, var(--color-texto, #333));
 		display: flex;
 		align-items: center;
 	}
