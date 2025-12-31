@@ -69,7 +69,7 @@
 		if (historias.length > 0) {
 			const historiaActual = historias[indiceActual];
 			// Navegar a la página de progreso de la historia seleccionada
-			goto(`/historias/${historiaActual.historiaId}/progreso`);
+			goto(`/juegos/historias/${historiaActual.historiaId}/progreso`);
 		}
 	}
 

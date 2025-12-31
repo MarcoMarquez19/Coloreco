@@ -15,7 +15,7 @@
     }
 
     function irAModoHistorias() {
-        goto('/historias/seleccionar-historia');
+        goto('/juegos/historias/seleccionar-historia');
     }
 
 	let contenedorMenuJuegosRef: HTMLElement | null = null;

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { applyPictograms } from '$lib/logic/pictograms';
+	import { applyPictograms } from '$lib/juegos/modos/historias/pictograms';
 
 	export let text: string = '';
 	export let showIcons: boolean = true;
