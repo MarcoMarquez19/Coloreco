@@ -3,6 +3,7 @@
 	import Instrucciones from '$lib/components/modales/Instrucciones.svelte';
 	import IconoInstrucciones from '$lib/components/iconos/IconoInstrucciones.svelte';
 	import { onMount } from 'svelte';
+	import { fly } from 'svelte/transition';
 	import { goto } from '$app/navigation';
 	import { obtenerArtistaActivo } from '$lib/db/artistas.service';
 	import * as logicaHistorias from '$lib/stores/historias';
@@ -29,8 +30,10 @@
 			}
 
 			historias = await logicaHistorias.obtenerHistoriasConProgreso(artista.id);
-			cargando = false;
-		} catch (err) {
+				cargando = false;
+				// Informar al layout para que reprograme la reaplicación de modos según su política centralizada
+				window.dispatchEvent(new CustomEvent('content-updated'));
+			} catch (err) {
 			console.error('Error al cargar historias:', err);
 			error = err instanceof Error ? err.message : 'Error desconocido';
 			cargando = false;
@@ -80,6 +83,13 @@
 		if (animTimer) { clearTimeout(animTimer); animTimer = null; }
 		indiceActual = (indiceActual - 1 + historias.length) % historias.length;
 		animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
+		// Solicitar a layout reaplicar modos (layout manejará los delays)
+		window.dispatchEvent(new CustomEvent('content-updated', { detail: { animationDuration: CAROUSEL_ANIM_DURATION } }));
+		// Enfocar el título tras la animación para que lectores/estados se re-apliquen
+		setTimeout(() => {
+			const el = document.getElementById('titulo-historia-' + indiceActual) as HTMLElement | null;
+			if (el) el.focus();
+		}, CAROUSEL_ANIM_DURATION / 2);
 	}
 
 	function navegarSiguiente() {
@@ -89,6 +99,13 @@
 		if (animTimer) { clearTimeout(animTimer); animTimer = null; }
 		indiceActual = (indiceActual + 1) % historias.length;
 		animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
+		// Solicitar a layout reaplicar modos (layout manejará los delays)
+		window.dispatchEvent(new CustomEvent('content-updated', { detail: { animationDuration: CAROUSEL_ANIM_DURATION } }));
+		// Enfocar el título tras la animación para que lectores/estados se re-apliquen
+		setTimeout(() => {
+			const el = document.getElementById('titulo-historia-' + indiceActual) as HTMLElement | null;
+			if (el) el.focus();
+		}, CAROUSEL_ANIM_DURATION / 2);
 	}
 
 	function manejarTeclaPresionada(event: KeyboardEvent) {
@@ -176,9 +193,11 @@
 		</div>
 	{:else}
 		<!-- Indicador de historia actual -->
+		{#key indiceActual}
 		<div class="indicador-historia" data-magnificable>
 			<p data-magnificable data-readable>Historia {indiceActual + 1} de {historias.length}</p>
 		</div>
+		{/key}
 
 		<!-- Carrusel de historias -->
 		<div class="carrusel-contenedor" data-magnificable>
@@ -205,27 +224,29 @@
 
 			<!-- Historia actual -->
 			{#if historiaActual}
-		<article class={"tarjeta-historia-carrusel " + animClass} aria-label={`Historia ${historiaActual.titulo}, Progreso ${logicaHistorias.calcularCapitulosCompletados(historiaActual)} de ${historiaActual.totalCapitulos} capítulos`} data-magnificable>
-			<div class="contenedor-historia-carrusel" role="group" aria-labelledby="titulo-historia-{indiceActual}" aria-describedby="progreso-historia-{indiceActual}" data-magnificable>
-				<div class="preview" data-magnificable>
-					<div class="placeholder-preview">
-					<img src={historiaActual!.imagen} alt={`Imagen de la historia ${historiaActual!.titulo}`} />
+			{#key indiceActual}
+			<article class={"tarjeta-historia-carrusel " + animClass} aria-label={`Historia ${historiaActual.titulo}, Progreso ${logicaHistorias.calcularCapitulosCompletados(historiaActual)} de ${historiaActual.totalCapitulos} capítulos`} data-magnificable in:fly={{ x: animClass === 'slide-right' ? 300 : animClass === 'slide-left' ? -300 : 0, duration: CAROUSEL_ANIM_DURATION }}>
+				<div class="contenedor-historia-carrusel" role="group" aria-labelledby={"titulo-historia-" + indiceActual} aria-describedby={"progreso-historia-" + indiceActual} data-magnificable>
+					<div class="preview" data-magnificable>
+						<div class="placeholder-preview">
+						<img src={historiaActual!.imagen} alt={`Imagen de la historia ${historiaActual!.titulo}`} />
+						</div>
 					</div>
+					<h2 id={"titulo-historia-" + indiceActual} class="nombre-historia" tabindex="-1" data-magnificable data-readable>{historiaActual.titulo}</h2>
+					<p id={"progreso-historia-" + indiceActual} class="progreso-historia" data-magnificable data-readable>Progreso: {logicaHistorias.calcularCapitulosCompletados(historiaActual)}/{historiaActual.totalCapitulos}</p>
+					
+					<button class="boton-selección"
+						aria-label={`Jugar la historia ${historiaActual.titulo}`}
+						title="Jugar la historia seleccionada"
+						onclick={verHistoria}
+						data-magnificable
+						data-readable
+					>
+						Jugar
+					</button>
 				</div>
-				<h2 id="titulo-historia-{indiceActual}" class="nombre-historia" data-magnificable data-readable>{historiaActual.titulo}</h2>
-				<p id="progreso-historia-{indiceActual}" class="progreso-historia" data-magnificable data-readable>Progreso: {logicaHistorias.calcularCapitulosCompletados(historiaActual)}/{historiaActual.totalCapitulos}</p>
-				
-				<button class="boton-selección"
-					aria-label={`Jugar la historia ${historiaActual.titulo}`}
-					title="Jugar la historia seleccionada"
-					onclick={verHistoria}
-					data-magnificable
-					data-readable
-				>
-					Jugar
-				</button>
-			</div>
 			</article>
+			{/key}
 			{/if}
 
 			<!-- Botón flecha derecha -->

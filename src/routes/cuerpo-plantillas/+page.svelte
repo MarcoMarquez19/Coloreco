@@ -61,6 +61,8 @@
 		if (animTimer) { clearTimeout(animTimer); animTimer = null; }
 		indiceActual = prevIndex;
 		animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
+		// Solicitar a layout reaplicar modos después del cambio del carrusel
+		window.dispatchEvent(new CustomEvent('content-updated', { detail: { animationDuration: CAROUSEL_ANIM_DURATION } }));
 	}
 
 	function navegarSiguiente() {
@@ -71,6 +73,8 @@
 		if (animTimer) { clearTimeout(animTimer); animTimer = null; }
 		indiceActual = nextIndex;
 		animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
+		// Solicitar a layout reaplicar modos después del cambio del carrusel
+		window.dispatchEvent(new CustomEvent('content-updated', { detail: { animationDuration: CAROUSEL_ANIM_DURATION } }));
 	}
 
 	function manejarTeclaPresionada(event: KeyboardEvent) {
@@ -128,9 +132,11 @@
 		</div>
 	{:else}
 		<!-- Indicador de escena actual -->
+		{#key indiceActual}
 		<div class="indicador-escena">
 			<p>Escena {indiceActual + 1} de {$escenasFiltradas.length}</p>
 		</div>
+		{/key}
 
 		<!-- Carrusel de escenas -->
 		<div class="carrusel-contenedor">

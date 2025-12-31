@@ -147,7 +147,7 @@
 		}
 	});
 
-	// Listener para procesar modales cuando se montan
+	// Listener para procesar modales cuando se montan y para reaplicar cuando el contenido cambia
 	onMount(() => {
 		if (!browser) return;
 		
@@ -158,11 +158,31 @@
 				}
 			}, 100);
 		};
+
+		const handleContentUpdated = (e: Event) => {
+			const detail = (e as CustomEvent)?.detail || {};
+			// Pequeña espera para que Svelte remonte el DOM
+			setTimeout(() => {
+				if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+					applyAccessibilityModes();
+				}
+			}, 80);
+
+			// Programar una segunda reaplicación tras la animación si se especifica, o usar un fallback
+			const animationDuration = typeof detail.animationDuration === 'number' ? detail.animationDuration : 500;
+			setTimeout(() => {
+				if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+					applyAccessibilityModes();
+				}
+			}, animationDuration + 60);
+		};
 		
 		window.addEventListener('modal-mounted', handleModalMounted);
+		window.addEventListener('content-updated', handleContentUpdated as EventListener);
 		
 		return () => {
 			window.removeEventListener('modal-mounted', handleModalMounted);
+			window.removeEventListener('content-updated', handleContentUpdated as EventListener);
 		};
 	});
 
@@ -202,6 +222,9 @@
 		setTimeout(() => applyAccessibilityModes(), 100);
 	});
 
+	// Mapa para observers que limpian data-original-html si el DOM cambia
+	const originalObservers = new WeakMap<Element, MutationObserver>();
+
 	// Efecto para reaplicar los modos cuando cambia la página
 	$effect(() => {
 		// Escuchar cambios en la ruta
@@ -217,14 +240,19 @@
 
 	// Función para aplicar todos los modos activos de forma combinada
 	async function applyAccessibilityModes() {
-		if (!mainEl) return;
-		
-		// Restaurar primero
+		// Procesar tanto el main como los modales montados (los modales se mueven al <body>)
+		const modalRoots = Array.from(document.querySelectorAll('.modal')) as Element[];
+		if (!mainEl && modalRoots.length === 0) return;
+
+		// Restaurar primero en todo el documento
 		restoreOriginalText();
-		
-		const elements = mainEl.querySelectorAll('h1, h2, h3, h4, h5, h6, .seccion-titulo, p, button:not(.control-button):not(.boton-volver):not(.boton-configuracion):not(.switch-toggle), label:not(.switch-knob), .switch-label, span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-highlight):not(.switch-knob):not(.control-valor), small, div.control-ayuda, .control-label span');
-		
-		// Importar funciones de rima si es necesario
+
+		// Preparar raíces a procesar (main primero, luego modales)
+		const roots: Element[] = [];
+		if (mainEl) roots.push(mainEl);
+		modalRoots.forEach(m => roots.push(m));
+
+		// Importar funciones de rima si es necesario (una sola vez)
 		let detectRhymes: ((text: string) => any[]) | undefined;
 		let applyRhymeHighlight: ((text: string, patterns: any[], backgroundColor?: string) => string) | undefined;
 		let splitIntoSyllables: ((word: string) => string[]) | undefined;
@@ -234,86 +262,127 @@
 			applyRhymeHighlight = rhymeModule.applyRhymeHighlight;
 			splitIntoSyllables = rhymeModule.splitIntoSyllables;
 		}
-		
-		elements.forEach((element) => {
 
-			// Evitar procesar elementos ya procesados
-			if (element.querySelector('.bionic-highlight') || element.querySelector('.rhyme-highlight')) return;
-			
-			const text = element.textContent?.trim();
+		// Selector de elementos a procesar dentro de cada raíz
+		const selector = 'h1, h2, h3, h4, h5, h6, .seccion-titulo, p, button:not(.control-button):not(.boton-volver):not(.boton-configuracion):not(.switch-toggle), label:not(.switch-knob), .switch-label, span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-highlight):not(.switch-knob):not(.control-valor), small, div.control-ayuda, .control-label span';
+
+		roots.forEach((root) => {
+			const elements = root.querySelectorAll(selector);
+
+			elements.forEach((element) => {
+
+				// Evitar procesar elementos ya procesados
+				if (element.querySelector('.bionic-highlight') || element.querySelector('.rhyme-highlight')) return;
+				
+let text = element.textContent?.trim();
 			if (!text) return;
 			
-			// Guardar HTML original para poder restaurarlo exactamente
-			element.setAttribute('data-original-html', (element as HTMLElement).innerHTML);
-			
-			let processedHTML = text;
-			
-			// Aplicar modo rima primero si está activo
-			if ($configuraciones.rhymeMode && detectRhymes && applyRhymeHighlight) {
-				const patterns = detectRhymes(text);
-				const backgroundColor = $configuraciones.modoNoche 
-					? ($configuraciones.modoInverso ? '#ffffff' : '#121212')
-					: '#ffffff';
-				processedHTML = applyRhymeHighlight(text, patterns, backgroundColor);
+			// Si el elemento está dentro del carrusel, no reemplazamos todo el innerHTML
+			// (evita borrar imágenes u otros nodos no-texto). En su lugar, solo eliminamos
+			// spans de resaltado previos para evitar contenido obsoleto.
+			if ((element as Element).closest('.carrusel-contenedor')) {
+				const highlights = element.querySelectorAll('.bionic-highlight, .bionic-rest, .rhyme-highlight');
+				if (highlights.length) {
+					highlights.forEach(h => {
+						const txt = h.textContent || '';
+						h.replaceWith(document.createTextNode(txt));
+					});
+				}
+				text = element.textContent?.trim() || '';
+				if (!text) return;
 			}
-			
-			// Aplicar modo biónico después si está activo
-			if ($configuraciones.bionicMode) {
-				// Si ya hay HTML del modo rima, procesar respetando los spans de rima
-				if ($configuraciones.rhymeMode) {
-					const tempDiv = document.createElement('div');
-					tempDiv.innerHTML = processedHTML;
-					
-					// Usar función de separación de sílabas importada
-					if (!splitIntoSyllables) return;
-					
-					// Procesar todos los textos, tanto dentro como fuera de spans de rima
-					const processTextNode = (node: Node) => {
-						if (node.nodeType === Node.TEXT_NODE) {
-							const text = node.textContent || '';
-							if (!text.trim()) return;
-							
-							// Dividir en palabras
-							const words = text.split(/(\s+)/);
-							const container = document.createElement('span');
-							
-							words.forEach(word => {
-								if (/^\s+$/.test(word)) {
-									// Es espacio, mantenerlo
-									container.appendChild(document.createTextNode(word));
-								} else if (word.length > 0) {
-									// Es palabra, aplicar formato biónico por sílabas
-									const syllables = splitIntoSyllables(word);
-									
-									if (syllables.length === 0) {
+				
+// Guardar HTML original para poder restaurarlo exactamente (solo si no existe ya)
+			if (!element.hasAttribute('data-original-html')) {
+				element.setAttribute('data-original-html', (element as HTMLElement).innerHTML);
+				// Attach a MutationObserver shortly after so we don't catch our own changes
+				setTimeout(() => {
+					if (originalObservers.has(element)) return;
+					try {
+						const obs = new MutationObserver(() => {
+							// Si the element is updated by another process (e.g. Svelte re-render),
+							// remove the stored original HTML so we don't restore stale content.
+							element.removeAttribute('data-original-html');
+							const o = originalObservers.get(element);
+							if (o) { o.disconnect(); }
+							originalObservers.delete(element);
+						});
+						obs.observe(element, { childList: true, subtree: true, characterData: true });
+						originalObservers.set(element, obs);
+					} catch (e) {
+						// ignore observer failures
+					}
+				}, 80);
+			}
+				
+				let processedHTML = text;
+				
+				// Aplicar modo rima primero si está activo
+				if ($configuraciones.rhymeMode && detectRhymes && applyRhymeHighlight) {
+					const patterns = detectRhymes(text);
+					const backgroundColor = $configuraciones.modoNoche 
+						? ($configuraciones.modoInverso ? '#ffffff' : '#121212')
+						: '#ffffff';
+					processedHTML = applyRhymeHighlight(text, patterns, backgroundColor);
+				}
+				
+				// Aplicar modo biónico después si está activo
+				if ($configuraciones.bionicMode) {
+					// Si ya hay HTML del modo rima, procesar respetando los spans de rima
+					if ($configuraciones.rhymeMode) {
+						const tempDiv = document.createElement('div');
+						tempDiv.innerHTML = processedHTML;
+						
+						// Usar función de separación de sílabas importada
+						if (!splitIntoSyllables) return;
+						
+						// Procesar todos los textos, tanto dentro como fuera de spans de rima
+						const processTextNode = (node: Node) => {
+							if (node.nodeType === Node.TEXT_NODE) {
+								const text = node.textContent || '';
+								if (!text.trim()) return;
+								
+								// Dividir en palabras
+								const words = text.split(/(\s+)/);
+								const container = document.createElement('span');
+								
+								words.forEach(word => {
+									if (/^\s+$/.test(word)) {
+										// Es espacio, mantenerlo
 										container.appendChild(document.createTextNode(word));
-									} else if (syllables.length === 1 && word.length <= 3) {
-										// Palabra corta, resaltar completa
-										const span = document.createElement('span');
-										span.className = 'bionic-highlight';
-										span.style.cssText = 'color: inherit; font-weight: 700;';
-										span.textContent = word;
-										container.appendChild(span);
-									} else {
-										// Resaltar primera sílaba
-										const firstSyllable = syllables[0];
-										const rest = word.slice(firstSyllable.length);
+									} else if (word.length > 0) {
+										// Es palabra, aplicar formato biónico por sílabas
+										const syllables = splitIntoSyllables(word);
 										
-										const highlightSpan = document.createElement('span');
-										highlightSpan.className = 'bionic-highlight';
-										highlightSpan.style.cssText = 'color: inherit; font-weight: 700;';
-										highlightSpan.textContent = firstSyllable;
-										container.appendChild(highlightSpan);
-										
-										if (rest) {
-											const restSpan = document.createElement('span');
-											restSpan.className = 'bionic-rest';
-											restSpan.style.cssText = 'color: inherit; font-weight: 400;';
-											restSpan.textContent = rest;
-											container.appendChild(restSpan);
+										if (syllables.length === 0) {
+											container.appendChild(document.createTextNode(word));
+										} else if (syllables.length === 1 && word.length <= 3) {
+											// Palabra corta, resaltar completa
+											const span = document.createElement('span');
+											span.className = 'bionic-highlight';
+											span.style.cssText = 'color: inherit; font-weight: 700;';
+											span.textContent = word;
+											container.appendChild(span);
+										} else {
+											// Resaltar primera sílaba
+											const firstSyllable = syllables[0];
+											const rest = word.slice(firstSyllable.length);
+											
+											const highlightSpan = document.createElement('span');
+											highlightSpan.className = 'bionic-highlight';
+											highlightSpan.style.cssText = 'color: inherit; font-weight: 700;';
+											highlightSpan.textContent = firstSyllable;
+											container.appendChild(highlightSpan);
+											
+											if (rest) {
+												const restSpan = document.createElement('span');
+												restSpan.className = 'bionic-rest';
+												restSpan.style.cssText = 'color: inherit; font-weight: 400;';
+												restSpan.textContent = rest;
+												container.appendChild(restSpan);
+											}
 										}
 									}
-								}
 							});
 							
 							if (node.parentNode) {
@@ -348,12 +417,12 @@
 							return word;
 						} else if (syllables.length === 1 && word.length <= 3) {
 							// Palabra corta, resaltar completa
-							return `<span class="bionic-highlight" style="font-weight: 700;">${word}</span>`;
+							return `<span class=\"bionic-highlight\" style=\"font-weight: 700;\">${word}</span>`;
 						} else {
 							// Resaltar primera sílaba
 							const firstSyllable = syllables[0];
 							const rest = word.slice(firstSyllable.length);
-							return `<span class="bionic-highlight" style="font-weight: 700;">${firstSyllable}</span><span class="bionic-rest" style="font-weight: 400;">${rest}</span>`;
+							return `<span class=\"bionic-highlight\" style=\"font-weight: 700;\">${firstSyllable}</span><span class=\"bionic-rest\" style=\"font-weight: 400;\">${rest}</span>`;
 						}
 					});
 					
@@ -414,18 +483,46 @@
 
 			Array.from(element.childNodes).forEach(processNode);
 		});
+		});
 	}
 
 	// Función para restaurar texto original
 	function restoreOriginalText() {
-		if (!mainEl) return;
-		
-		const elements = mainEl.querySelectorAll('[data-original-html]');
+		// Restaurar en todo el documento (incluye modales que puedan tener data-original-html)
+		const elements = document.querySelectorAll('[data-original-html]');
 		elements.forEach((element) => {
 			const originalHtml = element.getAttribute('data-original-html');
-			if (originalHtml !== null) {
-				(element as HTMLElement).innerHTML = originalHtml;
+			if (originalHtml === null) return;
+			const el = element as HTMLElement;
+			// Si el elemento contiene highlights, restauramos al original guardado
+			const hasHighlight = !!el.querySelector('.bionic-highlight, .rhyme-highlight');
+			if (hasHighlight) {
+				el.innerHTML = originalHtml;
 				element.removeAttribute('data-original-html');
+				// Disconnect observer if exists
+				const o = originalObservers.get(element);
+				if (o) {
+					o.disconnect();
+					originalObservers.delete(element);
+				}
+				return;
+			}
+
+			// Si no hay highlights pero el DOM cambió desde que guardamos el original,
+			// actualizamos el 'data-original-html' con el contenido actual para que
+			// futuras restauraciones reflejen el nuevo estado del template y no
+			// sobrescriban cambios dinámicos (p.ej. indicador 'Historia X de Y').
+			if (el.innerHTML !== originalHtml) {
+				element.setAttribute('data-original-html', el.innerHTML);
+				return;
+			}
+
+			// Si el contenido coincide con el original y no hay highlights, limpiamos.
+			element.removeAttribute('data-original-html');
+			const o = originalObservers.get(element);
+			if (o) {
+				o.disconnect();
+				originalObservers.delete(element);
 			}
 		});
 	}

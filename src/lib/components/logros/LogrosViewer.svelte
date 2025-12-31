@@ -47,6 +47,8 @@
         if (animTimer) { clearTimeout(animTimer); animTimer = null; }
         logroActualIndex = prevIndex;
         animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
+        // Solicitar a layout que reprograme la reaplicación de modos
+        window.dispatchEvent(new CustomEvent('content-updated', { detail: { animationDuration: CAROUSEL_ANIM_DURATION } }));
     }
 
     function logroSiguiente() {
@@ -56,6 +58,8 @@
         if (animTimer) { clearTimeout(animTimer); animTimer = null; }
         logroActualIndex = nextIndex;
         animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
+        // Solicitar a layout que reprograme la reaplicación de modos
+        window.dispatchEvent(new CustomEvent('content-updated', { detail: { animationDuration: CAROUSEL_ANIM_DURATION } }));
     }
 
     // Cargar logros del artista
@@ -104,6 +108,8 @@
             console.error('Error cargando logros:', error);
         } finally {
             cargando = false;
+            // Informar al layout para que reprograme la reaplicación de modos
+            window.dispatchEvent(new CustomEvent('content-updated'));
         }
     }
 
@@ -207,7 +213,7 @@
             <p>No se pudieron cargar los logros. Por favor, recarga la página.</p>
         </div>
     {:else}
-    <div class="navegacion-logros">
+    <div class="navegacion-logros carrusel-contenedor">
         <button 
             class="boton-flecha boton-izquierda" 
             onclick={logroAnterior}
