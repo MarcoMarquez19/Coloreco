@@ -40,7 +40,7 @@
 	let capitulo = $state<Capitulo | null>(null);
 	let cargando = $state<boolean>(true);
 	let error = $state<string | null>(null);
-	let opcionSeleccionadaIndex = $state<number>(0);
+	let opcionSeleccionadaIndex = $state<number>(-1);
 	let respuestaEnviada = $state<boolean>(false);
 	let opcionCorrecta = $state<boolean>(false);
 	let feedbackMostrado = $state<string>('');
@@ -101,6 +101,7 @@
 				logroDesbloqueadoActual = logro;
 				mostrarModalLogro = true;
 			}
+			logrosStore.limpiarNotificaciones();
 		});
 		
 		// Interceptar el botón de volver del navegador/layout para ir a progreso
@@ -122,8 +123,9 @@
 	});
 
 	async function enviarRespuesta() {
-		if (!capitulo || respuestaEnviada || !artistaId) return;
+		if (!capitulo || respuestaEnviada || !artistaId || opcionSeleccionadaIndex < 0) return;
 		const opcionElegida = capitulo.pregunta.opciones[opcionSeleccionadaIndex];
+		if (!opcionElegida) return;
 		respuestaEnviada = true;
 		opcionCorrecta = opcionElegida.esCorrecta;
 		feedbackMostrado = opcionElegida.feedback;
@@ -155,9 +157,11 @@
 			historiasCompletadas
 		);
 		
-		// Si la respuesta es incorrecta, resetear racha
+		// Si la respuesta es incorrecta, resetear racha (por artista)
 		if (!opcionCorrecta) {
-			logrosStore.resetearRespuestasConsecutivas();
+			if (typeof artistaId === 'number') {
+				logrosStore.resetearRespuestasConsecutivas(artistaId);
+			}
 		}
 	}
 
@@ -179,6 +183,7 @@
 			respuestaEnviada = false;
 			opcionCorrecta = false;
 			feedbackMostrado = '';
+			opcionSeleccionadaIndex = -1;
 		}
 	}
 

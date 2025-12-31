@@ -9,6 +9,7 @@ import { getDB } from './database';
 import { browser } from '$app/environment';
 import type { Artista, Sesion } from './schemas'; 
 import { cargarAjustesDelArtista, guardarAjustesDesdeUI } from './ajustes.service';
+import { cargarLogrosArtista } from '$lib/stores/logros';
 
 // ============================================================================
 // GESTIÓN DE ARTISTAS
@@ -171,6 +172,13 @@ export async function cambiarArtista(artistaId: number): Promise<void> {
 
 	// Cargar y aplicar ajustes del artista a la UI
 	await cargarAjustesDelArtista(artistaId);
+
+	// Cargar logros para este artista (asegura que contadores/rachas por artista se inicialicen)
+	try {
+		await cargarLogrosArtista(artistaId);
+	} catch (e) {
+		console.error('[ArtistasService] Error cargando logros al cambiar de artista:', e);
+	}
 
 	console.log(`[ArtistasService] Cambiado a artista: ${artista.nombre} (ID: ${artistaId})`);
 }

@@ -43,6 +43,8 @@ export interface Artista {
 	fechaCreacion: Date;
 	/** Última vez que el artista estuvo activo */
 	ultimaActividad: Date;
+	/** Racha de respuestas correctas consecutivas en Historias (persistente) */
+	rachaHistorias?: number;
 }
 
 /**
