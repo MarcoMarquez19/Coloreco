@@ -43,8 +43,6 @@ export interface Artista {
 	fechaCreacion: Date;
 	/** Última vez que el artista estuvo activo */
 	ultimaActividad: Date;
-	/** Puntuación total acumulada por logros */
-	puntuacion: number;
 }
 
 /**
@@ -128,6 +126,34 @@ export interface Ajustes {
 // ============================================================================
 
 /**
+ * Códigos únicos de logros de historias
+ */
+export const LOGROS_HISTORIAS = {
+	GRAN_LECTOR: 'GRAN_LECTOR',
+	LECTOR_ALOCADO: 'LECTOR_ALOCADO',
+	MENTE_BRILLANTE: 'MENTE_BRILLANTE',
+	MAESTRO_HISTORIAS: 'MAESTRO_HISTORIAS'
+} as const;
+
+/**
+ * Códigos únicos de logros de cuerpo humano
+ */
+export const LOGROS_CUERPO_HUMANO = {
+	PRIMERA_PARTE: 'PRIMERA_PARTE',
+	ANATOMISTA_NOVATO: 'ANATOMISTA_NOVATO',
+	PRECISION_PERFECTA: 'PRECISION_PERFECTA',
+	MAESTRO_ANATOMIA: 'MAESTRO_ANATOMIA',
+	EXPERTO_ORGANOS: 'EXPERTO_ORGANOS'
+} as const;
+
+/**
+ * Tipo para códigos de logros
+ */
+export type CodigoLogro = 
+	| typeof LOGROS_HISTORIAS[keyof typeof LOGROS_HISTORIAS]
+	| typeof LOGROS_CUERPO_HUMANO[keyof typeof LOGROS_CUERPO_HUMANO];
+
+/**
  * Definición de un logro en el catálogo
  * Clave primaria: id (UUID)
  */
@@ -140,8 +166,6 @@ export interface LogroDefinicion {
 	nombre: string;
 	/** Descripción del logro */
 	descripcion: string;
-	/** Puntos otorgados al desbloquear */
-	puntos: number;
 	/** Modo específico del logro (opcional, si aplica a un modo) */
 	modo?: Modo;
 	/** ID de la escena específica (opcional, si el logro está asociado a una escena) */
@@ -172,21 +196,15 @@ export interface LogroArtista {
 }
 
 /**
- * Umbral de medalla basado en puntuación
- * Clave primaria: id (UUID)
+ * SISTEMA DE RANGOS GENERALES
+ * 
+ * Los rangos se calculan automáticamente según la cantidad de logros desbloqueados:
+ * - Bronce: 1-3 logros desbloqueados (color: #CD7F32)
+ * - Plata: 4-7 logros desbloqueados (color: #C0C0C0)
+ * - Oro: 8+ logros desbloqueados (color: #FFD700)
+ * 
+ * No se usa una tabla de base de datos, se calcula dinámicamente.
  */
-export interface UmbralMedalla {
-	/** UUID único del registro */
-	id: string;
-	/** Nombre de la medalla (ej: 'Bronce', 'Plata', 'Oro') */
-	medalla: string;
-	/** Puntuación mínima para obtener la medalla */
-	minPuntos: number;
-	/** Puntuación máxima de la medalla */
-	maxPuntos: number;
-	/** Color representativo (hex) */
-	color?: string;
-}
 
 // ============================================================================
 // GALERÍA DE OBRAS
@@ -278,6 +296,10 @@ export interface EscenaCatalogo {
 	ruta: string;
 	/** Versión de la escena */
 	version: number;
+	/** Descripción de la escena */
+	descripcion?: string;
+	/** Etiqueta del svg accesible */
+	rutaAccesibilidad?: string;
 }
 
 // ============================================================================
@@ -300,10 +322,12 @@ export interface ProgresoCultureQuiz {
  * Campos específicos para el modo Human Body
  */
 export interface ProgresoHumanBody {
-	/** Partes del cuerpo ubicadas correctamente */
+	/** Partes del cuerpo ubicadas correctamente (acumulativo) */
 	partesUbicadasCorrectamente: number;
 	/** Número de errores cometidos */
 	errores: number;
+	/** IDs de escenas completadas (para contar escenas únicas) */
+	escenasCompletadas: string[];
 }
 
 /**
@@ -333,6 +357,55 @@ export interface Progreso {
 	cultureQuiz?: ProgresoCultureQuiz;
 	/** Datos específicos de Human Body */
 	humanBody?: ProgresoHumanBody;
+}
+
+// ============================================================================
+// SISTEMA DE HISTORIAS
+// ============================================================================
+
+/**
+ * Progreso de un capítulo individual
+ */
+export interface ProgresoCapitulo {
+	/** Número del capítulo (1, 2, 3...) */
+	numeroCapitulo: number;
+	/** Si el capítulo está desbloqueado para jugar */
+	desbloqueado: boolean;
+	/** Si el capítulo fue completado */
+	completado: boolean;
+	/** Fecha de desbloqueo (si aplica) */
+	fechaDesbloqueo?: Date;
+	/** Fecha de completado (si aplica) */
+	fechaCompletado?: Date;
+	/** Número de intentos realizados */
+	intentos: number;
+}
+
+/**
+ * Progreso de una historia completa para un artista
+ * Clave primaria: id (UUID)
+ */
+export interface ProgresoHistoria {
+	/** UUID único del registro */
+	id: string;
+	/** FK al artista */
+	artistaId: number;
+	/** ID de la historia (ej: 'cantuna', 'padre-almeida') */
+	historiaId: string;
+	/** Capítulos con su progreso */
+	capitulos: ProgresoCapitulo[];
+	/** Capítulo actual (último desbloqueado) */
+	capituloActual: number;
+	/** Número total de capítulos de la historia */
+	totalCapitulos: number;
+	/** Si la historia fue completada */
+	completada: boolean;
+	/** Fecha de inicio de la historia */
+	fechaInicio: Date;
+	/** Fecha de última actividad */
+	ultimaActividad: Date;
+	/** Fecha de completado (si aplica) */
+	fechaCompletado?: Date;
 }
 
 // ============================================================================

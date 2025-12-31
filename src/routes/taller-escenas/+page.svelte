@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fly } from 'svelte/transition';
 	import { goto } from '$app/navigation';
 	import { escenasStore, escenasFiltradas, cargando, error } from '$lib/stores/escenas';
 	import type { EscenaCatalogo } from '$lib/db/schemas';
@@ -46,29 +47,29 @@
 	});
 
     function verDescripcionEscena() {
-        //TODO: PONER LA PAGINA DE la descripción de la escena seleccionada
-		if ($escenasFiltradas.length > 0) {
-			const escenaActual = $escenasFiltradas[indiceActual];
-			console.log('Ver descripción de:', escenaActual);
-			// Aquí se implementará la navegación a la página de descripción
-		}
+		if ($escenasFiltradas.length === 0) return;
+		const escenaActual = $escenasFiltradas[indiceActual];
+		const destino = `/taller-escenas/descripcion/${encodeURIComponent(escenaActual.escenaId)}`;
+		goto(destino);
     }
 
 	function navegarAnterior() {
 		if ($escenasFiltradas.length === 0) return;
-		// aplicar clase de entrada desde la izquierda
+		// calcular índice previo y aplicar clase de entrada desde la izquierda
+		const prevIndex = ($escenasFiltradas.length === 0) ? 0 : (indiceActual - 1 + $escenasFiltradas.length) % $escenasFiltradas.length;
 		animClass = 'slide-left';
 		if (animTimer) { clearTimeout(animTimer); animTimer = null; }
-		indiceActual = (indiceActual - 1 + $escenasFiltradas.length) % $escenasFiltradas.length;
+		indiceActual = prevIndex;
 		animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
 	}
 
 	function navegarSiguiente() {
 		if ($escenasFiltradas.length === 0) return;
-		// aplicar clase de entrada desde la derecha
+		// calcular siguiente índice y aplicar clase de entrada desde la derecha
+		const nextIndex = ($escenasFiltradas.length === 0) ? 0 : (indiceActual + 1) % $escenasFiltradas.length;
 		animClass = 'slide-right';
 		if (animTimer) { clearTimeout(animTimer); animTimer = null; }
-		indiceActual = (indiceActual + 1) % $escenasFiltradas.length;
+		indiceActual = nextIndex;
 		animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
 	}
 
@@ -139,7 +140,7 @@
 				onclick={navegarAnterior}
 				aria-label="Escena anterior"
 				title="Navegar a la escena anterior (← tecla izquierda)"
-			>
+			> 
 				<svg 
 					xmlns="http://www.w3.org/2000/svg"
 					viewBox="0 0 24 24"
@@ -155,20 +156,22 @@
 
 			<!-- Escena actual -->
 			{#if escenaActual}
-			<article class={"tarjeta-escena-carrusel " + animClass}>
-				<button
-					class="contenedor-escena-carrusel"
-					aria-label={`Seleccionar escena ${escenaActual!.nombre}`}
-				>
-					<div class="preview">
-						<!-- TODO: PONER UN ARIA-LABEL CORRECTO PARA DESCRIBIRCADA ESCENA -->
-						<div class="placeholder-preview">
-							<img src={escenaActual!.ruta} alt={`Escena de ${escenaActual!.nombre}`} aria-label=""/>
-						</div>
-					</div>
-					<h2 class="nombre-escena">{escenaActual.nombre}</h2>
-				</button>
-			</article>
+				{#key indiceActual}
+				<article class={"tarjeta-escena-carrusel " + animClass} in:fly={{ x: animClass === 'slide-right' ? 300 : animClass === 'slide-left' ? -300 : 0, duration: CAROUSEL_ANIM_DURATION }}>
+						<button
+							class="contenedor-escena-carrusel"
+							aria-label={`Escena de ${escenaActual!.nombre}`}
+						>
+							<div class="preview">
+								<!-- TODO: PONER UN ARIA-LABEL CORRECTO PARA DESCRIBIRCADA ESCENA -->
+								<div class="placeholder-preview">
+									<img src={escenaActual!.ruta} alt={`Escena de ${escenaActual!.nombre}`}/>
+								</div>
+							</div>
+							<h2 class="nombre-escena">{escenaActual.nombre}</h2>
+						</button>
+					</article>
+				{/key}
 			{/if}
 
 			<!-- Botón flecha derecha -->
@@ -177,7 +180,7 @@
 				onclick={navegarSiguiente}
 				aria-label="Escena siguiente"
 				title="Navegar a la escena siguiente (→ tecla derecha)"
-			>
+			> 
 				<svg 
 					xmlns="http://www.w3.org/2000/svg"
 					viewBox="0 0 24 24"
@@ -310,7 +313,7 @@
 	.contenedor-escena-carrusel {
 		width: 100%;
 		border: none;
-		background: transparent;
+		background: var(--fondo-botones,"transparent");
 		cursor: pointer;
 		padding: 0;
 		text-align: center;
@@ -318,7 +321,6 @@
 
 	.preview {
 		width: 100%;
-		aspect-ratio: 4 / 3;
 		background: var(--color-fondo-preview, #e0e0e0);
 		display: flex;
 		align-items: center;
@@ -327,19 +329,24 @@
 
 	.placeholder-preview {
 		font-size: 6rem;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	.placeholder-preview img {
-		max-width: 100%;
-		max-height: 100%;
-		object-fit: contain;
+		width: 100%;
+		height: 100%;
+		object-fit:cover;
 	}
 
 	.nombre-escena {
 		padding: 1.5rem;
 		font-size: calc(var(--font-size-base,1rem)*1.5);
 		font-weight: 600;
-		color: var(--color-texto, #333);
+		color: var(--icono-color-relleno, #333);
 		margin: 0;
 		letter-spacing: 0.05em;
 	}

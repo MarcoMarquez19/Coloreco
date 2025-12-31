@@ -4,27 +4,13 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-
-	interface Capitulo {
-		id: number;
-		nombre: string;
-		imagen: string;
-		desbloqueado: boolean;
-	}
-
-	interface Historia {
-		historiaId: string;
-		titulo: string;
-		imagen: string;
-		progreso: number;
-		totalCapitulos: number;
-		version: number;
-		capitulos: Capitulo[];
-	}
+	import { obtenerArtistaActivo } from '$lib/db/artistas.service';
+	import * as logicaHistorias from '$lib/stores/historias';
+	import type { CapituloConProgreso } from '$lib/stores/historias';
 
 	let historiaId = $state<string>('');
 	let tituloHistoria = $state<string>('');
-	let capitulos = $state<Capitulo[]>([]);
+	let capitulos = $state<CapituloConProgreso[]>([]);
 	let cargando = $state<boolean>(true);
 	let error = $state<string | null>(null);
 	let capituloSeleccionadoIndex = $state<number>(0);
@@ -35,24 +21,46 @@
 	}
 
 	onMount(async () => {
-		// Cargar historias desde JSON
 		try {
-			const response = await fetch('/historias/historias.json');
-			if (!response.ok) {
-				throw new Error('Error al cargar las historias');
+			// Obtener el artista actual
+			const artista = await obtenerArtistaActivo();
+			if (!artista || !artista.id) {
+				error = 'No hay artista activo. Por favor, crea un perfil primero.';
+				cargando = false;
+				return;
 			}
-			const todasLasHistorias: Historia[] = await response.json();
+
+			historiaId = $page.params.historiaId ?? '';
+			if (!historiaId) {
+				error = 'ID de historia no válido';
+				cargando = false;
+				return;
+			}
 			
-			// Buscar la historia actual
-			const historiaActual = todasLasHistorias.find(h => h.historiaId === $page.params.historiaId);
+			// Cargar la historia desde el JSON
+			const historiaJSON = await logicaHistorias.cargarHistoriaJSON(historiaId);
 			
-			if (historiaActual) {
-				historiaId = historiaActual.historiaId;
-				tituloHistoria = historiaActual.titulo;
-				capitulos = historiaActual.capitulos;
-			} else {
+			if (!historiaJSON) {
 				error = 'Historia no encontrada';
+				cargando = false;
+				return;
 			}
+
+			// Combinar con el progreso de la BD
+			const historiaConProgreso = await logicaHistorias.combinarHistoriaConProgreso(
+				artista.id!,
+				historiaJSON
+			);
+
+			tituloHistoria = historiaConProgreso.titulo;
+			capitulos = historiaConProgreso.capitulos;
+
+			// Seleccionar el primer capítulo desbloqueado
+			const primerDesbloqueado = capitulos.findIndex(c => c.desbloqueado);
+			if (primerDesbloqueado !== -1) {
+				capituloSeleccionadoIndex = primerDesbloqueado;
+			}
+
 			cargando = false;
 		} catch (err) {
 			console.error('Error al cargar historia:', err);
@@ -78,7 +86,7 @@
 		};
 	});
 
-	function seleccionarCapitulo(capitulo: Capitulo) {
+	function seleccionarCapitulo(capitulo: CapituloConProgreso) {
 		if (capitulo.desbloqueado) {
 			goto(`/historias/${historiaId}/${capitulo.id}`);
 		}

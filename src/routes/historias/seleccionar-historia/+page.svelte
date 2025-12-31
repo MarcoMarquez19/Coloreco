@@ -4,18 +4,11 @@
 	import IconoInstrucciones from '$lib/components/iconos/IconoInstrucciones.svelte';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { obtenerArtistaActivo } from '$lib/db/artistas.service';
+	import * as logicaHistorias from '$lib/stores/historias';
+	import type { HistoriaConProgreso } from '$lib/stores/historias';
 
-	// Sistema de historias
-	interface Historia {
-		historiaId: string;
-		titulo: string;
-		imagen: string;
-		progreso: number;
-		totalCapitulos: number;
-		version: number;
-	}
-
-	let historias = $state<Historia[]>([]);
+	let historias = $state<HistoriaConProgreso[]>([]);
 	let cargando = $state<boolean>(true);
 	let error = $state<string | null>(null);
 	let indiceActual = $state<number>(0);
@@ -26,13 +19,16 @@
 	}
 
 	onMount(async () => {
-		// Cargar historias desde JSON estático
+		// Cargar historias con progreso desde la BD
 		try {
-			const response = await fetch('/historias/historias.json');
-			if (!response.ok) {
-				throw new Error('Error al cargar las historias');
+			const artista = await obtenerArtistaActivo();
+			if (!artista || !artista.id) {
+				error = 'No hay artista activo. Por favor, crea un perfil primero.';
+				cargando = false;
+				return;
 			}
-			historias = await response.json();
+
+			historias = await logicaHistorias.obtenerHistoriasConProgreso(artista.id);
 			cargando = false;
 		} catch (err) {
 			console.error('Error al cargar historias:', err);
@@ -58,7 +54,7 @@
 		};
 	});
 
-	let historiaActual = $state<Historia | null>(null);
+	let historiaActual = $state<HistoriaConProgreso | null>(null);
 
 	// Animación de carrusel: clase temporal y duración accesible
 	let animClass = $state<string>('');
@@ -209,7 +205,7 @@
 
 			<!-- Historia actual -->
 			{#if historiaActual}
-		<article class={"tarjeta-historia-carrusel " + animClass} aria-label={`Historia ${historiaActual.titulo}, Progreso ${historiaActual.progreso} de ${historiaActual.totalCapitulos} capítulos`} data-magnificable>
+		<article class={"tarjeta-historia-carrusel " + animClass} aria-label={`Historia ${historiaActual.titulo}, Progreso ${logicaHistorias.calcularCapitulosCompletados(historiaActual)} de ${historiaActual.totalCapitulos} capítulos`} data-magnificable>
 			<div class="contenedor-historia-carrusel" role="group" aria-labelledby="titulo-historia-{indiceActual}" aria-describedby="progreso-historia-{indiceActual}" data-magnificable>
 				<div class="preview" data-magnificable>
 					<div class="placeholder-preview">
@@ -217,7 +213,7 @@
 					</div>
 				</div>
 				<h2 id="titulo-historia-{indiceActual}" class="nombre-historia" data-magnificable data-readable>{historiaActual.titulo}</h2>
-				<p id="progreso-historia-{indiceActual}" class="progreso-historia" data-magnificable data-readable>Progreso: {historiaActual.progreso}/{historiaActual.totalCapitulos}</p>
+				<p id="progreso-historia-{indiceActual}" class="progreso-historia" data-magnificable data-readable>Progreso: {logicaHistorias.calcularCapitulosCompletados(historiaActual)}/{historiaActual.totalCapitulos}</p>
 				
 				<button class="boton-selección"
 					aria-label={`Jugar la historia ${historiaActual.titulo}`}
@@ -228,6 +224,7 @@
 				>
 					Jugar
 				</button>
+			</div>
 			</article>
 			{/if}
 

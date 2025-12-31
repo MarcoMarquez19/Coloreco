@@ -14,6 +14,7 @@
 	/* Colores de fondo y texto principales */
 	--bg: #ffffff;
 	--fg: #111111;
+	--color-texto: #000000;
 	
 	/* Colores de énfasis y acento */
 	--accent: #0b6efd;

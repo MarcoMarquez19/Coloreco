@@ -165,9 +165,19 @@
 
 	// Manejar eventos de foco (TAB)
 	function handleFocus(event: FocusEvent) {
-		if ($configuraciones.narrationEnabled && !isAutoFocusing) {
-			readFocusedElement(event.target as Element);
+		if (!$configuraciones.narrationEnabled) return;
+		
+		// Ignorar si el focus es automático
+		if (isAutoFocusing) return;
+		
+		// Si hay narración automática en curso, detenerla
+		if (isPlaying && !isPaused) {
+			window.speechSynthesis.cancel();
+			isPaused = true;
+			wasPlayingBeforeFocus = true;
 		}
+		
+		readFocusedElement(event.target as Element);
 	}
 
 	// Manejar eventos de clic

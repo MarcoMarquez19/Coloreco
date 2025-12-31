@@ -85,11 +85,11 @@
 	</button>
     <button class="boton-juego"
 		aria-label="Entra al modo de juego de historias" 
-		title="Rincón de historias"
+		title="El rincón de las historias"
 		onclick={irAModoHistorias}
 		>
         <img src={LibroHistorias} alt="Logo modo de juegos historias - Libro de historias">
-		Rincón de historias
+		El rincón de las historias
 	</button>
 </div>
 

@@ -1,0 +1,78 @@
+{
+  "historias": [
+    {
+      "codigo": "GRAN_LECTOR",
+      "nombre": "Gran Lector",
+      "descripcion": "Completa todos los capítulos de una historia",
+      "criterio": "Completar una historia completa",
+      "icono": "📚"
+    },
+    {
+      "codigo": "LECTOR_ALOCADO",
+      "nombre": "Lector Alocado",
+      "descripcion": "Completa dos historias diferentes",
+      "criterio": "Completar 2 historias completas",
+      "icono": "🤓"
+    },
+    {
+      "codigo": "MENTE_BRILLANTE",
+      "nombre": "Mente Brillante",
+      "descripcion": "Responde correctamente 3 preguntas seguidas",
+      "criterio": "Responder 3 preguntas correctas consecutivas",
+      "icono": "🧠"
+    },
+    {
+      "codigo": "MAESTRO_HISTORIAS",
+      "nombre": "Maestro de Historias",
+      "descripcion": "Completa todas las historias disponibles",
+      "criterio": "Completar todas las historias disponibles",
+      "icono": "👑"
+    }
+  ],
+  "dibujo": [
+    {
+      "codigo": "PRIMER_DIBUJO",
+      "nombre": "Primer Dibujo",
+      "descripcion": "Completa tu primera escena de dibujo",
+      "criterio": "Completar una escena",
+      "icono": "🎨"
+    }
+  ],
+  "cuerpoHumano": [
+    {
+      "codigo": "PRIMERA_PARTE",
+      "nombre": "Primera Parte",
+      "descripcion": "Coloca tu primera parte del cuerpo correctamente",
+      "criterio": "Colocar una parte en su lugar correcto",
+      "icono": "🧩"
+    },
+    {
+      "codigo": "ANATOMISTA_NOVATO",
+      "nombre": "Anatomista Novato",
+      "descripcion": "Completa tu primera plantilla del cuerpo humano",
+      "criterio": "Completar todas las partes de una escena",
+      "icono": "👤"
+    },
+    {
+      "codigo": "PRECISION_PERFECTA",
+      "nombre": "Precisión Perfecta",
+      "descripcion": "Completa una escena sin errores",
+      "criterio": "Completar una escena sin colocar partes incorrectas",
+      "icono": "🎯"
+    },
+    {
+      "codigo": "MAESTRO_ANATOMIA",
+      "nombre": "Maestro de Anatomía",
+      "descripcion": "Completa 3 escenas diferentes del cuerpo humano",
+      "criterio": "Completar 3 plantillas diferentes",
+      "icono": "🏆"
+    },
+    {
+      "codigo": "EXPERTO_ORGANOS",
+      "nombre": "Experto en Órganos",
+      "descripcion": "Coloca correctamente 20 partes del cuerpo",
+      "criterio": "Acumular 20 partes colocadas correctamente",
+      "icono": "🫀"
+    }
+  ]
+}

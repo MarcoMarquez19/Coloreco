@@ -6,10 +6,12 @@
     import Trofeo from '$lib/components/iconos/Trofeo.svelte';
     import { onMount } from 'svelte';
     import { configuraciones } from '$lib/stores/settings';
+    import { obtenerArtistaActivo } from '$lib/db/artistas.service';
+    import { calcularRangoArtista } from '$lib/db/logros.service';
 
     // Props para controlar el trofeo dinámicamente
-    let rangoTrofeo = $state<'oro' | 'plata' | 'bronce'>('oro');
-    let textoRango = $state('Oro');
+    let rangoTrofeo = $state<'oro' | 'plata' | 'bronce' | null>(null);
+    let textoRango = $state('...');
 
     // Detectar si hay filtros de fuente o espaciado activos
     let hayFiltrosActivos = $derived(
@@ -18,15 +20,36 @@
     );
 
     function irALogrosTaller() {
-        //TODO: PONER LA PAGINA DE LOGROS TALLER
+        goto(`logros/escenas`);
     }
 
     function irALogrosCuerpo() {
-        //TODO: PONER LA PAGINA DE LOGROS CUERPO
+        goto(`logros/cuerpo-humano`);
     }
 
-    function irALogrosCuentos() {
-        goto(`/logros-dislexia`);
+    function irALogrosHistorias() {
+        goto(`logros/historias`);
+    }
+
+    // Cargar rango del artista
+    async function cargarRango() {
+        const artista = await obtenerArtistaActivo();
+        if (!artista || !artista.id) return;
+        
+        const rango = await calcularRangoArtista(artista.id);
+        if (rango === 'oro') {
+            rangoTrofeo = 'oro';
+            textoRango = 'Oro';
+        } else if (rango === 'plata') {
+            rangoTrofeo = 'plata';
+            textoRango = 'Plata';
+        } else if (rango === 'bronce') {
+            rangoTrofeo = 'bronce';
+            textoRango = 'Bronce';
+        } else {
+            rangoTrofeo = null;
+            textoRango = 'Sin Rango';
+        }
     }
 
     let contenedorLogrosRef: HTMLElement | null = null;
@@ -44,6 +67,7 @@
 
     onMount(() => {
         document.body.style.overflow = 'hidden';
+        cargarRango();
         return () => {
             document.body.style.overflow = ''; // Restaurar al desmontar
         };
@@ -63,36 +87,6 @@
         };
     })
 
-    // Obtener colores según el rango
-    function obtenerColoresTrofeo(rango: 'oro' | 'plata' | 'bronce') {
-        const colores = {
-            oro: {
-                borde: '#B8860B',
-                relleno: '#FFD700',
-                texto: '#FFD700'
-            },
-            plata: {
-                borde: '#707070',
-                relleno: '#C0C0C0',
-                texto: '#C0C0C0'
-            },
-            bronce: {
-                borde: '#8B4513',
-                relleno: '#CD7F32',
-                texto: '#CD7F32'
-            }
-        };
-        return colores[rango];
-    }
-
-    $effect(() => {
-        // Actualizar colores CSS según el rango
-        const colores = obtenerColoresTrofeo(rangoTrofeo);
-        document.documentElement.style.setProperty('--trofeo-color-borde', colores.borde);
-        document.documentElement.style.setProperty('--trofeo-color-relleno', colores.relleno);
-        document.documentElement.style.setProperty('--trofeo-texto-color', colores.texto);
-    });
-
 </script>
 
 <div class="seleccionar-logros-contenedor" bind:this={contenedorLogrosRef} aria-label="Contenedor para seleccionar la categoría de logros" data-magnificable>
@@ -100,10 +94,10 @@
     
     <div class="trofeo-contenedor">
         <div class="trofeo-con-texto">
-            <div class="trofeo-wrapper">
+            <div class="trofeo-wrapper" data-tipo-trofeo={rangoTrofeo}>
                 <Trofeo/>
             </div>
-            <p class="texto-trofeo">{textoRango}</p>
+            <p class="texto-trofeo" data-tipo-trofeo={rangoTrofeo}>{textoRango}</p>
         </div>
     </div>
 
@@ -126,11 +120,11 @@
         </button>
         <button class="boton-logro"
             aria-label="Ver logros del rincón de historias" 
-            title="Logros Cuentos"
-            onclick={irALogrosCuentos}
+            title="Logros Historias"
+            onclick={irALogrosHistorias}
             >
             <img src={LibroHistorias} alt="Logo logros historias - Libro de historias">
-            Logros Cuentos
+            Logros Historias
         </button>
     </div>
 </div>
@@ -190,6 +184,29 @@
         --icono-color-relleno: var(--trofeo-color-relleno, #FFD700);
     }
 
+    /* Colores de trofeo según el rango */
+    .trofeo-wrapper[data-tipo-trofeo="oro"] :global(svg) {
+        --trofeo-color-borde: #B8860B;
+        --trofeo-color-relleno: #FFD700;
+    }
+
+    .trofeo-wrapper[data-tipo-trofeo="plata"] :global(svg) {
+        --trofeo-color-borde: #888888;
+        --trofeo-color-relleno: #C0C0C0;
+    }
+
+    .trofeo-wrapper[data-tipo-trofeo="bronce"] :global(svg) {
+        --trofeo-color-borde: #804A00;
+        --trofeo-color-relleno: #CD7F32;
+    }
+
+    /* Sin rango - solo borde negro sin relleno */
+    .trofeo-wrapper[data-tipo-trofeo="null"] :global(svg),
+    .trofeo-wrapper:not([data-tipo-trofeo="oro"]):not([data-tipo-trofeo="plata"]):not([data-tipo-trofeo="bronce"]) :global(svg) {
+        --trofeo-color-borde: #000000;
+        --trofeo-color-relleno: transparent;
+    }
+
     .texto-trofeo {
         margin: 0;
         font-size: calc(var(--font-size-base, 1rem) * 2);
@@ -197,6 +214,29 @@
         color: var(--trofeo-texto-color, #FFD700);
         letter-spacing: calc(var(--spacing-base, 1rem) * 0.05);
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Colores de texto según el rango */
+    .texto-trofeo[data-tipo-trofeo="oro"] {
+        --trofeo-texto-color: #FFD700;
+        color: var(--trofeo-texto-color);
+    }
+
+    .texto-trofeo[data-tipo-trofeo="plata"] {
+        --trofeo-texto-color: #C0C0C0;
+        color: var(--trofeo-texto-color);
+    }
+
+    .texto-trofeo[data-tipo-trofeo="bronce"] {
+        --trofeo-texto-color: #CD7F32;
+        color: var(--trofeo-texto-color);
+    }
+
+    /* Sin rango - texto gris */
+    .texto-trofeo[data-tipo-trofeo="null"],
+    .texto-trofeo:not([data-tipo-trofeo="oro"]):not([data-tipo-trofeo="plata"]):not([data-tipo-trofeo="bronce"]) {
+        --trofeo-texto-color: #666666;
+        color: var(--trofeo-texto-color);
     }
 
     .botones-contenedor {
