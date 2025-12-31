@@ -2,12 +2,17 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import { configuraciones } from '$lib/stores/settings';
 
-  export let correct: boolean; // true = correcto, false = incorrecto
-  export let mensaje: string;
-  export let pista: string = "";
+  interface Props {
+    correct?: boolean;
+    mensaje?: string;
+    pista?: string;
+  }
+
+  let { correct = false, mensaje = '', pista = '' }: Props = $props();
 
   const dispatch = createEventDispatcher();
-  let modalRef: HTMLElement | null = null;
+  let modalRef = $state<HTMLElement | null>(null);
+  let backdropRef = $state<HTMLElement | null>(null);
 
   function handleClose() {
     dispatch('close');
@@ -32,6 +37,22 @@
 
   // Aplicar modos de accesibilidad cuando se monta el modal
   onMount(() => {
+    // Prevenir scroll del body cuando el modal está abierto
+    document.body.style.overflow = 'hidden';
+    
+    // Prevenir scroll del contenedor principal (.app-main)
+    const appMain = document.querySelector('.app-main') as HTMLElement;
+    if (appMain) {
+      appMain.style.overflow = 'hidden';
+    }
+
+    // Mover el backdrop al body para evitar que herede contextos de apilamiento/transform del padre
+    const prevParent = backdropRef?.parentElement ?? null;
+    const nextSibling = backdropRef?.nextSibling ?? null;
+    if (backdropRef && backdropRef.parentElement !== document.body) {
+      document.body.appendChild(backdropRef);
+    }
+
     // Disparar un evento personalizado para que el layout procese el modal
     setTimeout(() => {
       const event = new CustomEvent('modal-mounted');
@@ -45,25 +66,56 @@
         }, 200);
       }
     }, 50);
+
+    // Cleanup: restaurar scroll del body y app-main cuando el componente se desmonte
+    return () => {
+      document.body.style.overflow = '';
+      if (appMain) {
+        appMain.style.overflow = '';
+      }
+      if (backdropRef && document.body.contains(backdropRef)) {
+        document.body.removeChild(backdropRef);
+        // No reinsertemos automáticamente — el componente se desmonta de todas formas
+      }
+    };
   });
+
+  // Aplicar filtro de daltonismo/contraste al propio modal (para que reciba la simulación aun cuando
+  // el filtro global en .app-filtered-content se desactive temporalmente).
+  $effect(() => {
+    const filtro = `${$configuraciones.colorBlindness !== 'none' ? 'url(#cvd-filter)' : ''} ${$configuraciones.contrast === 'high' ? 'url(#smart-contrast-filter)' : ''}`.trim();
+    if (modalRef) {
+      modalRef.style.filter = filtro;
+      modalRef.style.transition = 'filter 150ms ease';
+    }
+
+    // Restaurar al desmontar
+    return () => {
+      if (modalRef) {
+        modalRef.style.filter = '';
+        modalRef.style.transition = '';
+      }
+    };
+  });
+
 </script>
 
 <!-- Detectamos eventos de teclado en toda la ventana -->
-<svelte:window on:keydown={handleGlobalKeydown} />
+<svelte:window onkeydown={handleGlobalKeydown} />
 
-<div class="modal-backdrop" on:click={handleBackdropClick} role="presentation">
+<div class="modal-backdrop" bind:this={backdropRef} onclick={handleBackdropClick} role="presentation">
   <div 
     class="modal" 
     bind:this={modalRef}
-    on:click={handleModalClick}
-    on:keydown={handleGlobalKeydown}
+    onclick={handleModalClick}
+    onkeydown={handleGlobalKeydown}
     role="dialog" 
     aria-modal="true" 
     aria-labelledby="modal-title" 
     tabindex="-1"
     data-magnificable
   >
-    <button class="close-btn no-pictogram" on:click={handleClose} aria-label="Cerrar modal" aria-hidden="true" tabindex="-1">×</button>
+    <button class="close-btn no-pictogram" onclick={handleClose} aria-label="Cerrar modal" aria-hidden="true" tabindex="-1">×</button>
     <div class="icon-container" data-magnificable>
       {#if correct}
         <div class="icon success" aria-hidden="true">✔</div>
@@ -82,7 +134,7 @@
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <p class="detalle" data-magnificable data-readable tabindex="0">Pista: {pista}</p>
     {/if}
-    <button class="action-btn" on:click={handleClose} data-magnificable data-readable>
+    <button class="action-btn" onclick={handleClose} data-magnificable data-readable>
       {correct ? 'Continuar' : 'Reintentar'}
     </button>
   </div>
@@ -100,6 +152,7 @@
     align-items: center;
     justify-content: center;
     z-index: 50000000;
+    filter: none !important;
   }
   
   .modal {

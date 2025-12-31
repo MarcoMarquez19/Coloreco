@@ -3,10 +3,15 @@
   import { configuraciones } from '$lib/stores/settings';
   import type { LogroDefinicion } from '$lib/db/schemas';
 
-  export let logro: LogroDefinicion;
+  interface Props {
+    logro?: LogroDefinicion | null;
+  }
+
+  let { logro = null }: Props = $props();
 
   const dispatch = createEventDispatcher();
-  let modalRef: HTMLElement | null = null;
+  let modalRef = $state<HTMLElement | null>(null);
+  let backdropRef = $state<HTMLElement | null>(null);
 
   function handleClose() {
     dispatch('close');
@@ -31,6 +36,20 @@
 
   // Aplicar modos de accesibilidad cuando se monta el modal
   onMount(() => {
+    // Prevenir scroll del body cuando el modal está abierto
+    document.body.style.overflow = 'hidden';
+    
+    // Prevenir scroll del contenedor principal (.app-main)
+    const appMain = document.querySelector('.app-main') as HTMLElement;
+    if (appMain) {
+      appMain.style.overflow = 'hidden';
+    }
+
+    // Mover el backdrop al body para evitar que herede contextos del padre
+    if (backdropRef && backdropRef.parentElement !== document.body) {
+      document.body.appendChild(backdropRef);
+    }
+
     // Disparar un evento personalizado para que el layout procese el modal
     setTimeout(() => {
       const event = new CustomEvent('modal-mounted');
@@ -44,31 +63,60 @@
         }, 200);
       }
     }, 50);
+
+    // Cleanup: restaurar scroll del body y app-main cuando el componente se desmonte
+    return () => {
+      document.body.style.overflow = '';
+      if (appMain) {
+        appMain.style.overflow = '';
+      }
+      if (backdropRef && document.body.contains(backdropRef)) {
+        document.body.removeChild(backdropRef);
+      }
+    };
   });
+
+  // Sincronizar filtro de daltonismo/contraste con el modal (para que reciba la simulación aunque
+  // el filtro global en .app-filtered-content se haya desactivado temporalmente).
+  $effect(() => {
+    const filtro = `${$configuraciones.colorBlindness !== 'none' ? 'url(#cvd-filter)' : ''} ${$configuraciones.contrast === 'high' ? 'url(#smart-contrast-filter)' : ''}`.trim();
+    if (modalRef) {
+      modalRef.style.filter = filtro;
+      modalRef.style.transition = 'filter 150ms ease';
+    }
+
+    return () => {
+      if (modalRef) {
+        modalRef.style.filter = '';
+        modalRef.style.transition = '';
+      }
+    };
+  });
+
 </script>
 
 <!-- Detectamos eventos de teclado en toda la ventana -->
-<svelte:window on:keydown={handleGlobalKeydown} />
+<svelte:window onkeydown={handleGlobalKeydown} />
 
-<div class="modal-backdrop" on:click={handleBackdropClick} role="presentation">
+<div class="modal-backdrop" bind:this={backdropRef} onclick={handleBackdropClick} role="presentation">
   <div 
     class="modal" 
     bind:this={modalRef}
-    on:click={handleModalClick}
-    on:keydown={handleGlobalKeydown}
+    onclick={handleModalClick}
+    onkeydown={handleGlobalKeydown}
     role="dialog" 
     aria-modal="true" 
     aria-labelledby="modal-title" 
     tabindex="-1"
     data-magnificable
   >
-    <button class="close-btn no-pictogram" on:click={handleClose} aria-label="Cerrar modal" aria-hidden="true" tabindex="-1">×</button>
+    <button class="close-btn no-pictogram" onclick={handleClose} aria-label="Cerrar modal" aria-hidden="true" tabindex="-1">×</button>
     
     <div class="celebration-container">
       <div class="sparkles" aria-hidden="true">✨</div>
       <div class="icon-container" data-magnificable>
-        <div class="icon-logro" aria-hidden="true">{logro.icono || '🏆'}</div>
-      </div>
+        <div class="icon-logro" aria-hidden="true">{logro?.icono || '🏆'}</div>
+      </div> 
       <div class="sparkles" aria-hidden="true">✨</div>
     </div>
 
@@ -76,12 +124,12 @@
     <h2 id="modal-title" data-magnificable data-readable tabindex="0">¡Logro Desbloqueado!</h2>
     
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-    <h3 class="logro-nombre" data-magnificable data-readable tabindex="0">{logro.nombre}</h3>
+    <h3 class="logro-nombre" data-magnificable data-readable tabindex="0">{logro?.nombre}</h3> 
     
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-    <p class="logro-descripcion" data-magnificable data-readable tabindex="0">{logro.descripcion}</p>
+    <p class="logro-descripcion" data-magnificable data-readable tabindex="0">{logro?.descripcion}</p> 
     
-    <button class="action-btn" on:click={handleClose} data-magnificable data-readable>
+    <button class="action-btn" onclick={handleClose} data-magnificable data-readable> 
       ¡Continuar!
     </button>
   </div>
@@ -100,6 +148,7 @@
     justify-content: center;
     z-index: 50000000;
     animation: fadeIn 0.3s ease;
+    filter: none !important;
   }
 
   @keyframes fadeIn {

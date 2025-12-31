@@ -5,7 +5,7 @@
   import Mouse from '$lib/components/iconos/Mouse.svelte';
 
   const dispatch = createEventDispatcher();
-  let modalRef: HTMLElement | null = null;
+  let modalRef = $state<HTMLElement | null>(null);
 
   function handleClose() {
     dispatch('close');
@@ -28,8 +28,24 @@
     }
   }
 
+  let backdropRef = $state<HTMLElement | null>(null);
+
   // Aplicar modos de accesibilidad cuando se monta el modal
   onMount(() => {
+    // Prevenir scroll del body cuando el modal está abierto
+    document.body.style.overflow = 'hidden';
+
+    // Prevenir scroll del contenedor principal (.app-main)
+    const appMain = document.querySelector('.app-main') as HTMLElement;
+    if (appMain) {
+      appMain.style.overflow = 'hidden';
+    }
+
+    // Mover el backdrop al body para evitar que herede contextos del padre
+    if (backdropRef && backdropRef.parentElement !== document.body) {
+      document.body.appendChild(backdropRef);
+    }
+
     // Disparar un evento personalizado para que el layout procese el modal
     setTimeout(() => {
       const event = new CustomEvent('modal-mounted');
@@ -43,25 +59,52 @@
         }, 200);
       }
     }, 50);
+
+    // Cleanup: restaurar scroll y filtro cuando el componente se desmonte
+    return () => {
+      document.body.style.overflow = '';
+      if (appMain) {
+        appMain.style.overflow = '';
+      }
+      if (backdropRef && document.body.contains(backdropRef)) {
+        document.body.removeChild(backdropRef);
+      }
+    };
+  });
+
+  // Aplicar filtro de daltonismo/contraste al propio modal (actualiza en tiempo real)
+  $effect(() => {
+    const filtro = `${$configuraciones.colorBlindness !== 'none' ? 'url(#cvd-filter)' : ''} ${$configuraciones.contrast === 'high' ? 'url(#smart-contrast-filter)' : ''}`.trim();
+    if (modalRef) {
+      modalRef.style.filter = filtro;
+      modalRef.style.transition = 'filter 150ms ease';
+    }
+
+    return () => {
+      if (modalRef) {
+        modalRef.style.filter = '';
+        modalRef.style.transition = '';
+      }
+    };
   });
 </script>
 
 <!-- Detectamos eventos de teclado en toda la ventana -->
-<svelte:window on:keydown={handleGlobalKeydown} />
+<svelte:window onkeydown={handleGlobalKeydown} />
 
-<div class="modal-backdrop" on:click={handleBackdropClick} role="presentation">
+<div class="modal-backdrop" bind:this={backdropRef} onclick={handleBackdropClick} role="presentation">
   <div 
     class="modal" 
     bind:this={modalRef}
-    on:click={handleModalClick}
-    on:keydown={handleGlobalKeydown}
+    onclick={handleModalClick}
+    onkeydown={handleGlobalKeydown}
     role="dialog" 
     aria-modal="true" 
     aria-labelledby="modal-title" 
     tabindex="-1"
     data-magnificable
   >
-    <button class="close-btn no-pictogram" on:click={handleClose} aria-label="Cerrar instrucciones" aria-hidden="true" tabindex="-1">×</button>
+    <button class="close-btn no-pictogram" onclick={handleClose} aria-label="Cerrar instrucciones" aria-hidden="true" tabindex="-1">×</button>
     
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
     <h2 id="modal-title" data-magnificable data-readable tabindex="0">Instrucciones</h2>
@@ -99,6 +142,7 @@
     align-items: center;
     justify-content: center;
     z-index: 50000000;
+    filter: none !important;
   }
   
   .modal {
