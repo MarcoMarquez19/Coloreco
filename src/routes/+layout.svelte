@@ -16,6 +16,7 @@
 	import IconoAccesibilidad from '$lib/components/iconos/Accesibilidad.svelte';
 	import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
 	import FondoLogrosGeneral from '$lib/components/fondos/FondoLogrosGeneral.svelte';
+	import FondoCuerpoHumano from '$lib/components/fondos/FondoCuerpoHumano.svelte';
 
 	// Pequeño helper de accesibilidad: enfocar el contenido principal al navegar
 	let mainEl: HTMLElement | null = null;
@@ -60,6 +61,13 @@
 
 	//DETECTAR SI SE NECESITA EL FONDO DE LOGROS GENERAL
 	let necesitaFondoLogrosGeneral = $derived($page.url.pathname===('/logros'));
+
+	//DETECTAR SI SE NECESITA EL FONDO DE CUERPO HUMANO
+	let necesitaFondoCuerpoHumano = $derived(
+		$page.url.pathname === '/cuerpo-plantillas' ||
+		$page.url.pathname === '/logros/cuerpo-humano' ||
+		($page.url.pathname.includes('/juegos/cuerpo-humano') && $page.url.pathname.endsWith('/completada'))
+	);
 
 	// Funciones de navegación
 	function abrirConfiguracion() {
@@ -479,6 +487,10 @@
 
 {#if (necesitaFondoLogrosGeneral)}
 	<FondoLogrosGeneral style={filterStyle}/>
+{/if}
+
+{#if (necesitaFondoCuerpoHumano)}
+	<FondoCuerpoHumano style={filterStyle}/>
 {/if}
 
 	<div class="app-filtered-content" style={filterStyle}>

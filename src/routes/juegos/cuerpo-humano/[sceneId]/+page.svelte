@@ -667,12 +667,12 @@
 		cerrarAlClickearFuera={!guardandoObra}
 		mostrarBotonCerrar={!guardandoObra}
 	>
-		<div style="padding: 1.5rem 0; text-align: center;">
-			<div style="font-size: 4rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">💾</div>
-			<p style="font-size: 1.2rem; margin-bottom: 1rem; font-weight: 600; color: var(--color-texto, #333);">
+		<div style="padding: calc(var(--spacing-base, 1rem) * 1.5) 0; text-align: center;">
+			<div style="font-size: calc(var(--font-size-base, 1rem) * 4); margin-bottom: calc(var(--spacing-base, 1rem) * 1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">💾</div>
+			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.2); margin-bottom: calc(var(--spacing-base, 1rem) * 1); font-weight: 600; color: var(--fg, #333);">
 				¿Deseas guardar tu obra en la galería?
 			</p>
-			<p style="color: var(--color-texto-secundario, #666); font-size: 1rem; line-height: 1.5;">
+			<p style="color: var(--text-secondary, #666); font-size: calc(var(--font-size-base, 1rem) * 1); line-height: 1.5;">
 				Tu dibujo se guardará y podrás verlo más tarde en la galería de obras.
 			</p>
 		</div>
@@ -707,12 +707,12 @@
 		titulo="Guardar antes de terminar"
 		anchoMaximo="500px"
 	>
-		<div style="padding: 1.5rem 0; text-align: center;">
-			<div style="font-size: 4rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">💾</div>
-			<p style="font-size: 1.2rem; margin-bottom: 1rem; font-weight: 600; color: var(--color-texto, #333);">
+		<div style="padding: calc(var(--spacing-base, 1rem) * 1.5) 0; text-align: center;">
+			<div style="font-size: calc(var(--font-size-base, 1rem) * 4); margin-bottom: calc(var(--spacing-base, 1rem) * 1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">💾</div>
+			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.2); margin-bottom: calc(var(--spacing-base, 1rem) * 1); font-weight: 600; color: var(--fg, #333);">
 				¿Deseas guardar tu obra antes de terminar?
 			</p>
-			<p style="color: var(--color-texto-secundario, #666); font-size: 1rem; line-height: 1.5;">
+			<p style="color: var(--text-secondary, #666); font-size: calc(var(--font-size-base, 1rem) * 1); line-height: 1.5;">
 				Tu dibujo se guardará en la galería y podrás verlo más tarde.
 			</p>
 		</div>
@@ -741,12 +741,12 @@
 		titulo="¡Obra guardada!"
 		anchoMaximo="450px"
 	>
-		<div style="padding: 1.5rem 0; text-align: center;">
-			<div style="font-size: 4rem; margin-bottom: 1rem;">🎨</div>
-			<p style="font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 600;">
+		<div style="padding: calc(var(--spacing-base, 1rem) * 1.5) 0; text-align: center;">
+			<div style="font-size: calc(var(--font-size-base, 1rem) * 4); margin-bottom: calc(var(--spacing-base, 1rem) * 1);">🎨</div>
+			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.1); margin-bottom: calc(var(--spacing-base, 1rem) * 0.5); font-weight: 600; color: var(--fg, #333);">
 				¡Tu obra ha sido guardada exitosamente!
 			</p>
-			<p style="color: var(--color-texto-secundario, #666); font-size: 0.9rem;">
+			<p style="color: var(--text-secondary, #666); font-size: calc(var(--font-size-base, 1rem) * 0.9);">
 				Puedes verla en la galería cuando quieras.
 			</p>
 		</div>
@@ -779,7 +779,7 @@
 		display: flex;
 		flex-direction: column;
 		background: var(--bg, #f5f5f5);
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
         align-items: start;
         justify-content: start;
 
@@ -799,34 +799,34 @@
 	.panel-ayuda {
 		position: absolute;
 		top: 90px;
-		right: 1.5rem;
+		right: calc(var(--spacing-base, 1rem) * 1.5);
 		z-index: 1000;
-		background: var(--color-fondo-panel, #fff);
-		border: 3px solid var(--color-borde-panel, #000);
-		border-radius: 12px;
-		padding: 1.5rem;
+		background: var(--bg, #fff);
+		border: 3px solid var(--icono-color-borde, #000);
+		border-radius: var(--border-radius, 8px);
+		padding: calc(var(--spacing-base, 1rem) * 1.5);
 		box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
 		max-width: 300px;
 	}
 
 	.contenido-ayuda h2 {
-		margin: 0 0 1rem 0;
-		font-size: 1.3rem;
-		color: var(--color-titulo, #333);
+		margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0;
+		font-size: calc(var(--font-size-base, 1rem) * 1.3);
+		color: var(--fg, #333);
 	}
 
 	.lista-atajos {
 		list-style: none;
 		padding: 0;
-		margin: 0 0 1.5rem 0;
+		margin: 0 0 calc(var(--spacing-base, 1rem) * 1.5) 0;
 	}
 
 	.lista-atajos li {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 0.5rem 0;
-		border-bottom: 1px solid var(--color-borde-lista, #eee);
+		padding: calc(var(--spacing-base, 1rem) * 0.5) 0;
+		border-bottom: 1px solid var(--border, #eee);
 	}
 
 	.lista-atajos li:last-child {
@@ -834,28 +834,28 @@
 	}
 
 	.lista-atajos kbd {
-		background: var(--color-fondo-kbd, #f1f1f1);
-		border: 1px solid var(--color-borde-kbd, #ccc);
-		border-radius: 4px;
-		padding: 0.25rem 0.5rem;
+		background: var(--surface, #f1f1f1);
+		border: 1px solid var(--border, #ccc);
+		border-radius: calc(var(--border-radius, 8px) * 0.5);
+		padding: calc(var(--spacing-base, 1rem) * 0.25) calc(var(--spacing-base, 1rem) * 0.5);
 		font-family: monospace;
-		font-size: 0.9rem;
+		font-size: calc(var(--font-size-base, 1rem) * 0.9);
 		font-weight: bold;
 	}
 
 	.boton-cerrar-ayuda {
 		width: 100%;
-		padding: 0.75rem;
-		border: 2px solid var(--color-borde-boton, #000);
-		border-radius: 8px;
-		background: var(--color-fondo-boton, #fff);
+		padding: calc(var(--spacing-base, 1rem) * 0.75);
+		border: 2px solid var(--icono-color-borde, #000);
+		border-radius: var(--border-radius, 8px);
+		background: var(--bg, #fff);
 		cursor: pointer;
 		font-weight: 600;
 		transition: all 0.2s ease;
 	}
 
 	.boton-cerrar-ayuda:hover {
-		background: var(--color-fondo-boton-hover, #f0f0f0);
+		background: var(--surface-hover, #f0f0f0);
 	}
 
 	/* Área principal */
@@ -863,8 +863,8 @@
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
-		padding: 1rem;
+		gap: calc(var(--spacing-base, 1rem) * 1);
+		padding: calc(var(--spacing-base, 1rem) * 1);
 		overflow: hidden;
         justify-content: start;
         align-items: start;
@@ -881,17 +881,17 @@
 		flex: 1;
 		display: flex;
 		flex-direction: row;
-		gap: 2rem;
+		gap: calc(var(--spacing-base, 1rem) * 2);
 		min-height: 0;
 	}
 
 	.contenedor-lienzo {
 		flex: 1;
 		position: relative;
-		border: 3px solid var(--color-borde-lienzo, #000);
-		border-radius: 12px;
+		border: 3px solid var(--icono-color-borde, #000);
+		border-radius: var(--border-radius, 8px);
 		overflow: hidden;
-		background: var(--color-fondo-lienzo, #fff);
+		background: var(--bg, #fff);
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 	}
 
@@ -901,10 +901,10 @@
 		transform: translate(-50%, -50%);
 		background: rgba(76, 175, 80, 0.95);
 		color: white;
-		padding: 0.5rem 1rem;
-		border-radius: 8px;
+		padding: calc(var(--spacing-base, 1rem) * 0.5) calc(var(--spacing-base, 1rem) * 1);
+		border-radius: var(--border-radius, 8px);
 		font-weight: 700;
-		font-size: 0.9rem;
+		font-size: calc(var(--font-size-base, 1rem) * 0.9);
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 		border: 2px solid #2e7d32;
 		pointer-events: none;
@@ -925,10 +925,10 @@
 
 	/* Estilos para botones de modales */
 	:global(.boton-modal) {
-		padding: 0.75rem 1.5rem;
-		border-radius: 8px;
+		padding: calc(var(--spacing-base, 1rem) * 0.75) calc(var(--spacing-base, 1rem) * 1.5);
+		border-radius: var(--border-radius, 8px);
 		font-weight: 600;
-		font-size: 1rem;
+		font-size: calc(var(--font-size-base, 1rem) * 1);
 		cursor: pointer;
 		transition: all 0.2s ease;
 		border: 2px solid transparent;
@@ -953,13 +953,13 @@
 
 	:global(.boton-modal.boton-secundario) {
 		background: transparent;
-		color: var(--color-texto, #333);
-		border-color: var(--color-borde, #ccc);
+		color: var(--fg, #333);
+		border-color: var(--border, #ccc);
 	}
 
 	:global(.boton-modal.boton-secundario:hover:not(:disabled)) {
-		background: var(--color-fondo-hover, #f5f5f5);
-		border-color: var(--color-borde-hover, #999);
+		background: var(--surface-hover, #f5f5f5);
+		border-color: var(--border-strong, #999);
 	}
 
 </style>

@@ -8,7 +8,6 @@
 	import { obtenerConfiguracionEscena } from '$lib/juegos/modos/cuerpo-humano/configuraciones-escenas';
 	import type { EscenaConfig } from '$lib/juegos/modos/cuerpo-humano/types/cuerpo-humano.types';
 	import ConfetiImagen from '$lib/components/iconos/Confeti.png';
-	import FondoCuerpoHumano from '$lib/components/fondos/FondoCuerpoHumano.svelte';
 
 	let escenaConfig = $state<EscenaConfig | null>(null);
 	let cargando = $state<boolean>(true);
@@ -134,15 +133,15 @@
 			rangoActual = 'bronce';
 			siguienteRango = 'Plata';
 			logrosFaltantes = 4 - logrosDesbloqueados;
-			// Progreso dentro del rango bronce: de 0 a 100% cuando tiene 1-3 logros
-			porcentajeProgreso = ((logrosDesbloqueados - 1) / 3) * 100;
+			// Progreso: cada logro = 33.33% (1 logro = 33%, 2 = 66%, 3 = 100%)
+			porcentajeProgreso = (logrosDesbloqueados / 3) * 100;
 		} else if (logrosDesbloqueados >= 4 && logrosDesbloqueados <= 7) {
 			// Rango Plata (4-7 logros) → Necesita 8 para Oro
 			rangoActual = 'plata';
 			siguienteRango = 'Oro';
 			logrosFaltantes = 8 - logrosDesbloqueados;
-			// Progreso dentro del rango plata: de 0 a 100% cuando tiene 4-7 logros
-			porcentajeProgreso = ((logrosDesbloqueados - 4) / 4) * 100;
+			// Progreso: cada logro = 25% (4 = 25%, 5 = 50%, 6 = 75%, 7 = 100%)
+			porcentajeProgreso = ((logrosDesbloqueados - 3) / 4) * 100;
 		} else {
 			// Rango Oro (8+ logros) → Máximo alcanzado
 			rangoActual = 'oro';
@@ -156,10 +155,10 @@
 
 	function obtenerColorRango(rango: 'bronce' | 'plata' | 'oro' | null): string {
 		switch (rango) {
-			case 'bronce': return '#cd7f32';
-			case 'plata': return '#c0c0c0';
-			case 'oro': return '#ffd700';
-			default: return '#888';
+			case 'bronce': return '#d2691e';
+			case 'plata': return '#9e9e9e';
+			case 'oro': return '#ffc107';
+			default: return '#607d8b';
 		}
 	}
 
@@ -357,7 +356,7 @@
 		margin-top: calc(var(--spacing-base, 1rem) * 0.5);
 		padding: 0;
 		font-weight: 700;
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
 	}
 
 	h2 {
@@ -365,13 +364,13 @@
 		margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0;
 		padding: 0;
 		font-weight: 600;
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
 	}
 
 	.marco-externo {
 		background: var(--bg, white);
 		border: 3px solid var(--icono-color-borde, #000000);
-		border-radius: 16px;
+		border-radius: var(--border-radius, 8px);
 		padding: calc(var(--spacing-base, 1rem) * 2);
 		box-shadow: var(--sombra-botones, 0 4px 16px rgba(0, 0, 0, 0.15));
 		margin-top: calc(var(--spacing-base, 1rem) * 0.5);
@@ -418,11 +417,11 @@
 	.plantilla-nombre {
 		font-size: calc(var(--font-size-base, 1rem) * 1.3);
 		margin: 0;
-		color: var(--color-texto, #555);
+		color: var(--text-secondary, #555);
 	}
 
 	.plantilla-nombre strong {
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
 		font-weight: 700;
 	}
 
@@ -433,8 +432,8 @@
 		gap: calc(var(--spacing-base, 1rem) * 2);
 		margin: calc(var(--spacing-base, 1rem) * 1) 0;
 		padding: calc(var(--spacing-base, 1rem) * 1.5);
-		background: var(--surface-hover, rgba(0, 0, 0, 0.03));
-		border-radius: 12px;
+		background: transparent;
+		border-radius: var(--border-radius, 8px);
 		border: 2px solid var(--border, #e0e0e0);
 	}
 
@@ -448,20 +447,20 @@
 	.stat-numero {
 		font-size: calc(var(--font-size-base, 1rem) * 3);
 		font-weight: 700;
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
 		line-height: 1;
 	}
 
 	.stat-label {
 		font-size: calc(var(--font-size-base, 1rem) * 1);
-		color: var(--color-texto-secundario, #666);
+		color: var(--text-secondary, #666);
 		font-weight: 600;
 	}
 
 	.stat-divider {
 		font-size: calc(var(--font-size-base, 1rem) * 3);
 		font-weight: 300;
-		color: var(--color-texto-secundario, #999);
+		color: var(--text-secondary, #999);
 	}
 
 	.mensaje-perfecto {
@@ -470,10 +469,15 @@
 		padding: calc(var(--spacing-base, 1rem) * 1.2);
 		background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
 		border: 3px solid #ffd700;
-		border-radius: 12px;
-		color: var(--color-texto, #333);
+		border-radius: var(--border-radius, 8px);
+		color: #333 !important;
 		font-weight: 700;
 		box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+		word-wrap: break-word;
+		overflow-wrap: break-word;
+		white-space: normal;
+		width: 100%;
+		box-sizing: border-box;
 	}
 
 	.seccion-logros {
@@ -490,7 +494,7 @@
 		padding: calc(var(--spacing-base, 1rem) * 0.8) calc(var(--spacing-base, 1rem) * 2);
 		background: var(--bg, #fff);
 		border: 3px solid;
-		border-radius: 12px;
+		border-radius: var(--border-radius, 8px);
 		margin-bottom: calc(var(--spacing-base, 1rem) * 1);
 		font-size: calc(var(--font-size-base, 1rem) * 1.3);
 		font-weight: 700;
@@ -502,11 +506,11 @@
 	}
 
 	.rango-nombre {
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
 	}
 
 	.sin-rango {
-		color: var(--color-texto-secundario, #666);
+		color: var(--text-secondary, #666);
 		font-style: italic;
 		margin-bottom: calc(var(--spacing-base, 1rem) * 1);
 	}
@@ -522,30 +526,31 @@
 		align-items: center;
 		margin-bottom: calc(var(--spacing-base, 1rem) * 0.75);
 		font-size: calc(var(--font-size-base, 1rem) * 1);
-		color: var(--color-texto, #555);
+		color: var(--fg, #555);
 		font-weight: 600;
 	}
 
 	.siguiente-rango {
-		color: var(--color-texto-secundario, #666);
+		color: var(--text-secondary, #666);
 		font-size: calc(var(--font-size-base, 1rem) * 0.95);
 	}
 
 	.barra-progreso {
 		width: 100%;
-		height: calc(var(--spacing-base, 1rem) * 1.8);
-		background: var(--surface-hover, #e0e0e0);
-		border-radius: 12px;
+		height: calc(var(--spacing-base, 1rem) * 2.2);
+		background: var(--surface, #f5f5f5);
+		border-radius: var(--border-radius, 8px);
 		overflow: hidden;
 		border: 2px solid var(--border, #ccc);
-		box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+		box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.15);
 	}
 
 	.barra-relleno {
 		height: 100%;
 		transition: width 0.8s ease-out;
-		background: linear-gradient(90deg, currentColor 0%, currentColor 100%);
-		box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
+		background: currentColor;
+		box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3), 0 0 8px rgba(0, 0, 0, 0.2);
+		min-width: 2%;
 	}
 
 	.botones-contenedor {
@@ -561,7 +566,7 @@
 		background: var(--fondo-botones, #ffca00);
 		color: var(--icono-color-relleno, black);
 		border: 3px solid var(--icono-color-borde, #000000);
-		border-radius: 10px;
+		border-radius: var(--border-radius, 8px);
 		padding: calc(var(--spacing-base, 1rem) * 1.2) calc(var(--spacing-base, 1rem) * 2.5);
 		font-size: calc(var(--font-size-base, 1rem) * 1.2);
 		font-weight: 700;
@@ -604,7 +609,7 @@
 		text-align: center;
 		padding: calc(var(--spacing-base, 1rem) * 3);
 		font-size: calc(var(--font-size-base, 1rem) * 1.25);
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
 	}
 
 	.estado-error {
@@ -612,7 +617,7 @@
 	}
 
 	.cargando {
-		color: var(--color-texto-secundario, #666);
+		color: var(--text-secondary, #666);
 		font-style: italic;
 	}
 
@@ -655,5 +660,3 @@
 		}
 	}
 </style>
-
-<FondoCuerpoHumano />
