@@ -206,6 +206,12 @@
 			}
 		}
 
+		// Si no hay elemento enfocado o no está en la lista, ir al primero
+		if (indice === -1) {
+			(elementos[0] as HTMLElement).focus();
+			return;
+		}
+
 		// Calcular el siguiente índice (circular)
 		const siguienteIndice = (indice + 1) % elementos.length;
 		(elementos[siguienteIndice] as HTMLElement).focus();
@@ -229,6 +235,12 @@
 			}
 		}
 
+		// Si no hay elemento enfocado o no está en la lista, ir al último
+		if (indice === -1) {
+			(elementos[elementos.length - 1] as HTMLElement).focus();
+			return;
+		}
+
 		// Calcular el índice anterior (circular)
 		const indiceAnterior = indice === 0 ? elementos.length - 1 : indice - 1;
 		(elementos[indiceAnterior] as HTMLElement).focus();
@@ -236,32 +248,17 @@
 
 	/**
 	 * Maneja el evento de teclado en una zona
+	 * NOTA: Shift+A y Shift+D se manejan en manejarTecladoGlobal para evitar conflictos
 	 */
 	function manejarTecladoEnZona(evento: Event) {
 		const keyEvent = evento as KeyboardEvent;
 		const elemento = evento.target as SVGElement;
 
-		// Escape: desactivar modo navegación
+		// Shift + X: desactivar modo navegación
 		if (keyEvent.shiftKey && (keyEvent.key === 'X' || keyEvent.key === 'x')) {
 			keyEvent.preventDefault();
 			desactivarAltoContraste();
 			desactivarNavegacion();
-			return;
-		}
-
-		// Shift + D: navegar al siguiente elemento
-		if (keyEvent.shiftKey && (keyEvent.key === 'D' || keyEvent.key === 'd')) {
-			keyEvent.preventDefault();
-			desactivarAltoContraste();
-			navegarSiguiente();
-			return;
-		}
-
-		// Shift + A: navegar al elemento anterior
-		if (keyEvent.shiftKey && (keyEvent.key === 'A' || keyEvent.key === 'a')) {
-			keyEvent.preventDefault();
-			desactivarAltoContraste();
-			navegarAnterior();
 			return;
 		}
 
@@ -405,6 +402,7 @@
 			} 
 			// Si ya estamos en modo navegación, ir al siguiente
 			else if (modoNavegacionActivo) {
+				desactivarAltoContraste();
 				navegarSiguiente();
 			}
 		}
@@ -419,6 +417,7 @@
 			}
 			// Si ya estamos en modo navegación, ir al anterior
 			else if (modoNavegacionActivo) {
+				desactivarAltoContraste();
 				navegarAnterior();
 			}
 		}
