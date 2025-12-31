@@ -20,6 +20,7 @@
 	const dispatch = createEventDispatcher<{
 		seleccionar: { zona: string };
 		zonaEnfocada: { zona: string; label: string };
+		modoNavegacionCambiado: { activo: boolean };
 	}>();
 
 	// Estado del overlay - siempre visible
@@ -43,6 +44,8 @@
 				primerElemento.focus();
 			}
 		}
+		// Emitir evento de cambio
+		dispatch('modoNavegacionCambiado', { activo: true });
 		console.log('[DibujoOverlay] Modo de navegación activado');
 	}
 
@@ -56,6 +59,8 @@
 		if (document.activeElement && contenedorSvg?.contains(document.activeElement)) {
 			(document.activeElement as HTMLElement).blur();
 		}
+		// Emitir evento de cambio
+		dispatch('modoNavegacionCambiado', { activo: false });
 		console.log('[DibujoOverlay] Modo de navegación desactivado');
 	}
 
@@ -477,22 +482,6 @@
 		<!-- El SVG se inyectará aquí dinámicamente -->
 	</div>
 
-	<!-- Panel de información - solo visible cuando hay zona enfocada -->
-	{#if zonaActualmenteFocusada && modoNavegacionActivo}
-		<div class="panel-informacion" role="status" aria-live="polite">
-			<div class="zona-info">
-				<span class="icono-zona">📍</span>
-				<span class="texto-zona">{zonaActualmenteFocusada}</span>
-			</div>
-			<ul class="instruccion-rapida">
-				<li><kbd>Shift+D</kbd> siguiente</li>
-				<li><kbd>Shift+A</kbd> anterior</li>
-				<li><kbd>Enter</kbd> seleccionar</li>
-				<li><kbd>Ctrl+X</kbd> salir</li>
-			</ul>
-		</div>
-	{/if}
-
 </div>
 
 <style>
@@ -589,53 +578,5 @@
 		50% { 
 			fill-opacity: 0.25;
 		}
-	}
-
-	/* Panel de información compacto */
-	.panel-informacion {
-		position: absolute;
-		top: 1rem;
-		left: 1rem;
-		background: transparent;
-		color: rgb(0, 0, 0);
-		border-radius: 8px;
-		padding: 0.75rem 1rem;
-		border: 2px solid #000;
-		pointer-events: auto;
-		z-index: 101;
-		max-width: 300px;
-		pointer-events: none;
-	}
-
-	.zona-info {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		margin-bottom: 0.5rem;
-	}
-
-	.icono-zona {
-		font-size: 1.2rem;
-		line-height: 1;
-	}
-
-	.texto-zona {
-		font-weight: 600;
-		font-size: 0.95rem;
-		flex: 1;
-	}
-
-	.instruccion-rapida {
-		font-size: 0.8rem;
-		opacity: 0.9;
-		display: block;
-		list-style: none;
-		padding: 0;
-		margin: 0;
-	}
-
-	.instruccion-rapida li {
-		margin: 0;
-		padding: 0;
 	}
 </style>

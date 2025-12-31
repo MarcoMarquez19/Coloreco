@@ -47,6 +47,13 @@
 	let mensajeTipo = $state<'success' | 'error'>('success');
 	let timeoutMensaje: ReturnType<typeof setTimeout> | null = null;
 
+	// Estado del panel de información de navegación
+	let zonaEnfocada = $state<string>('');
+	let labelZonaEnfocada = $state<string>('');
+	let modoNavegacionActivo = $state<boolean>(false);
+	let mostrarPanelNavegacion = $state<boolean>(false);
+	let timeoutPanelNavegacion: ReturnType<typeof setTimeout> | null = null;
+
     //Propiedades de la escena actual
 	let escena: EscenaCatalogo | null = $state<EscenaCatalogo | null>(null);
     let error: string | null = $state<string | null>(null);
@@ -223,8 +230,38 @@
 				break;
 			
 			case 'zonaEnfocada':
-				// Informar al usuario sobre la zona enfocada (manejado por el overlay)
+				// Actualizar estado para mostrar en el panel
+				zonaEnfocada = detail.zona;
+				labelZonaEnfocada = detail.label;
+				
+				// Mostrar el panel y establecer timeout para ocultarlo después de 2 segundos
+				if (timeoutPanelNavegacion) {
+					clearTimeout(timeoutPanelNavegacion);
+				}
+				mostrarPanelNavegacion = true;
+				timeoutPanelNavegacion = setTimeout(() => {
+					mostrarPanelNavegacion = false;
+					timeoutPanelNavegacion = null;
+				}, 5000);
+				
 				console.log(`[TallerDibujo] Zona enfocada: ${detail.label}`);
+				break;
+			
+			case 'modoNavegacionCambiado':
+				// Actualizar estado del modo de navegación
+				modoNavegacionActivo = detail.activo;
+				if (!detail.activo) {
+					// Limpiar zona enfocada cuando se desactiva
+					zonaEnfocada = '';
+					labelZonaEnfocada = '';
+					// Limpiar timeout del panel
+					if (timeoutPanelNavegacion) {
+						clearTimeout(timeoutPanelNavegacion);
+						timeoutPanelNavegacion = null;
+					}
+					mostrarPanelNavegacion = false;
+				}
+				console.log(`[TallerDibujo] Modo navegación: ${detail.activo ? 'activado' : 'desactivado'}`);
 				break;
 		}
 	}
@@ -302,6 +339,10 @@
 
 	// Cleanup al desmontar
 	onDestroy(() => {
+		// Limpiar timeout del panel si existe
+		if (timeoutPanelNavegacion) {
+			clearTimeout(timeoutPanelNavegacion);
+		}
 		servicioDibujo.destruir();
 	});
 
@@ -313,7 +354,7 @@
 		const maxHeight = 1080;
 		const rawScale = window.innerHeight / maxHeight;
 		// limitar entre 0.6 y 1 para evitar escalados excesivos
-		const scale = Math.max(0.8, Math.min(1, rawScale));
+		const scale = Math.max(0.75, Math.min(1, rawScale));
 		contenedorModoDibujoRef.style.transform = `scale(${scale})`;
 		contenedorModoDibujoRef.style.transformOrigin = 'top center';
 	}
@@ -337,25 +378,6 @@
 <svelte:window onkeydown={manejarAtajosTeclado} />
 
 <div class="taller-dibujo">
-	<!-- Panel de ayuda -->
-	{#if mostrarAyuda}
-		<aside class="panel-ayuda" aria-label="Panel de ayuda">
-			<div class="contenido-ayuda">
-				<h2>Atajos de Teclado</h2>
-				<ul class="lista-atajos">
-					<li><kbd>Ctrl+Z</kbd> - Deshacer</li>
-					<li><kbd>Ctrl+S</kbd> - Guardar</li>
-					<li><kbd>A</kbd> - Modo accesible</li>
-					<li><kbd>F1</kbd> - Ayuda</li>
-					<li><kbd>Escape</kbd> - Salir</li>
-				</ul>
-				<button class="boton-cerrar-ayuda" onclick={alternarAyuda}>
-					Cerrar ayuda
-				</button>
-			</div>
-		</aside>
-	{/if}
-
 	<!-- Área principal del taller -->
 	<main class="area-principal">
 		<!-- Barra de herramientas -->
@@ -376,6 +398,22 @@
 				on:accionTerminar={manejarEventoBarra}
 				on:accionMover={manejarEventoBarra}
 			/>
+
+			<!-- Panel de información de navegación - posicionado absolutamente -->
+			{#if labelZonaEnfocada && modoNavegacionActivo && mostrarPanelNavegacion}
+				<div class="panel-informacion-navegacion" role="status" aria-live="polite">
+					<div class="zona-info">
+						<span class="icono-zona">📍</span>
+						<span class="texto-zona">{labelZonaEnfocada}</span>
+					</div>
+					<ul class="instruccion-rapida">
+						<li><kbd>Shift+D</kbd> siguiente</li>
+						<li><kbd>Shift+A</kbd> anterior</li>
+						<li><kbd>Enter</kbd> seleccionar</li>
+						<li><kbd>Shift+X</kbd> salir</li>
+					</ul>
+				</div>
+			{/if}
 		</section>
 
 		<!-- Área del lienzo -->
@@ -389,6 +427,7 @@
 					rutaSvgAccesibilidad={escena?.rutaAccesibilidad}
 					on:seleccionar={manejarEventoOverlay}
 					on:zonaEnfocada={manejarEventoOverlay}
+					on:modoNavegacionCambiado={manejarEventoOverlay}
 				/>
 			</div>
 		</section>
@@ -484,14 +523,13 @@
 	/* Contenedor principal */
 	.taller-dibujo {
 		width: 100%;
-		height: 90vh;
+		height: 92vh;
 		display: flex;
 		flex-direction: column;
 		background: var(--bg, #f5f5f5);
 		color: var(--color-texto, #333);
         align-items: center;
         justify-content: center;
-
 	}
 
 	/* Información para lectores de pantalla */
@@ -504,76 +542,12 @@
 		overflow: hidden;
 	}
 
-	/* Panel de ayuda */
-	.panel-ayuda {
-		position: absolute;
-		top: 90px;
-		right: 1.5rem;
-		z-index: 1000;
-		background: var(--color-fondo-panel, #fff);
-		border: 3px solid var(--color-borde-panel, #000);
-		border-radius: 12px;
-		padding: 1.5rem;
-		box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
-		max-width: 300px;
-	}
-
-	.contenido-ayuda h2 {
-		margin: 0 0 1rem 0;
-		font-size: 1.3rem;
-		color: var(--color-titulo, #333);
-	}
-
-	.lista-atajos {
-		list-style: none;
-		padding: 0;
-		margin: 0 0 1.5rem 0;
-	}
-
-	.lista-atajos li {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 0.5rem 0;
-		border-bottom: 1px solid var(--color-borde-lista, #eee);
-	}
-
-	.lista-atajos li:last-child {
-		border-bottom: none;
-	}
-
-	.lista-atajos kbd {
-		background: var(--color-fondo-kbd, #f1f1f1);
-		border: 1px solid var(--color-borde-kbd, #ccc);
-		border-radius: 4px;
-		padding: 0.25rem 0.5rem;
-		font-family: monospace;
-		font-size: 0.9rem;
-		font-weight: bold;
-	}
-
-	.boton-cerrar-ayuda {
-		width: 100%;
-		padding: 0.75rem;
-		border: 2px solid var(--color-borde-boton, #000);
-		border-radius: 8px;
-		background: var(--color-fondo-boton, #fff);
-		cursor: pointer;
-		font-weight: 600;
-		transition: all 0.2s ease;
-	}
-
-	.boton-cerrar-ayuda:hover {
-		background: var(--color-fondo-boton-hover, #f0f0f0);
-	}
-
 	/* Área principal */
 	.area-principal {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
-		padding: 1rem;
+		padding: 1vh;
 		overflow: hidden;
         justify-content: center;
         align-items: center;
@@ -583,14 +557,17 @@
         min-width: 95vw;
 		flex-shrink: 0;
 		z-index: 201;
+		margin-bottom: 2vh;
 	}
 
 	.seccion-lienzo {
+		top: 0;
         min-width: 70vw;
 		flex: 1;
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
+		position: relative;
 	}
 
 	.contenedor-lienzo {
@@ -601,6 +578,76 @@
 		overflow: hidden;
 		background: var(--color-fondo-lienzo, #fff);
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+	}
+
+	/* Panel de información de navegación - posicionado absolutamente fuera del flujo */
+	.panel-informacion-navegacion {
+		position: absolute;
+		bottom: -10vh;
+		width: max-content;
+		left: 25%;
+		background: var(--color-fondo-panel, #fff);
+		color: #000;
+		border-radius: 8px;
+		padding: 0.75rem 1rem;
+		border: 2px solid var(--color-borde-panel, #000);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+		white-space: nowrap;
+		z-index: 202;
+		font-size: calc(var(--font-size-base,1rem)*1);
+		animation: fadeInPanel 0.3s ease-in-out forwards;
+	}
+
+	@keyframes fadeInPanel {
+		0% {
+			opacity: 0;
+			transform: translateY(-10px);
+		}
+		100% {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
+	.zona-info {
+		justify-content: center;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.icono-zona {
+		line-height: 1;
+	}
+
+	.texto-zona {
+		font-weight: 600;
+		flex: 1;
+	}
+
+	.instruccion-rapida {
+		opacity: 0.9;
+		display: flex;
+		gap: 1rem;
+		flex-wrap: wrap;
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		justify-content: center;
+	}
+
+	.instruccion-rapida li {
+		margin: 0;
+		padding: 0;
+	}
+
+	.instruccion-rapida kbd {
+		background:  #f1f1f1;
+		border: 1px solid #ccc;
+		border-radius: 4px;
+		padding: 0.2rem 0.4rem;
+		font-family: monospace;
+		font-weight: bold;
 	}
 
     /* ============================================================================
