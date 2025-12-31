@@ -16,6 +16,9 @@
 	let isAutoFocusing = $state(false); // Bandera para indicar que el focus es automático
 	let isWaitingToStartAutoNarration = $state(false); // Bandera para evitar lecturas mientras se prepara el inicio automático
 
+	// Suscripción temporal al evento de fin de narración para acciones (p.ej. avanzar índice)
+	let currentEndUnsubscribe: (() => void) | null = null;
+
 	// Sincronizar currentSpeed con las configuraciones
 	$effect(() => {
 		currentSpeed = $configuraciones.ttsSpeed || 1;
@@ -128,9 +131,9 @@
 			text = element.getAttribute('aria-label') || element.textContent?.trim() || '';
 		}
 		
-		if (text && browser && window.speechSynthesis) {
-			// SIEMPRE cancelar cualquier narración anterior (automática o manual)
-			window.speechSynthesis.cancel();
+		if (text && browser && ttsService.isSupported()) {
+			// Siempre detener cualquier narración anterior (automática o manual)
+			ttsService.stop();
 			
 			// Si estaba reproduciendo la narración automática, pausarla
 			if (isPlaying && !isPaused) {
@@ -144,21 +147,24 @@
 				}
 			}
 			
-			// Pequeño delay después de cancelar para asegurar que el motor de síntesis esté listo
+			// Pequeño delay después de detener para asegurar que el motor de síntesis esté listo
 			setTimeout(() => {
-				// Leer el elemento enfocado
-				const utterance = new SpeechSynthesisUtterance(text);
-				utterance.lang = 'es-ES';
-				utterance.rate = currentSpeed;
+				// Limpiar handler anterior
+				if (currentEndUnsubscribe) { currentEndUnsubscribe(); currentEndUnsubscribe = null; }
 				
 				if (isPlaying && isPaused && wasPlayingBeforeFocus) {
-					utterance.onend = () => {
-						// Avanzar al siguiente elemento para cuando se reanude
-						currentElementIndex++;
-					};
+					ttsService.speakAsync(text, { lang: 'es-ES', rate: currentSpeed })
+						.then(() => {
+							// Avanzar al siguiente elemento para cuando se reanude
+							currentElementIndex++;
+						})
+						.catch(() => {
+							// Cancelado o error - no modificar índice
+						});
+				} else {
+					// Lectura normal (no es reanudación) — usar speak para mantener comportamiento anterior
+					ttsService.speak(text, { lang: 'es-ES', rate: currentSpeed });
 				}
-				
-				window.speechSynthesis.speak(utterance);
 			}, 10);
 		}
 	}
@@ -172,7 +178,7 @@
 		
 		// Si hay narración automática en curso, detenerla
 		if (isPlaying && !isPaused) {
-			window.speechSynthesis.cancel();
+			ttsService.stop();
 			isPaused = true;
 			wasPlayingBeforeFocus = true;
 		}
@@ -190,7 +196,7 @@
 		
 		// Si hay una narración automática en curso, detenerla
 		if (isPlaying && !isPaused) {
-			window.speechSynthesis.cancel();
+			ttsService.stop();
 			isPaused = true;
 			wasPlayingBeforeFocus = true;
 		}
@@ -207,7 +213,7 @@
 		
 		if ($configuraciones.narrationEnabled && isPlaying && !isPaused) {
 			// Cancelar narración automática cuando se hace scroll manual
-			window.speechSynthesis.cancel();
+			ttsService.stop();
 			isPaused = true;
 			wasPlayingBeforeFocus = true;
 		}
@@ -299,34 +305,31 @@
 		const soloLectoresSpan = element.querySelector('.solo-lectores');
 		const text = soloLectoresSpan?.textContent?.trim() || element.textContent?.trim() || '';
 
-		if (text && window.speechSynthesis) {
-			const utterance = new SpeechSynthesisUtterance(text);
-			utterance.lang = 'es-ES';
-			utterance.rate = currentSpeed;
+		if (text && ttsService.isSupported()) {
+			// Limpiar handler anterior
+			if (currentEndUnsubscribe) { currentEndUnsubscribe(); currentEndUnsubscribe = null; }
 			
-			utterance.onend = () => {
-				// Quitar outline si lo agregamos
-				if (element.style.outline) {
-					element.style.outline = '';
-				}
-				
-				// Solo avanzar si NO está pausado
-				if (!isPaused) {
-					// Pasar al siguiente elemento
-					currentElementIndex++;
-					if (isPlaying && currentElementIndex < readableElements.length) {
-						readCurrentElement();
-					} else {
-						stopNarration();
+			// Usar speakAsync para encadenar lecturas de forma fiable
+			ttsService.speakAsync(text, { lang: 'es-ES', rate: currentSpeed })
+				.then(() => {
+					// Quitar outline si lo agregamos
+					if (element.style.outline) {
+						element.style.outline = '';
 					}
-				}
-			};
-			
-			utterance.onerror = () => {
-				stopNarration();
-			};
-			
-			window.speechSynthesis.speak(utterance);
+					// Solo avanzar si NO está pausado
+					if (!isPaused) {
+						currentElementIndex++;
+						if (isPlaying && currentElementIndex < readableElements.length) {
+							readCurrentElement();
+						} else {
+							stopNarration();
+						}
+					}
+				})
+				.catch((e) => {
+					// Cancelación o error: no continuar
+					// console.debug('tts speakAsync rejected', e);
+				});
 		} else {
 			// Si no hay texto, pasar al siguiente
 			currentElementIndex++;
@@ -337,8 +340,8 @@
 	// Leer todo el contenido de la página (narración automática)
 	function readAll() {		// Desactivar bandera de espera
 		isWaitingToStartAutoNarration = false;
-				if (browser && window.speechSynthesis) {
-			window.speechSynthesis.cancel();
+				if (browser && ttsService.isSupported()) {
+			ttsService.stop();
 		}
 		
 		readableElements = getAllReadableElements();
@@ -356,9 +359,9 @@
 	}
 
 	function pauseNarration() {
-		// Pausar el audio usando la API de speechSynthesis
-		if (browser && window.speechSynthesis && window.speechSynthesis.speaking) {
-			window.speechSynthesis.pause();
+		// Pausar el audio usando el servicio TTS
+		if (browser && ttsService.isSupported() && ttsService.isSpeaking()) {
+			ttsService.pause();
 			isPaused = true;
 		}
 	}
@@ -381,15 +384,15 @@
 		currentElementIndex = 0;
 		
 		// Cancelar cualquier audio anterior y comenzar desde el principio
-		if (browser && window.speechSynthesis) {
-			window.speechSynthesis.cancel();
+		if (browser && ttsService.isSupported()) {
+			ttsService.stop();
 			readCurrentElement();
 		}
 	}
 
 	function stopNarration() {
-		if (browser && window.speechSynthesis) {
-			window.speechSynthesis.cancel();
+		if (browser && ttsService.isSupported()) {
+			ttsService.stop();
 		}
 		isPlaying = false;
 		isPaused = false;
