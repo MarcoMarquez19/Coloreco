@@ -75,7 +75,7 @@
 		// Interceptar el botón de volver del navegador/layout para ir a seleccionar-historia
 		const handlePopState = (event: PopStateEvent) => {
 			event.preventDefault();
-			goto('/historias/seleccionar-historia');
+			goto('/juegos/historias/seleccionar-historia');
 		};
 		
 		window.addEventListener('popstate', handlePopState);
@@ -88,7 +88,7 @@
 
 	function seleccionarCapitulo(capitulo: CapituloConProgreso) {
 		if (capitulo.desbloqueado) {
-			goto(`/historias/${historiaId}/${capitulo.id}`);
+			goto(`/juegos/historias/${historiaId}/${capitulo.id}`);
 		}
 	}
 

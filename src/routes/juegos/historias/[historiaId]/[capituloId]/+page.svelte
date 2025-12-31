@@ -108,7 +108,7 @@
 			event.preventDefault();
 			const historiaId = $page.params.historiaId;
 			if (historiaId) {
-				goto(`/historias/${historiaId}/progreso`);
+				goto(`/juegos/historias/${historiaId}/progreso`);
 			}
 		};
 		
@@ -169,10 +169,10 @@
 		if (opcionCorrecta) {
 			// Si es el último capítulo, ir a página de completado
 			if (capituloActual === totalCapitulos) {
-				goto(`/historias/${capitulo.historiaId}/completada`);
+				goto(`/juegos/historias/${capitulo.historiaId}/completada`);
 			} else {
 				// Si no, volver a progreso
-				goto(`/historias/${capitulo.historiaId}/progreso`);
+				goto(`/juegos/historias/${capitulo.historiaId}/progreso`);
 			}
 		} else {
 			// Si la respuesta es incorrecta, resetear para permitir reintentar

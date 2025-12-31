@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { applyBionic, applyBionicBySyllable } from '$lib/logic/bionic';
+	import { applyBionic, applyBionicBySyllable } from '$lib/juegos/modos/historias/bionic';
 
 	export let text: string = '';
 	export let mode: 'character' | 'syllable' = 'character';
