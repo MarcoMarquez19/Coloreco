@@ -24,6 +24,10 @@
 	// Props para recibir el contenido de las páginas hijas
 	let { children } = $props();
 
+	// Control de procesamiento de accesibilidad
+	let isProcessing = false;
+	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
 	// 1. Matriz de color reactiva
 	let matrixValues = $derived(interpolateMatrix($configuraciones.colorBlindness, $configuraciones.intensity));
 
@@ -284,6 +288,25 @@ function getBionicColorForBackground(element: Element): string {
 	// Si luminancia > 0.5 (fondo claro), usar azul oscuro; sino azul claro
 	return luminance > 0.5 ? '#003366' : '#90CAF9';
 }
+
+// Funciones auxiliares para procesamiento de colores en rimas
+function hexToRgbSimple(hex: string): [number, number, number] | null {
+	const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	return result ? [
+		parseInt(result[1], 16),
+		parseInt(result[2], 16),
+		parseInt(result[3], 16)
+	] : null;
+}
+
+function darkenColorSimple(hex: string, amount: number): string {
+	const rgb = hexToRgbSimple(hex);
+	if (!rgb) return hex;
+	
+	const [r, g, b] = rgb.map(v => Math.max(0, Math.floor(v * (1 - amount))));
+	return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
 	$effect(() => {
 		// Escuchar cambios en la ruta
 		const currentPath = $page.url.pathname;
@@ -296,14 +319,47 @@ function getBionicColorForBackground(element: Element): string {
 		}, 200);
 	});
 
+	// Escuchar cambios en los modos de accesibilidad con debounce
+	$effect(() => {
+		// Observar cambios en bionicMode y rhymeMode
+		const bionicActive = $configuraciones.bionicMode;
+		const rhymeActive = $configuraciones.rhymeMode;
+		
+		// Limpiar timeout anterior si existe
+		if (debounceTimer) {
+			clearTimeout(debounceTimer);
+		}
+		
+		// Aplicar con debounce de 150ms para evitar múltiples llamadas rápidas
+		debounceTimer = setTimeout(() => {
+			if (bionicActive || rhymeActive) {
+				applyAccessibilityModes();
+			} else {
+				// Si ambos están desactivados, restaurar el texto original
+				restoreOriginalText();
+			}
+		}, 150);
+	});
+
 	// Función para aplicar todos los modos activos de forma combinada
 	async function applyAccessibilityModes() {
-		// Procesar tanto el main como los modales montados (los modales se mueven al <body>)
-		const modalRoots = Array.from(document.querySelectorAll('.modal')) as Element[];
-		if (!mainEl && modalRoots.length === 0) return;
+		// Evitar procesamiento concurrente
+		if (isProcessing) {
+			return;
+		}
+		
+		isProcessing = true;
+		
+		try {
+			// Procesar tanto el main como los modales montados (los modales se mueven al <body>)
+			const modalRoots = Array.from(document.querySelectorAll('.modal')) as Element[];
+			if (!mainEl && modalRoots.length === 0) {
+				isProcessing = false;
+				return;
+			}
 
-		// Restaurar primero en todo el documento
-		restoreOriginalText();
+			// Restaurar primero en todo el documento
+			restoreOriginalText();
 
 		// Preparar raíces a procesar (main primero, luego modales)
 		const roots: Element[] = [];
@@ -329,8 +385,50 @@ function getBionicColorForBackground(element: Element): string {
 
 			elements.forEach((element) => {
 
-				// Evitar procesar elementos ya procesados
-				if (element.querySelector('.bionic-highlight') || element.querySelector('.rhyme-highlight')) return;
+				// Verificar qué modos están activos y qué highlights ya existen
+				const hasBionic = !!element.querySelector('.bionic-highlight');
+				const hasRhyme = !!element.querySelector('.rhyme-highlight');
+				
+				// Determinar si el elemento ya está correctamente procesado para el estado actual
+				const bionicOk = $configuraciones.bionicMode ? hasBionic : !hasBionic;
+				const rhymeOk = $configuraciones.rhymeMode ? hasRhyme : !hasRhyme;
+				
+				// Solo saltamos si el elemento ya tiene exactamente los highlights que necesita
+				if (bionicOk && rhymeOk) return;
+				
+				// Si llegamos aquí, el elemento no coincide con el estado deseado
+				// Primero, asegurarnos de que tenemos el HTML original guardado
+				if (!element.hasAttribute('data-original-html')) {
+					// Si el elemento actualmente tiene highlights, necesitamos limpiarlo primero
+					// antes de guardarlo como original
+					if (hasBionic || hasRhyme) {
+						// Crear una copia temporal para limpiar
+						const tempEl = element.cloneNode(true) as HTMLElement;
+						const highlights = tempEl.querySelectorAll('.bionic-highlight, .bionic-rest, .rhyme-highlight');
+						highlights.forEach(h => {
+							// Preservar el contenido interno, solo quitar el wrapper
+							const parent = h.parentNode;
+							if (parent) {
+								while (h.firstChild) {
+									parent.insertBefore(h.firstChild, h);
+								}
+								parent.removeChild(h);
+							}
+						});
+						element.setAttribute('data-original-html', tempEl.innerHTML);
+					} else {
+						// No hay highlights, guardar directamente
+						element.setAttribute('data-original-html', (element as HTMLElement).innerHTML);
+					}
+				}
+				
+				// Limpiar cualquier highlight existente antes de reprocesar
+				if (hasBionic || hasRhyme) {
+					const originalHtml = element.getAttribute('data-original-html');
+					if (originalHtml) {
+						(element as HTMLElement).innerHTML = originalHtml;
+					}
+				}
 				
 let text = element.textContent?.trim();
 			if (!text) return;
@@ -350,28 +448,26 @@ let text = element.textContent?.trim();
 				if (!text) return;
 			}
 				
-// Guardar HTML original para poder restaurarlo exactamente (solo si no existe ya)
-			if (!element.hasAttribute('data-original-html')) {
-				element.setAttribute('data-original-html', (element as HTMLElement).innerHTML);
-				// Attach a MutationObserver shortly after so we don't catch our own changes
-				setTimeout(() => {
-					if (originalObservers.has(element)) return;
-					try {
-						const obs = new MutationObserver(() => {
-							// Si the element is updated by another process (e.g. Svelte re-render),
-							// remove the stored original HTML so we don't restore stale content.
-							element.removeAttribute('data-original-html');
-							const o = originalObservers.get(element);
-							if (o) { o.disconnect(); }
-							originalObservers.delete(element);
-						});
-						obs.observe(element, { childList: true, subtree: true, characterData: true });
-						originalObservers.set(element, obs);
-					} catch (e) {
-						// ignore observer failures
-					}
-				}, 80);
-			}
+				// Configurar MutationObserver si no existe ya
+				if (!originalObservers.has(element)) {
+					setTimeout(() => {
+						if (originalObservers.has(element)) return;
+						try {
+							const obs = new MutationObserver(() => {
+								// Si el elemento es actualizado por otro proceso (ej. re-render de Svelte),
+								// remover el HTML original guardado para no restaurar contenido obsoleto
+								element.removeAttribute('data-original-html');
+								const o = originalObservers.get(element);
+								if (o) { o.disconnect(); }
+								originalObservers.delete(element);
+							});
+							obs.observe(element, { childList: true, subtree: true, characterData: true });
+							originalObservers.set(element, obs);
+						} catch (e) {
+							// ignorar fallos del observer
+						}
+					}, 80);
+				}
 				
 				let processedHTML = text;
 				
@@ -496,26 +592,149 @@ let text = element.textContent?.trim();
 						parent = parent.parentElement;
 					}
 					
-					if ($configuraciones.rhymeMode && detectRhymes && applyRhymeHighlight) {
-						const patterns = detectRhymes(txt);
-						const backgroundColor = $configuraciones.modoNoche ? ($configuraciones.modoInverso ? '#ffffff' : '#121212') : '#ffffff';
-						const html = applyRhymeHighlight(txt, patterns, backgroundColor);
-						const tmp = document.createElement('div'); tmp.innerHTML = html;
-						if ($configuraciones.bionicMode) {
-							const walk = (n: Node) => {
-								if (n.nodeType === Node.TEXT_NODE) {
-									const frag = createBionicFragment(n.textContent || '', element); n.parentNode?.replaceChild(frag, n);
-								} else if (n.nodeType === Node.ELEMENT_NODE && (n as Element).classList.contains('rhyme-highlight')) {
-									Array.from(n.childNodes).forEach(walk);
-								} else if (n.childNodes && n.childNodes.length) { Array.from(n.childNodes).forEach(walk); }
-							};
-							Array.from(tmp.childNodes).forEach(walk);
+					// Detectar si el texto original tiene negrita (strong, b, o font-weight bold/bolder)
+					const hasOriginalBold = (() => {
+						let p = node.parentElement;
+						while (p && p !== element) {
+							const tagName = p.tagName.toLowerCase();
+							if (tagName === 'strong' || tagName === 'b') return true;
+							const computedStyle = window.getComputedStyle(p);
+							const fontWeight = computedStyle.fontWeight;
+							if (fontWeight === 'bold' || fontWeight === 'bolder' || parseInt(fontWeight) >= 700) return true;
+							p = p.parentElement;
 						}
-						const frag = document.createDocumentFragment(); Array.from(tmp.childNodes).forEach(c => frag.appendChild(c.cloneNode(true)));
+						return false;
+					})();
+					
+					// NUEVO ENFOQUE: Procesar palabra por palabra aplicando AMBOS modos simultáneamente
+					if (($configuraciones.bionicMode || $configuraciones.rhymeMode) && detectRhymes && applyRhymeHighlight) {
+						const patterns = $configuraciones.rhymeMode ? detectRhymes(txt) : [];
+						const words = txt.split(/(\s+|[.,;:!?¿¡()"""'])/);
+						const frag = document.createDocumentFragment();
+						const bionicColor = getBionicColorForBackground(element);
+						
+						words.forEach(word => {
+							// Si es espacio o puntuación, añadir tal cual
+							if (/^\s+$/.test(word) || /^[.,;:!?¿¡()"""']$/.test(word)) {
+								frag.appendChild(document.createTextNode(word));
+								return;
+							}
+							
+							if (word.length === 0) {
+								frag.appendChild(document.createTextNode(word));
+								return;
+							}
+							
+							// Limpiar palabra para buscar patrón de rima
+							const cleanWord = word.toLowerCase().replace(/[.,;:!?¿¡()"""']/g, '');
+							const pattern = patterns.find(p => p.word === cleanWord);
+							
+							// Calcular posiciones de biónico
+							let bionicLength = 0;
+							if ($configuraciones.bionicMode) {
+								bionicLength = getHighlightLengthForWord(word.length, 0.5);
+							}
+							
+							// Calcular posiciones de rima
+							let rhymeStartIndex = -1;
+							let rhymeColor = '';
+							let rhymeBgColor = '';
+							
+							if ($configuraciones.rhymeMode && pattern && pattern.hasRhyme && pattern.ending) {
+								const ending = pattern.ending.toLowerCase();
+								const wordLower = cleanWord;
+								rhymeStartIndex = wordLower.lastIndexOf(ending);
+								
+								if (rhymeStartIndex === -1 || rhymeStartIndex + ending.length !== wordLower.length) {
+									rhymeStartIndex = wordLower.length - ending.length;
+								}
+								
+								if (rhymeStartIndex >= 0 && rhymeStartIndex < word.length) {
+									const rgb = hexToRgbSimple(pattern.color);
+									const lum = rgb ? (0.2126 * rgb[0]/255 + 0.7152 * rgb[1]/255 + 0.0722 * rgb[2]/255) : 0.5;
+									rhymeColor = lum > 0.4 ? darkenColorSimple(pattern.color, 0.4) : pattern.color;
+									rhymeBgColor = rgb ? `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.15)` : 'rgba(0,0,0,0.15)';
+								} else {
+									rhymeStartIndex = -1;
+								}
+							}
+							
+							// Dividir la palabra en segmentos según estilos para evitar separación de letras
+							let currentSegment = '';
+							let currentStyle = { isBionic: false, isRhyme: false };
+							
+							const flushSegment = () => {
+								if (currentSegment.length === 0) return;
+								
+								const span = document.createElement('span');
+								
+								// Prioridad: Si es rima, aplicar estilos de rima
+								if (currentStyle.isRhyme) {
+									// Rima: fondo/subrayado
+									span.style.backgroundColor = rhymeBgColor;
+									span.style.borderBottom = `2px solid ${rhymeColor}`;
+									span.style.padding = '0';
+									span.style.borderRadius = '2px';
+									
+									// Si ambos modos están activos
+									if ($configuraciones.bionicMode && currentStyle.isBionic) {
+										// Mantener negrita si el texto original la tenía, sino normal
+										span.style.fontWeight = hasOriginalBold ? '700' : 'normal';
+										span.style.color = bionicColor;
+										span.className = 'bionic-highlight rhyme-highlight';
+									} else if ($configuraciones.bionicMode) {
+										// Solo modo biónico activo (pero esta parte es rima, no biónica)
+										span.style.fontWeight = hasOriginalBold ? '700' : 'normal';
+										span.className = 'rhyme-highlight';
+									} else {
+										// Solo rima activa, no tocar font-weight (preservar negrita original)
+										span.className = 'rhyme-highlight';
+									}
+								} else if (currentStyle.isBionic) {
+									// Solo biónico: negrita
+									span.style.fontWeight = '700';
+									span.style.color = bionicColor;
+									span.className = 'bionic-highlight';
+								} else {
+									// Ninguno: texto normal
+									span.className = 'bionic-rest';
+									// Solo aplicar font-weight normal si el modo biónico está activo
+									// (para diferenciar partes resaltadas vs no resaltadas)
+									// Si solo está el modo rima, no tocar font-weight (preservar negrita original)
+									if ($configuraciones.bionicMode) {
+										span.style.fontWeight = hasOriginalBold ? '700' : 'normal';
+									}
+								}
+								
+								
+								span.textContent = currentSegment;
+								frag.appendChild(span);
+								currentSegment = '';
+							};
+							
+							for (let i = 0; i < word.length; i++) {
+								const char = word[i];
+								const isBionic = $configuraciones.bionicMode && i < bionicLength;
+								const isRhyme = rhymeStartIndex >= 0 && i >= rhymeStartIndex;
+								
+								// Si el estilo cambió, crear un nuevo segmento
+								if (currentSegment.length > 0 && 
+									(currentStyle.isBionic !== isBionic || currentStyle.isRhyme !== isRhyme)) {
+									flushSegment();
+								}
+								
+								currentSegment += char;
+								currentStyle = { isBionic, isRhyme };
+							}
+							
+							// Añadir el último segmento
+							flushSegment();
+						});
+						
 						node.parentNode?.replaceChild(frag, node);
 						return;
 					}
-					if ($configuraciones.bionicMode) { const f = createBionicFragment(txt, element); node.parentNode?.replaceChild(f, node); return; }
+					
 					return;
 				} else if (node.nodeType === Node.ELEMENT_NODE) {
 					// Ignorar elementos SVG y sus hijos
@@ -530,6 +749,10 @@ let text = element.textContent?.trim();
 			Array.from(element.childNodes).forEach(processNode);
 		});
 		});
+		} finally {
+			// Siempre liberar la bandera de procesamiento
+			isProcessing = false;
+		}
 	}
 
 	// Función para restaurar texto original

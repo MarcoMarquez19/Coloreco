@@ -2,6 +2,7 @@
  * rhyme.ts - Sistema equilibrado de detección de rimas para niños con dislexia
  * 
  * Detecta patrones de rima reales con criterios balanceados.
+ * Usa resaltado tipo biónico para las terminaciones de rima.
  */
 
 export interface RhymePattern {
@@ -11,6 +12,24 @@ export interface RhymePattern {
 	hasRhyme: boolean;
 	rhymeType: string;
 	ending: string;
+}
+
+/**
+ * Calcula cuántos caracteres resaltar según la longitud del ending
+ * Reglas del modo biónico:
+ * - 1-3 letras: resaltar la primera letra
+ * - 4 letras: resaltar 2 letras
+ * - 5-6 letras: resaltar 3 letras
+ * - 7+ letras: resaltar aproximadamente 40% - 50%
+ */
+function getBionicHighlightLength(endingLength: number): number {
+	if (endingLength <= 3) return 1;
+	if (endingLength === 4) return 2;
+	if (endingLength === 5 || endingLength === 6) return 3;
+
+	// Para endings largos, usar 40%-50%
+	const pct = 0.45; // 45% como punto medio
+	return Math.min(endingLength - 1, Math.max(1, Math.ceil(endingLength * pct)));
 }
 
 // Paleta de colores con alto contraste
@@ -216,21 +235,29 @@ function extractVowels(word: string): string {
 
 /**
  * Detecta sufijos comunes del español
+ * Incluye terminaciones para palabras agudas, graves y esdrújulas
  */
 function getCommonSuffix(word: string): string | null {
 	// Ordenados por longitud descendente para evitar matches parciales
 	const suffixes = [
-		// Terminaciones largas
+		// Terminaciones largas (esdrújulas y graves)
 		'ibilidad', 'amiento', 'imiento',
-		// Terminaciones medias
+		// Terminaciones medias - graves comunes
 		'ción', 'sión', 'mente', 'idad', 'edad', 'ador', 'edor', 'idor',
-		'ante', 'ente', 'tad', 'dad',
-		// Verbos y participios
-		'ando', 'iendo', 'ado', 'ido', 'aba', 'ía', 'iar',
-		// Adjetivos
+		'ante', 'ente', 'tad', 'dad', 'ura', 'ura',
+		// Verbos y participios - graves
+		'ando', 'iendo', 'ado', 'ido', 'aba', 'ían', 'aba', 'ían',
+		// Diminutivos y aumentativos - graves
+		'ito', 'ita', 'illo', 'illa', 'ón', 'ona', 'azo', 'aza',
+		// Adjetivos - graves
 		'able', 'ible', 'oso', 'osa', 'ivo', 'iva', 'ica', 'ico',
+		// Profesiones y oficios
+		'ero', 'era', 'ista', 'or', 'ora',
+		// Terminaciones agudas (palabras con acento en última sílaba)
+		'ión', 'ón', 'án', 'és', 'ás',
 		// Otras terminaciones comunes
-		'ura', 'tes', 'or', 'ar', 'er', 'ir', 'en', 'to'
+		'tes', 'ar', 'er', 'ir', 'en', 'to', 'ta', 'no', 'na',
+		'al', 'el', 'il', 'ol', 'ul'
 	];
 	
 	for (const suffix of suffixes) {
@@ -244,6 +271,8 @@ function getCommonSuffix(word: string): string | null {
 
 /**
  * Extrae la terminación según el tipo
+ * Para palabras graves/esdrújulas: últimas 3 letras
+ * Para palabras agudas: últimas 2 letras o desde vocal acentuada
  */
 function extractEnding(word: string, key: string, type: string): string {
 	if (key.startsWith('cons3:')) {
@@ -258,10 +287,23 @@ function extractEnding(word: string, key: string, type: string): string {
 		const syllables = splitIntoSyllables(word);
 		return syllables[syllables.length - 1] || '';
 	} else if (key.startsWith('suf:')) {
-		return key.replace('suf:', '');
+		const suffix = key.replace('suf:', '');
+		// Para sufijos, determinar si es aguda o grave
+		const hasAccentedVowel = /[áéíóú]/.test(word);
+		const endsInVowelNS = /[aeiou]$|[ns]$/.test(word);
+		
+		// Si tiene vocal acentuada o termina en consonante (excepto n,s) = aguda
+		if (hasAccentedVowel || !endsInVowelNS) {
+			// Aguda: últimas 2 letras o el sufijo si es corto
+			return suffix.length <= 3 ? suffix : word.slice(-2);
+		} else {
+			// Grave: últimas 3 letras o el sufijo
+			return suffix.length <= 4 ? suffix : word.slice(-3);
+		}
 	}
 	
-	return word.slice(-2);
+	// Por defecto, usar últimas 3 letras para palabras graves
+	return word.slice(-3);
 }
 
 /**
@@ -351,7 +393,8 @@ function createNoRhymePattern(word: string): RhymePattern {
 }
 
 /**
- * Aplica resaltado visual
+ * Aplica resaltado visual estilo biónico a las rimas
+ * Resalta solo la parte crítica del ending según las reglas biónicas
  */
 export function applyRhymeHighlight(
 	text: string,
@@ -390,14 +433,29 @@ export function applyRhymeHighlight(
 			return segment;
 		}
 		
+		// Aplicar reglas biónicas al ending
+		const endingPart = wordPart.substring(endingIndex);
+		const bionicLength = getBionicHighlightLength(endingPart.length);
+		
 		const before = wordPart.substring(0, endingIndex);
-		const highlighted = wordPart.substring(endingIndex);
+		const bionicHighlight = endingPart.substring(0, bionicLength);
+		const bionicRest = endingPart.substring(bionicLength);
 		
 		const color = backgroundColor 
 			? ensureContrast(pattern.color, backgroundColor)
 			: pattern.color;
 		
-		return `${before}<span class="rhyme-highlight" data-type="${pattern.rhymeType}" style="color: ${color}; font-weight: 700;">${highlighted}</span>${punctuation}`;
+		// Convertir color hex a rgba con opacidad suave (15%)
+		const bgColor = hexToRgba(color, 0.15);
+		
+		// Aplicar solo fondo resaltado suave y subrayado, sin alterar el texto
+		// Usar clase "rhyme-highlight" para que +layout.svelte lo detecte y no lo procese
+		if (bionicRest.length > 0) {
+			return `${before}<span class="rhyme-highlight" data-type="${pattern.rhymeType}" style="background-color: ${bgColor}; border-bottom: 2px solid ${color}; padding: 0 2px; border-radius: 2px;">${bionicHighlight}${bionicRest}</span>${punctuation}`;
+		} else {
+			// Si el ending es muy corto, resaltar todo
+			return `${before}<span class="rhyme-highlight" data-type="${pattern.rhymeType}" style="background-color: ${bgColor}; border-bottom: 2px solid ${color}; padding: 0 2px; border-radius: 2px;">${bionicHighlight}</span>${punctuation}`;
+		}
 	});
 	
 	return result.join('');
@@ -441,6 +499,14 @@ function darkenColor(hex: string, amount: number): string {
 	
 	const [r, g, b] = rgb.map(v => Math.max(0, Math.floor(v * (1 - amount))));
 	return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+	const rgb = hexToRgb(hex);
+	if (!rgb) return `rgba(0, 0, 0, ${alpha})`;
+	
+	const [r, g, b] = rgb;
+	return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 /**

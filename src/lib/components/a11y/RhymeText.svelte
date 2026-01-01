@@ -37,17 +37,13 @@
 		line-height: 1.8;
 	}
 
-	.rhyme-text :global(.rhyme-word) {
-		font-weight: 600;
-		padding: 0.1rem 0.3rem;
-		border-radius: 4px;
-		background-color: var(--rhyme-color);
-		color: #fff;
-		margin: 0 0.1rem;
-		display: inline-block;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	/* Estilo para rimas: solo fondo suave y subrayado, sin alterar texto */
+	.rhyme-text :global(.rhyme-highlight) {
+		display: inline;
+		/* Fondo y subrayado se aplican inline desde el código */
 	}
 
+	/* Modo sílaba: colorea cada sílaba */
 	.rhyme-text.syllable-mode :global(.syllable) {
 		font-weight: 500;
 		padding: 0.1rem 0.2rem;
