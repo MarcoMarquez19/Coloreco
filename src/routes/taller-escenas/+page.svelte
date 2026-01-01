@@ -93,7 +93,7 @@
 		const maxHeight = 1080;
 		const rawScale = window.innerHeight / maxHeight;
 		// limitar entre 0.6 y 1 para evitar escalados excesivos
-		const scale = Math.max(0.6, Math.min(1, rawScale));
+		const scale = Math.max(0.75, Math.min(1, rawScale));
 		contenedorSeleccionarEscenaRef.style.transform = `scale(${scale})`;
 		contenedorSeleccionarEscenaRef.style.transformOrigin = 'top center';
 	}
