@@ -283,7 +283,7 @@
 					aria-label="Editar obra actual"
 					use:clickSound
 				>
-					✏️ Editar
+					<span class="icono">✏️</span> Editar
 				</button>
 
 				<!-- Botón Descargar (Verde) -->
@@ -293,7 +293,7 @@
 					aria-label="Descargar imagen de la obra"
 					use:clickSound
 				>
-					💾 Descargar
+					<span class="icono">💾</span> Descargar
 				</button>
 
 				<!-- Botón Eliminar (Rojo) -->
@@ -303,7 +303,7 @@
 					aria-label="Eliminar obra de la galería"
 					use:clickSound
 				>
-					🗑️ Eliminar
+					<span class="icono">🗑️</span> Eliminar
 				</button>
 			</section>
 

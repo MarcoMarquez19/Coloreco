@@ -176,6 +176,37 @@ export class ColorecoDB extends Dexie {
 			// Migración v5 → v6: Solo actualiza índices, no hay datos que migrar
 			console.log('[DB] v6: Índice compuesto agregado a logrosArtista');
 		});
+
+		// ========================================================================
+		// VERSIÓN 7: Persistir racha de respuestas consecutivas por artista
+		// ========================================================================
+		this.version(7).stores({
+			// Mantener todos los stores anteriores
+			artistas: '++id, ultimaActividad',
+			sesion: 'id',
+			ajustes: 'id, artistaId',
+			obras: 'id, artistaId, modo, fechaCreacion, titulo',
+			obrasBlobs: 'idObra',
+			logrosDefinicion: 'id, codigo',
+			logrosArtista: 'id, artistaId, logroId, [artistaId+desbloqueado]',
+			progreso: 'id, artistaId, modo',
+			miniaturasBlobs: 'idObra',
+			escenasCatalogo: 'id, modo, escenaId',
+			progresosHistorias: 'id, artistaId, historiaId'
+		}).upgrade(async (trans) => {
+			// Migración v6 → v7: establecer rachaHistorias = 0 para artistas existentes si no está definido
+			try {
+				const artistas = await trans.table('artistas').toArray();
+				for (const art of artistas) {
+					if (typeof art.rachaHistorias !== 'number') {
+						await trans.table('artistas').update(art.id, { rachaHistorias: 0 });
+					}
+				}
+				console.log('[DB] v7: Racha de historias inicializada para artistas existentes');
+			} catch (e) {
+				console.error('[DB] v7: Error inicializando racha de historias:', e);
+			}
+		});
 	}
 }
 

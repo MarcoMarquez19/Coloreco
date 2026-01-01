@@ -189,7 +189,7 @@
 	{:else}
 		<!-- Título de la historia -->
 		<div class="titulo-historia-contenedor" data-magnificable>
-			<h1 data-magnificable data-readable>{tituloHistoria}</h1>
+			<h1 tabindex="0" data-magnificable data-readable data-narration-text="Historia: {tituloHistoria}">{tituloHistoria}</h1>
 		</div>
 
 		<!-- Contenedor de capítulos -->
@@ -203,7 +203,7 @@
 
 					{#each capitulos as capitulo, index}
                     	<!-- Flecha conectora (no mostrar después del último) -->
-                        <div class="flecha-conectora" data-magnificable>
+                        <div class="flecha-conectora" data-magnificable aria-hidden="true">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32" data-magnificable>
                                 <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
                             </svg>
@@ -218,17 +218,18 @@
 								onclick={() => seleccionarCapitulo(capitulo)}
 								onfocus={() => { if (capitulo.desbloqueado) capituloSeleccionadoIndex = index; }}
 								disabled={!capitulo.desbloqueado}
-								aria-label={capitulo.desbloqueado ? `Jugar ${capitulo.nombre}` : `${capitulo.nombre} bloqueado`}
 								title={capitulo.desbloqueado ? `Jugar ${capitulo.nombre}` : `Completa el capítulo anterior para desbloquear`}
 								style={!capitulo.desbloqueado ? `background-image: url('${capitulo.imagen}');` : ''}
 								data-magnificable
-							>
+								data-readable
+								data-narration-text={capitulo.desbloqueado ? `${capitulo.nombre}` : `${capitulo.nombre}, bloqueado`}
+								>
 								{#if capitulo.desbloqueado}
-									<img src={capitulo.imagen} alt={capitulo.nombre} data-magnificable />
-								{:else}
-									<div class="overlay-bloqueo" data-magnificable></div>
-									<div class="candado-contenedor" data-magnificable>
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="80" height="80" data-magnificable>
+								<img src={capitulo.imagen} alt="" data-magnificable aria-hidden="true" />
+							{:else}
+								<div class="overlay-bloqueo" data-magnificable aria-hidden="true"></div>
+								<div class="candado-contenedor" data-magnificable aria-hidden="true">
+										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="80" height="80" data-magnificable aria-hidden="true">
 											<path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
 										</svg>
 									</div>
@@ -394,7 +395,7 @@
 	}
 
 	.flecha-conectora {
-		color: var(--icono-color-relleno, #333);
+		color: var(--icono-color-borde, var(--color-texto, #333));
 		display: flex;
 		align-items: center;
 	}

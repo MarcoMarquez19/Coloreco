@@ -101,7 +101,6 @@
         </div>
     </div>
 
-    <div class="botones-contenedor" style="gap: {hayFiltrosActivos ? '0' : 'calc(var(--spacing-base, 1rem) * 4)'}">
         <button class="boton-logro"
             aria-label="Ver logros del taller de escenas creativas" 
             title="Logros Taller"   
@@ -126,12 +125,11 @@
             <img src={LibroHistorias} alt="Logo logros historias - Libro de historias">
             Logros Historias
         </button>
-    </div>
 </div>
 
 <style>
     .seleccionar-logros-contenedor {
-        margin: 2vh auto;
+        margin: 1vh auto;
         background: transparent;
         z-index: 1;
         max-width: 1080px;
@@ -145,9 +143,7 @@
 
     h1 {
         font-size: calc(var(--font-size-base, 1rem) * 2.5);
-        margin: 0;
-        margin-top: calc(var(--spacing-base, 1rem) * 0.5);
-        margin-bottom: calc(var(--spacing-base, 1rem) * 0.5);
+        margin: 0 0 calc(var(--spacing-base, 1rem) * 0.25) 0;
         padding: 0;
         font-weight: 600;
         letter-spacing: calc(var(--spacing-base, 1rem) * 0.1);
@@ -158,8 +154,8 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-top: calc(var(--spacing-base, 1rem) * 0.5);
-        margin-bottom: calc(var(--spacing-base, 1rem) * 0.5);
+        margin-top: calc(var(--spacing-base, 1rem) * 0.25);
+        margin-bottom: calc(var(--spacing-base, 1rem) * 0.25);
         width: 100%;
     }
 
@@ -167,7 +163,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: calc(var(--spacing-base, 1rem) * 0.5);
+        gap: calc(var(--spacing-base, 1rem) * 0.1);
     }
 
     .trofeo-wrapper {
@@ -180,8 +176,9 @@
     }
 
     .trofeo-wrapper :global(svg) {
-        --icono-color-borde: var(--trofeo-color-borde, #B8860B);
-        --icono-color-relleno: var(--trofeo-color-relleno, #FFD700);
+        /* Aplicar directamente stroke/fill desde variables de tema o del trofeo para evitar referencias circulares */
+        stroke: var(--trofeo-color-borde, var(--icono-color-borde, #B8860B));
+        fill: var(--trofeo-color-relleno, var(--icono-color-relleno, #FFD700));
     }
 
     /* Colores de trofeo según el rango */
@@ -200,11 +197,26 @@
         --trofeo-color-relleno: #CD7F32;
     }
 
-    /* Sin rango - solo borde negro sin relleno */
-    .trofeo-wrapper[data-tipo-trofeo="null"] :global(svg),
-    .trofeo-wrapper:not([data-tipo-trofeo="oro"]):not([data-tipo-trofeo="plata"]):not([data-tipo-trofeo="bronce"]) :global(svg) {
-        --trofeo-color-borde: #000000;
-        --trofeo-color-relleno: transparent;
+    :global(.trofeo-wrapper[data-tipo-trofeo="oro"] svg path) {
+        stroke: var(--trofeo-color-borde, #B8860B);
+        fill: var(--trofeo-color-relleno, #FFD700);
+    }
+
+    :global(.trofeo-wrapper[data-tipo-trofeo="plata"] svg path) {
+        stroke: var(--trofeo-color-borde, #888888);
+        fill: var(--trofeo-color-relleno, #C0C0C0);
+    }
+
+    :global(.trofeo-wrapper[data-tipo-trofeo="bronce"] svg path) {
+        stroke: var(--trofeo-color-borde, #804A00);
+        fill: var(--trofeo-color-relleno, #CD7F32);
+    }
+
+    /* Sin rango - borde según tema, sin relleno */
+    :global(.trofeo-wrapper[data-tipo-trofeo="null"] svg path),
+    :global(.trofeo-wrapper:not([data-tipo-trofeo="oro"]):not([data-tipo-trofeo="plata"]):not([data-tipo-trofeo="bronce"]) svg path) {
+        stroke: var(--icono-color-borde, #000000); /* forzar stroke desde la variable del tema (blanco en dark) */
+        fill: transparent !important; /* asegurarse de que no haya relleno */
     }
 
     .texto-trofeo {
@@ -239,32 +251,23 @@
         color: var(--trofeo-texto-color);
     }
 
-    .botones-contenedor {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-        margin-top: calc(var(--spacing-base, 1rem) * 1);
-        margin-bottom: calc(var(--spacing-base, 1rem) * 2);
-        justify-content: flex-start;
-    }
-
+    /* Estilos copiados de .boton-juego para mantener coherencia visual (altura reducida) */
     .boton-logro {      
-        padding: calc(var(--spacing-base, 1rem) * 1.2) calc(var(--spacing-base, 1rem) * 1);
-        margin-top: 0;
-		background: var(--fondo-botones, #ffca00);
-		color: var(--icono-color-relleno, black);
-		border: none;
-		font-size: calc(var(--font-size-base, 1rem) * 1.8);
-		font-weight: 600;
+        padding: calc(var(--spacing-base,1rem) * 1) 0.75rem; /* menos padding vertical para reducir altura */
+        margin-top: 2rem; /* menor separación entre botones */
+        background: var(--fondo-botones, #ffca00);
+        color: var(--icono-color-relleno, black);
+        border: none;
+        font-size: calc(var(--font-size-base, 1rem) * 1.8);
+        font-weight: 600;
         width: 100%;
-		letter-spacing: calc(var(--spacing-base, 1rem) * 0.05);
-		border-radius: var(--border-radius, 8px);
-		cursor: pointer;
-		box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
+        letter-spacing: 0.05em;
+        border-radius: var(--border-radius, 8px);
+        cursor: pointer;
+        box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
         text-align: left;
-		transition: transform 120ms ease, box-shadow 120ms ease;
-	}
+        transition: transform 120ms ease, box-shadow 120ms ease;
+    }
 
     .boton-logro img {
         height: auto;

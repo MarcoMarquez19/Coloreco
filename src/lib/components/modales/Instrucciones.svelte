@@ -50,6 +50,14 @@
     setTimeout(() => {
       const event = new CustomEvent('modal-mounted');
       window.dispatchEvent(event);
+
+      // Enfocar el primer elemento interactivo del modal para accesibilidad
+      setTimeout(() => {
+        const primerElemento = modalRef?.querySelector(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        ) as HTMLElement;
+        primerElemento?.focus();
+      }, 100);
       
       // Si la narración está activada, iniciar lectura automática del modal
       if ($configuraciones.narrationEnabled) {
@@ -87,6 +95,32 @@
       }
     };
   });
+
+  // Inyectar variables de accesibilidad (tamaño de fuente y espaciado) directamente
+  // en el backdrop y en el modal para que sigan aplicándose aunque el backdrop
+  // se mueva al <body> y deje de heredar las variables del layout.
+  $effect(() => {
+    if (backdropRef) {
+      backdropRef.style.setProperty('--font-size-base', `${$configuraciones.multiplicadorTamanioFuente}rem`);
+      backdropRef.style.setProperty('--spacing-base', `${$configuraciones.multiplicadorEspaciado}rem`);
+    }
+
+    if (modalRef) {
+      modalRef.style.setProperty('--font-size-base', `${$configuraciones.multiplicadorTamanioFuente}rem`);
+      modalRef.style.setProperty('--spacing-base', `${$configuraciones.multiplicadorEspaciado}rem`);
+    }
+
+    return () => {
+      if (backdropRef) {
+        backdropRef.style.removeProperty('--font-size-base');
+        backdropRef.style.removeProperty('--spacing-base');
+      }
+      if (modalRef) {
+        modalRef.style.removeProperty('--font-size-base');
+        modalRef.style.removeProperty('--spacing-base');
+      }
+    };
+  });
 </script>
 
 <!-- Detectamos eventos de teclado en toda la ventana -->
@@ -102,30 +136,28 @@
     aria-modal="true" 
     aria-labelledby="modal-title" 
     tabindex="-1"
-    data-magnificable
   >
-    <button class="close-btn no-pictogram" onclick={handleClose} aria-label="Cerrar instrucciones" aria-hidden="true" tabindex="-1">×</button>
+    <button class="close-btn no-pictogram" onclick={handleClose} aria-label="Cerrar instrucciones" type="button">×</button>
     
-    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-    <h2 id="modal-title" data-magnificable data-readable tabindex="0">Instrucciones</h2>
+    <h2 id="modal-title" data-readable>Instrucciones</h2>
     
     <div class="instrucciones-contenido">
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-      <p data-magnificable data-readable tabindex="0">Navega entre las opciones disponibles con el ratón</p>
+      <p data-readable tabindex="0">Navega entre las opciones disponibles con el ratón</p>
       
       <div class="icono-mouse" aria-hidden="true">
         <Mouse />
       </div>
       
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-      <p data-magnificable data-readable tabindex="0">o con las flechas del teclado</p>
+      <p data-readable tabindex="0">o con las flechas del teclado</p>
       
       <div class="teclado-container" aria-hidden="true">
         <Teclado />
       </div>
       
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-      <p data-magnificable data-readable tabindex="0">y presiona ENTER para seleccionar</p>
+      <p data-readable tabindex="0">y presiona ENTER para seleccionar</p>
     </div>
   </div>
 </div>
@@ -150,7 +182,7 @@
     border: 2px solid var(--icono-color-borde, #000000);
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 2.5rem 2rem 2rem 2rem;
+    padding: calc(var(--spacing-base, 1rem) * 2.5) calc(var(--spacing-base, 1rem) * 2) calc(var(--spacing-base, 1rem) * 2) calc(var(--spacing-base, 1rem) * 2);
     min-width: 380px;
     max-width: 90vw;
     text-align: center;
@@ -163,7 +195,7 @@
     right: 1rem;
     background: none;
     border: none;
-    font-size: 1.5rem;
+    font-size: calc(var(--font-size-base, 1rem) * 1.5);
     color: var(--color-texto, #888);
     cursor: pointer;
   }
@@ -174,7 +206,7 @@
   
   h2 {
     margin: 0 0 1.5rem 0;
-    font-size: 2rem;
+    font-size: calc(var(--font-size-base, 1rem) * 2);
     font-weight: 700;
     color: var(--color-texto, #000);
   }
@@ -187,7 +219,7 @@
   }
 
   .instrucciones-contenido p {
-    font-size: 1.1rem;
+    font-size: calc(var(--font-size-base, 1rem) * 1.1);
     color: var(--color-texto, #222);
     margin: 0.2rem 0;
   }

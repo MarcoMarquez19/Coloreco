@@ -13,8 +13,11 @@
 	let currentPath = $state($page.url.pathname); // Rastrear la ruta actual
 	let readableElements: HTMLElement[] = $state([]); // Lista de elementos a leer
 	let currentElementIndex = $state(0); // Índice del elemento actual
-	let isAutoFocusing = $state(false); // Bandera para indicar que el focus es automático
+	let isAutoFocusing = $state(false); // Bandera para indicar que el focus es automático de la narración
 	let isWaitingToStartAutoNarration = $state(false); // Bandera para evitar lecturas mientras se prepara el inicio automático
+
+	// Suscripción temporal al evento de fin de narración para acciones (p.ej. avanzar índice)
+	let currentEndUnsubscribe: (() => void) | null = null;
 
 	// Sincronizar currentSpeed con las configuraciones
 	$effect(() => {
@@ -107,10 +110,8 @@
 	function readFocusedElement(element: Element | null) {
 		if (!element || !$configuraciones.narrationEnabled) return;
 
-		// Ignorar controles de narración
+		// Ignorar etiquetas de narración
 		if (element.classList.contains('narration-label')) return;
-		if (element.classList.contains('control-button')) return;
-		if ((element as HTMLElement).closest('.narration-control')) return;
 
 		// Si la narración automática está activa, NO leer elementos enfocados
 		// porque el focus es parte del proceso automático
@@ -119,18 +120,32 @@
 		// Si estamos esperando para iniciar la narración automática, ignorar
 		if (isWaitingToStartAutoNarration) return;
 
-		// Obtener texto accesible: primero buscar span.solo-lectores, luego aria-label, finalmente textContent
-		let text = '';
+// Obtener texto accesible: primero data-narration-text, luego span.solo-lectores, luego aria-label, finalmente textContent
+	let text = '';
+	const narrationText = (element as HTMLElement).getAttribute('data-narration-text');
+	if (narrationText) {
+		text = narrationText.trim();
+	} else {
 		const soloLectoresSpan = (element as HTMLElement).querySelector('.solo-lectores');
 		if (soloLectoresSpan) {
 			text = soloLectoresSpan.textContent?.trim() || '';
 		} else {
 			text = element.getAttribute('aria-label') || element.textContent?.trim() || '';
 		}
+		}
 		
-		if (text && browser && window.speechSynthesis) {
-			// SIEMPRE cancelar cualquier narración anterior (automática o manual)
-			window.speechSynthesis.cancel();
+		if (text && browser && ttsService.isSupported()) {
+			// Verificar si el elemento es un botón de control ANTES de cualquier otra lógica
+			const isControlButton = (element as HTMLElement).closest('.narration-control') !== null;
+			
+			// Si es un botón de control, solo leerlo sin alterar el estado de la narración
+			if (isControlButton) {
+				ttsService.speak(text, { lang: 'es-ES', rate: currentSpeed });
+				return; // Salir sin modificar índices ni estados
+			}
+			
+			// Siempre detener cualquier narración anterior (automática o manual)
+			ttsService.stop();
 			
 			// Si estaba reproduciendo la narración automática, pausarla
 			if (isPlaying && !isPaused) {
@@ -144,21 +159,24 @@
 				}
 			}
 			
-			// Pequeño delay después de cancelar para asegurar que el motor de síntesis esté listo
+			// Pequeño delay después de detener para asegurar que el motor de síntesis esté listo
 			setTimeout(() => {
-				// Leer el elemento enfocado
-				const utterance = new SpeechSynthesisUtterance(text);
-				utterance.lang = 'es-ES';
-				utterance.rate = currentSpeed;
+				// Limpiar handler anterior
+				if (currentEndUnsubscribe) { currentEndUnsubscribe(); currentEndUnsubscribe = null; }
 				
 				if (isPlaying && isPaused && wasPlayingBeforeFocus) {
-					utterance.onend = () => {
-						// Avanzar al siguiente elemento para cuando se reanude
-						currentElementIndex++;
-					};
+					ttsService.speakAsync(text, { lang: 'es-ES', rate: currentSpeed })
+						.then(() => {
+							// Avanzar al siguiente elemento para cuando se reanude
+							currentElementIndex++;
+						})
+						.catch(() => {
+							// Cancelado o error - no modificar índice
+						});
+				} else {
+					// Lectura normal (no es reanudación) — usar speak para mantener comportamiento anterior
+					ttsService.speak(text, { lang: 'es-ES', rate: currentSpeed });
 				}
-				
-				window.speechSynthesis.speak(utterance);
 			}, 10);
 		}
 	}
@@ -167,17 +185,33 @@
 	function handleFocus(event: FocusEvent) {
 		if (!$configuraciones.narrationEnabled) return;
 		
-		// Ignorar si el focus es automático
+		// Ignorar si el focus es automático de la narración
 		if (isAutoFocusing) return;
 		
-		// Si hay narración automática en curso, detenerla
+		const target = event.target as Element;
+		
+		// Si hay narración automática en curso
 		if (isPlaying && !isPaused) {
-			window.speechSynthesis.cancel();
-			isPaused = true;
-			wasPlayingBeforeFocus = true;
+			// Buscar el elemento enfocado en la lista
+			const focusedIndex = readableElements.findIndex(el => el === target);
+			
+			if (focusedIndex !== -1) {
+				// El usuario hizo Tab a un elemento de la lista
+				// Detener la narración actual y actualizar el índice
+				ttsService.stop();
+				currentElementIndex = focusedIndex;
+				// Continuar desde el nuevo elemento
+				readCurrentElement();
+				return;
+			} else {
+				// Focus fuera de los elementos narrables, pausar
+				ttsService.stop();
+				isPaused = true;
+				wasPlayingBeforeFocus = true;
+			}
 		}
 		
-		readFocusedElement(event.target as Element);
+		readFocusedElement(target);
 	}
 
 	// Manejar eventos de clic
@@ -190,27 +224,13 @@
 		
 		// Si hay una narración automática en curso, detenerla
 		if (isPlaying && !isPaused) {
-			window.speechSynthesis.cancel();
+			ttsService.stop();
 			isPaused = true;
 			wasPlayingBeforeFocus = true;
 		}
 		
 		// Leer el elemento clickeado (el focus ya se encarga de esto)
 		// Solo aseguramos que la narración automática se detenga
-	}
-
-	// Manejar eventos de scroll
-	function handleScroll() {
-		// Importante: No pausar si el scroll es causado por el focus automático
-		// Esto previene que la narración se pause inmediatamente al iniciar
-		if (isAutoFocusing) return;
-		
-		if ($configuraciones.narrationEnabled && isPlaying && !isPaused) {
-			// Cancelar narración automática cuando se hace scroll manual
-			window.speechSynthesis.cancel();
-			isPaused = true;
-			wasPlayingBeforeFocus = true;
-		}
 	}
 
 	// Obtener todos los elementos legibles de la página
@@ -249,9 +269,9 @@
 				rect.height > 0;
 			
 			if (isVisible) {
-				const soloLectoresSpan = element.querySelector('.solo-lectores');
-				const text = soloLectoresSpan?.textContent?.trim() || element.textContent?.trim() || '';
-				
+			const narrationText = element.getAttribute('data-narration-text');
+			const soloLectoresSpan = element.querySelector('.solo-lectores');
+			const text = narrationText?.trim() || soloLectoresSpan?.textContent?.trim() || element.textContent?.trim() || '';
 				if (text) {
 					readableElements.push(element);
 					processedElements.add(element);
@@ -278,16 +298,25 @@
 			return;
 		}
 
-		// Activar bandera de focus automático
+		// Limpiar outline de TODOS los elementos anteriores
+		readableElements.forEach((el, index) => {
+			if (index !== currentElementIndex && el.style.outline) {
+				el.style.outline = '';
+			}
+		});
+
+		// Activar bandera para evitar que handleFocus interfiera
 		isAutoFocusing = true;
 
-		// Hacer focus en el elemento
+		// Poner outline en el elemento actual (SIEMPRE, sin importar el tipo)
+		element.style.outline = '2px solid var(--color-enfoque, #0066cc)';
+
+		// Hacer focus en el elemento (sincronizar con el focus del navegador)
 		if (element.hasAttribute('tabindex') || element.tagName === 'BUTTON' || element.tagName === 'A') {
-			element.focus({ preventScroll: true }); // Prevenir scroll automático
+			element.focus({ preventScroll: true });
 		} else {
 			element.setAttribute('tabindex', '-1');
-			element.focus({ preventScroll: true }); // Prevenir scroll automático
-			element.style.outline = '2px solid var(--color-enfoque, #0066cc)';
+			element.focus({ preventScroll: true });
 		}
 
 		// Desactivar bandera después de un pequeño delay
@@ -295,38 +324,32 @@
 			isAutoFocusing = false;
 		}, 50);
 
-		// Obtener texto a leer
-		const soloLectoresSpan = element.querySelector('.solo-lectores');
-		const text = soloLectoresSpan?.textContent?.trim() || element.textContent?.trim() || '';
+// Obtener texto a leer: primero data-narration-text, luego solo-lectores, finalmente textContent
+	const narrationText = element.getAttribute('data-narration-text');
+	const soloLectoresSpan = element.querySelector('.solo-lectores');
+	const text = narrationText?.trim() || soloLectoresSpan?.textContent?.trim() || element.textContent?.trim() || '';
 
-		if (text && window.speechSynthesis) {
-			const utterance = new SpeechSynthesisUtterance(text);
-			utterance.lang = 'es-ES';
-			utterance.rate = currentSpeed;
+		if (text && ttsService.isSupported()) {
+			// Limpiar handler anterior
+			if (currentEndUnsubscribe) { currentEndUnsubscribe(); currentEndUnsubscribe = null; }
 			
-			utterance.onend = () => {
-				// Quitar outline si lo agregamos
-				if (element.style.outline) {
-					element.style.outline = '';
-				}
-				
-				// Solo avanzar si NO está pausado
-				if (!isPaused) {
-					// Pasar al siguiente elemento
-					currentElementIndex++;
-					if (isPlaying && currentElementIndex < readableElements.length) {
-						readCurrentElement();
-					} else {
-						stopNarration();
+			// Usar speakAsync para encadenar lecturas de forma fiable
+			ttsService.speakAsync(text, { lang: 'es-ES', rate: currentSpeed })
+				.then(() => {
+					// Solo avanzar si NO está pausado
+					if (!isPaused) {
+						currentElementIndex++;
+						if (isPlaying && currentElementIndex < readableElements.length) {
+							readCurrentElement();
+						} else {
+							stopNarration();
+						}
 					}
-				}
-			};
-			
-			utterance.onerror = () => {
-				stopNarration();
-			};
-			
-			window.speechSynthesis.speak(utterance);
+				})
+				.catch((e) => {
+					// Cancelación o error: no continuar
+					// console.debug('tts speakAsync rejected', e);
+				});
 		} else {
 			// Si no hay texto, pasar al siguiente
 			currentElementIndex++;
@@ -337,12 +360,20 @@
 	// Leer todo el contenido de la página (narración automática)
 	function readAll() {		// Desactivar bandera de espera
 		isWaitingToStartAutoNarration = false;
-				if (browser && window.speechSynthesis) {
-			window.speechSynthesis.cancel();
+				if (browser && ttsService.isSupported()) {
+			ttsService.stop();
 		}
 		
 		readableElements = getAllReadableElements();
 		if (readableElements.length === 0) return;
+
+		// Limpiar TODOS los outlines del DOM (no solo de la lista)
+		// Esto asegura que no queden outlines residuales de narraciones anteriores
+		if (browser) {
+			document.querySelectorAll('[style*="outline"]').forEach((el) => {
+				(el as HTMLElement).style.outline = '';
+			});
+		}
 
 		currentElementIndex = 0;
 		isPlaying = true;
@@ -356,44 +387,62 @@
 	}
 
 	function pauseNarration() {
-		// Pausar el audio usando la API de speechSynthesis
-		if (browser && window.speechSynthesis && window.speechSynthesis.speaking) {
-			window.speechSynthesis.pause();
+		if (!isPlaying || isPaused) return;
+		
+		// Pausar el TTS y marcar como pausado
+		if (browser && ttsService.isSupported()) {
+			ttsService.stop(); // Detener el audio actual
 			isPaused = true;
 		}
-	}
-
-	function resumeNarration() {
-		if (!isPlaying) return;
 		
-		isPaused = false;
-		wasPlayingBeforeFocus = false;
-		
-		// Limpiar el outline del elemento actual antes de reiniciar
+		// Limpiar outline del elemento actual cuando se pausa
 		if (browser && currentElementIndex < readableElements.length) {
 			const currentElement = readableElements[currentElementIndex];
 			if (currentElement && currentElement.style.outline) {
 				currentElement.style.outline = '';
 			}
 		}
+	}
+
+	function resumeNarration() {
+		if (!isPlaying || !isPaused) return;
 		
-		// Reiniciar desde el primer elemento
-		currentElementIndex = 0;
+		// Detener cualquier audio actual (por ejemplo, la lectura del botón "Reanudar")
+		if (browser && ttsService.isSupported()) {
+			ttsService.stop();
+		}
 		
-		// Cancelar cualquier audio anterior y comenzar desde el principio
-		if (browser && window.speechSynthesis) {
-			window.speechSynthesis.cancel();
-			readCurrentElement();
+		// Marcar como activo ANTES de llamar a readCurrentElement
+		isPaused = false;
+		wasPlayingBeforeFocus = false;
+		
+		// Continuar desde donde se pausó (NO reiniciar desde el principio)
+		if (browser && ttsService.isSupported()) {
+			// Delay para asegurar que el TTS se detuvo completamente
+			setTimeout(() => {
+				readCurrentElement();
+			}, 100);
 		}
 	}
 
 	function stopNarration() {
-		if (browser && window.speechSynthesis) {
-			window.speechSynthesis.cancel();
+		if (browser && ttsService.isSupported()) {
+			ttsService.stop();
 		}
+		
+		// Limpiar todos los outlines de todos los elementos legibles
+		if (browser && readableElements.length > 0) {
+			readableElements.forEach(element => {
+				if (element && element.style.outline) {
+					element.style.outline = '';
+				}
+			});
+		}
+		
 		isPlaying = false;
 		isPaused = false;
 		wasPlayingBeforeFocus = false;
+		currentElementIndex = 0; // Reiniciar índice para que al volver a iniciar comience desde el principio
 	}
 
 	// Cambiar velocidad en tiempo real
@@ -412,7 +461,6 @@
 		if (browser) {
 			document.addEventListener('focusin', handleFocus);
 			document.addEventListener('click', handleClick, true); // true para capturar antes que otros eventos
-			window.addEventListener('scroll', handleScroll, true); // true para capturar en fase de captura
 			
 			// Listener para iniciar lectura cuando se abre un modal
 			const handleReadModal = () => {
@@ -433,7 +481,6 @@
 			return () => {
 				window.removeEventListener('read-modal', handleReadModal);
 				document.removeEventListener('click', handleClick, true);
-				window.removeEventListener('scroll', handleScroll, true);
 			};
 		}
 	});

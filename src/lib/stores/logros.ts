@@ -60,34 +60,72 @@ export const logrosHistorias = derived(
 );
 
 // ============================================================================
-// TRACKING DE RESPUESTAS CONSECUTIVAS
+// TRACKING DE RESPUESTAS CONSECUTIVAS (POR ARTISTA)
 // ============================================================================
 
 /**
- * Contador de respuestas correctas consecutivas
+ * Map que guarda el contador de respuestas correctas consecutivas por artista.
+ * Key: artistaId, Value: contador
  */
-let respuestasCorrectasConsecutivas = 0;
+const respuestasConsecutivasPorArtista = new Map<number, number>();
 
 /**
- * Resetea el contador de respuestas consecutivas
+ * Resetea el contador de respuestas consecutivas para un artista o todos si no se pasa artistaId
  */
-export function resetearRespuestasConsecutivas(): void {
-	respuestasCorrectasConsecutivas = 0;
+export function resetearRespuestasConsecutivas(artistaId?: number): void {
+	if (typeof artistaId === 'number') {
+		// Actualizar DB en background
+		logrosService.resetearRachaArtista(artistaId).catch(e => console.error('[LogrosStore] Error reseteando racha en DB:', e));
+		respuestasConsecutivasPorArtista.set(artistaId, 0);
+		console.debug(`[LogrosStore] Racha reseteada para artista ${artistaId}`);
+		return;
+	}
+	// Sin artistaId: limpiar todo (mantener compatibilidad)
+	respuestasConsecutivasPorArtista.clear();
+	console.debug('[LogrosStore] Racha reseteada para todos los artistas');
 }
 
 /**
- * Incrementa el contador de respuestas consecutivas
+ * Incrementa el contador de respuestas consecutivas para un artista
+ * Devuelve la nueva racha (Promise<number>) para que el caller pueda esperar
  */
-export function incrementarRespuestasConsecutivas(): void {
-	respuestasCorrectasConsecutivas++;
+export async function incrementarRespuestasConsecutivas(artistaId: number): Promise<number> {
+	try {
+		const nueva = await logrosService.incrementarRachaArtista(artistaId);
+		respuestasConsecutivasPorArtista.set(artistaId, nueva);
+		console.debug(`[LogrosStore] Racha para artista ${artistaId}: ${nueva}`);
+		return nueva;
+	} catch (e) {
+		// Fallback: incrementar en memoria si falla la DB
+		const current = respuestasConsecutivasPorArtista.get(artistaId) ?? 0;
+		const nuevo = current + 1;
+		respuestasConsecutivasPorArtista.set(artistaId, nuevo);
+		console.error('[LogrosStore] Error incrementando racha en DB, usando valor en memoria:', e);
+		return nuevo;
+	}
 }
 
 /**
- * Obtiene el contador actual
+ * Obtiene el contador actual para un artista
  */
-export function obtenerRespuestasConsecutivas(): number {
-	return respuestasCorrectasConsecutivas;
+export function obtenerRespuestasConsecutivas(artistaId?: number): number {
+	if (typeof artistaId === 'number') {
+		return respuestasConsecutivasPorArtista.get(artistaId) ?? 0;
+	}
+	// Sin artistaId: devolver 0 para evitar comportamiento global inesperado
+	return 0;
 }
+
+// Sincronizar racha desde la DB al cargar logros de artista
+export async function sincronizarRachaDesdeDB(artistaId: number): Promise<void> {
+	try {
+		const racha = await logrosService.obtenerRachaArtista(artistaId);
+		respuestasConsecutivasPorArtista.set(artistaId, racha);
+		console.debug(`[LogrosStore] Racha sincronizada desde DB para artista ${artistaId}: ${racha}`);
+	} catch (e) {
+		console.error('[LogrosStore] Error sincronizando racha desde DB:', e);
+	}
+} 
 
 // ============================================================================
 // FUNCIONES DE CARGA
@@ -120,6 +158,9 @@ export async function cargarLogrosArtista(artistaId: number): Promise<void> {
 		// Cargar estadísticas
 		const stats = await logrosService.obtenerEstadisticasLogros(artistaId);
 		estadisticasLogros.set(stats);
+
+		// Sincronizar la racha desde la DB para este artista (en vez de resetearla automáticamente)
+		await sincronizarRachaDesdeDB(artistaId);
 
 		console.log('[LogrosStore] Logros cargados:', logrosFormateados.length);
 	} catch (error) {
@@ -204,10 +245,14 @@ export async function verificarGranLector(artistaId: number, historiaCompletada:
  * @param respuestaCorrecta - Si la última respuesta fue correcta
  */
 export async function verificarMenteBrillante(artistaId: number, respuestaCorrecta: boolean): Promise<void> {
+	console.debug(`[LogrosStore] verificarMenteBrillante invoked para artista ${artistaId} - respuestaCorrecta=${respuestaCorrecta}`);
 	if (respuestaCorrecta) {
-		incrementarRespuestasConsecutivas();
+		// Esperar al incremento para evitar condiciones de carrera
+		const racha = await incrementarRespuestasConsecutivas(artistaId);
+		console.debug(`[LogrosStore] Racha actual para artista ${artistaId}: ${racha}`);
 		
-		if (obtenerRespuestasConsecutivas() >= 3) {
+		if (racha >= 3) {
+			console.debug(`[LogrosStore] Intentando desbloquear Mente Brillante para artista ${artistaId}`);
 			const yaDesbloqueado = await logrosService.tieneLogroDesbloqueado(
 				artistaId,
 				LOGROS_HISTORIAS.MENTE_BRILLANTE
@@ -218,7 +263,7 @@ export async function verificarMenteBrillante(artistaId: number, respuestaCorrec
 			}
 		}
 	} else {
-		resetearRespuestasConsecutivas();
+		resetearRespuestasConsecutivas(artistaId);
 	}
 }
 

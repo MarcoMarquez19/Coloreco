@@ -422,17 +422,11 @@
 							speedDisplay = parseFloat(val).toFixed(2);
 							configuraciones.setTTSSpeed(parseFloat(val));
 							
-							// Leer la velocidad actual
-							if (typeof window !== 'undefined' && window.speechSynthesis) {
-								window.speechSynthesis.cancel();
-								const utterance = new SpeechSynthesisUtterance(`Velocidad ${speedDisplay}`);
-								utterance.lang = 'es-ES';
-								utterance.rate = parseFloat(val);
-								window.speechSynthesis.speak(utterance);
-							}
-							
-							if (typeof window !== 'undefined') {
-								import('$lib/audio/tts.service').then(({ ttsService }) => {
+						// Leer la velocidad actual usando ttsService (mantiene la voz seleccionada)
+						if (typeof window !== 'undefined') {
+							import('$lib/audio/tts.service').then(({ ttsService }) => {
+								ttsService.stop();
+								ttsService.speak(`Velocidad ${speedDisplay}`, { lang: 'es-ES', rate: parseFloat(val) });
 									ttsService.changeSpeed(parseFloat(val));
 								});
 							}

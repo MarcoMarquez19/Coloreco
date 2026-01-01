@@ -423,6 +423,74 @@ export async function actualizarProgresoLogro(
 }
 
 // ============================================================================
+// RACHAS PERSISTENTES POR ARTISTA
+// ============================================================================
+
+/**
+ * Obtiene la racha de respuestas correctas consecutivas guardada para un artista
+ * Si no existe, devuelve 0
+ */
+export async function obtenerRachaArtista(artistaId: number): Promise<number> {
+	const db = getDB();
+	if (!db) return 0;
+
+	try {
+		const artista = await db.artistas.get(artistaId);
+		return artista?.rachaHistorias ?? 0;
+	} catch (error) {
+		console.error('[LogrosService] Error obteniendo racha del artista:', error);
+		return 0;
+	}
+}
+
+/**
+ * Establece la racha de un artista
+ */
+export async function setRachaArtista(artistaId: number, valor: number): Promise<void> {
+	const db = getDB();
+	if (!db) return;
+
+	try {
+		await db.artistas.update(artistaId, { rachaHistorias: Math.max(0, Math.floor(valor)) });
+	} catch (error) {
+		console.error('[LogrosService] Error seteando racha del artista:', error);
+	}
+}
+
+/**
+ * Incrementa la racha del artista en 1 y devuelve la nueva racha
+ */
+export async function incrementarRachaArtista(artistaId: number): Promise<number> {
+	const db = getDB();
+	if (!db) return 0;
+
+	try {
+		const artista = await db.artistas.get(artistaId);
+		const actual = artista?.rachaHistorias ?? 0;
+		const nueva = actual + 1;
+		await db.artistas.update(artistaId, { rachaHistorias: nueva });
+		return nueva;
+	} catch (error) {
+		console.error('[LogrosService] Error incrementando racha del artista:', error);
+		return 0;
+	}
+}
+
+/**
+ * Resetea la racha de un artista a 0
+ */
+export async function resetearRachaArtista(artistaId: number): Promise<void> {
+	const db = getDB();
+	if (!db) return;
+
+	try {
+		await db.artistas.update(artistaId, { rachaHistorias: 0 });
+	} catch (error) {
+		console.error('[LogrosService] Error reseteando racha del artista:', error);
+	}
+}
+
+// ============================================================================
 // RANGOS
 // ============================================================================
 

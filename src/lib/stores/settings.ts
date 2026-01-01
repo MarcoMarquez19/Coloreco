@@ -41,6 +41,8 @@ export interface ConfiguracionUI {
 	bionicMode: boolean; // activar lectura biónica
 	narrationEnabled: boolean; // activar narración TTS
 	ttsSpeed: number; // velocidad de narración (0.1 - 10)
+	// Nombre de la voz TTS preferida (p. ej. 'Sabina')
+	ttsVoiceName?: string | null;
 	rhymeMode: boolean; // resaltar rimas
 	pictogramMode: boolean; // mostrar pictogramas
 
@@ -67,6 +69,7 @@ const valoresPorDefecto: ConfiguracionUI = {
 	bionicMode: false,
 	narrationEnabled: false,
 	ttsSpeed: 1,
+	ttsVoiceName: null,
 	rhymeMode: false,
 	pictogramMode: false,
 
@@ -283,6 +286,11 @@ function crearEstadoConfiguraciones() {
 		setTTSSpeed: (speed: number) => update(config => ({
 			...config,
 			ttsSpeed: speed
+		})),
+		// Guardar nombre de voz TTS preferida (no expuesto en la UI por ahora)
+		setTTSVoiceName: (name: string | null) => update(config => ({
+			...config,
+			ttsVoiceName: name
 		})),
 		
 		// HU-04: Rimas
