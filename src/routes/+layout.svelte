@@ -322,7 +322,7 @@ function getBionicColorForBackground(element: Element): string {
 		}
 
 		// Selector de elementos a procesar dentro de cada raíz
-		const selector = 'h1, h2, h3, h4, h5, h6, .seccion-titulo, p, button:not(.control-button):not(.boton-volver):not(.boton-configuracion):not(.switch-toggle), label:not(.switch-knob), .switch-label, span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-highlight):not(.switch-knob):not(.control-valor), small, div.control-ayuda, .control-label span';
+		const selector = 'h1, h2, h3, h4, h5, h6, .seccion-titulo, p, button:not(.control-button):not(.boton-volver):not(.boton-configuracion):not(.switch-toggle), label:not(.switch-knob), .switch-label, span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-highlight):not(.switch-knob):not(.control-valor):not(.icono), small, div.control-ayuda, .control-label span';
 
 		roots.forEach((root) => {
 			const elements = root.querySelectorAll(selector);
@@ -488,6 +488,14 @@ let text = element.textContent?.trim();
 				if (node.nodeType === Node.TEXT_NODE) {
 					const txt = node.textContent || '';
 					if (!txt.trim()) return;
+					
+					// Verificar si el nodo de texto está dentro de un elemento .icono
+					let parent = node.parentElement;
+					while (parent && parent !== element) {
+						if (parent.classList.contains('icono')) return;
+						parent = parent.parentElement;
+					}
+					
 					if ($configuraciones.rhymeMode && detectRhymes && applyRhymeHighlight) {
 						const patterns = detectRhymes(txt);
 						const backgroundColor = $configuraciones.modoNoche ? ($configuraciones.modoInverso ? '#ffffff' : '#121212') : '#ffffff';
@@ -510,6 +518,10 @@ let text = element.textContent?.trim();
 					if ($configuraciones.bionicMode) { const f = createBionicFragment(txt, element); node.parentNode?.replaceChild(f, node); return; }
 					return;
 				} else if (node.nodeType === Node.ELEMENT_NODE) {
+					// Ignorar elementos SVG y sus hijos
+					if ((node as Element).tagName === 'svg' || (node as Element).closest('svg')) return;
+					// Ignorar elementos con clase .icono y sus hijos
+					if ((node as Element).classList.contains('icono')) return;
 					if ((node as Element).classList.contains('bionic-highlight') || (node as Element).classList.contains('rhyme-highlight')) return;
 					Array.from(node.childNodes).forEach(processNode);
 				}
