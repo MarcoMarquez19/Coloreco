@@ -225,7 +225,65 @@
 	// Mapa para observers que limpian data-original-html si el DOM cambia
 	const originalObservers = new WeakMap<Element, MutationObserver>();
 
-	// Efecto para reaplicar los modos cuando cambia la página
+/**
+ * Calcula cuántos caracteres resaltar según la longitud de la palabra
+ * Reglas:
+ * - 1-3 letras: resaltar la primera letra
+ * - 4 letras: resaltar 2 letras
+ * - 5-6 letras: resaltar 3 letras
+ * - 7+ letras: resaltar aproximadamente 40% - 50% (usa intensidad y clampa entre 0.4 y 0.5)
+ */
+function getHighlightLengthForWord(wordLength: number, intensity: number = 0.5): number {
+	if (wordLength <= 3) return 1;
+	if (wordLength === 4) return 2;
+	if (wordLength === 5 || wordLength === 6) return 3;
+	const minPct = 0.4;
+	const maxPct = 0.5;
+	const pct = Math.max(minPct, Math.min(intensity, maxPct));
+	return Math.min(wordLength - 1, Math.max(1, Math.ceil(wordLength * pct)));
+}
+
+/**
+ * Devuelve las dos partes (highlight/rest) de una palabra según las reglas
+ */
+function splitWordIntoBionicParts(word: string, intensity: number = 0.5): { highlighted: string; rest: string } {
+	const hl = getHighlightLengthForWord(word.length, intensity);
+	return { highlighted: word.slice(0, hl), rest: word.slice(hl) };
+}
+
+/**
+ * Detecta si el fondo del elemento es claro u oscuro y retorna el color apropiado
+ * @param element Elemento DOM a analizar
+ * @returns Color hexadecimal apropiado para resaltado biónico
+ */
+function getBionicColorForBackground(element: Element): string {
+	const computed = window.getComputedStyle(element);
+	let bgColor = computed.backgroundColor;
+	
+	// Si es transparente, buscar en ancestros
+	let current = element.parentElement;
+	while ((!bgColor || bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent') && current) {
+		bgColor = window.getComputedStyle(current).backgroundColor;
+		current = current.parentElement;
+	}
+	
+	// Convertir RGB a luminancia
+	const rgb = bgColor.match(/\d+/g);
+	if (!rgb || rgb.length < 3) {
+		// Fallback: usar modo noche si está activo
+		return $configuraciones.modoNoche ? '#90CAF9' : '#003366';
+	}
+	
+	const r = parseInt(rgb[0]);
+	const g = parseInt(rgb[1]);
+	const b = parseInt(rgb[2]);
+	
+	// Calcular luminancia relativa (fórmula WCAG)
+	const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+	
+	// Si luminancia > 0.5 (fondo claro), usar azul oscuro; sino azul claro
+	return luminance > 0.5 ? '#003366' : '#90CAF9';
+}
 	$effect(() => {
 		// Escuchar cambios en la ruta
 		const currentPath = $page.url.pathname;
@@ -341,58 +399,40 @@ let text = element.textContent?.trim();
 							if (node.nodeType === Node.TEXT_NODE) {
 								const text = node.textContent || '';
 								if (!text.trim()) return;
-								
-								// Dividir en palabras
-								const words = text.split(/(\s+)/);
-								const container = document.createElement('span');
-								
-								words.forEach(word => {
-									if (/^\s+$/.test(word)) {
-										// Es espacio, mantenerlo
-										container.appendChild(document.createTextNode(word));
-									} else if (word.length > 0) {
-										// Es palabra, aplicar formato biónico por sílabas
-										const syllables = splitIntoSyllables(word);
-										
-										if (syllables.length === 0) {
-											container.appendChild(document.createTextNode(word));
-										} else if (syllables.length === 1 && word.length <= 3) {
-											// Palabra corta, resaltar completa
-											const span = document.createElement('span');
-											span.className = 'bionic-highlight';
-											span.style.cssText = 'color: inherit; font-weight: 700;';
-											span.textContent = word;
-											container.appendChild(span);
-										} else {
-											// Resaltar primera sílaba
-											const firstSyllable = syllables[0];
-											const rest = word.slice(firstSyllable.length);
-											
-											const highlightSpan = document.createElement('span');
-											highlightSpan.className = 'bionic-highlight';
-											highlightSpan.style.cssText = 'color: inherit; font-weight: 700;';
-											highlightSpan.textContent = firstSyllable;
-											container.appendChild(highlightSpan);
-											
-											if (rest) {
-												const restSpan = document.createElement('span');
-												restSpan.className = 'bionic-rest';
-												restSpan.style.cssText = 'color: inherit; font-weight: 400;';
-												restSpan.textContent = rest;
-												container.appendChild(restSpan);
-											}
-										}
-									}
-							});
-							
-							if (node.parentNode) {
-								node.parentNode.replaceChild(container, node);
+
+					// Dividir en palabras
+					const words = text.split(/(\s+)/);
+					const container = document.createElement('span');
+					
+					// Detectar color apropiado basado en fondo del elemento ancestro
+					const bionicColor = getBionicColorForBackground(element);
+
+					words.forEach(word => {
+						if (/^\s+$/.test(word)) {
+							container.appendChild(document.createTextNode(word));
+						} else if (word.length > 0) {
+							// Aplicar reglas por longitud de palabra (caracteres)
+							const { highlighted, rest } = splitWordIntoBionicParts(word, 0.5);
+
+							const highlightSpan = document.createElement('span');
+							highlightSpan.className = 'bionic-highlight';
+							highlightSpan.style.cssText = `color: ${bionicColor}; font-weight: 700;`;
+							highlightSpan.textContent = highlighted;
+							container.appendChild(highlightSpan);
+
+							if (rest) {
+								const restSpan = document.createElement('span');
+								restSpan.className = 'bionic-rest';
+								restSpan.style.cssText = 'color: inherit; font-weight: 400;';
+								restSpan.textContent = rest;
+								container.appendChild(restSpan);
 							}
-						} else if (node.nodeType === Node.ELEMENT_NODE && (node as Element).classList.contains('rhyme-highlight')) {
-							// Procesar texto dentro de spans de rima sin destruir el span
-							Array.from(node.childNodes).forEach(processTextNode);
-						} else if (node.childNodes.length > 0) {
-							// Recursivamente procesar hijos
+						}
+					});
+
+					if (node.parentNode) {
+						node.parentNode.replaceChild(container, node);
+					}
 							Array.from(node.childNodes).forEach(processTextNode);
 						}
 					};
@@ -404,6 +444,9 @@ let text = element.textContent?.trim();
 					if (!splitIntoSyllables) return;
 					const words = text.split(/(\s+)/);
 					
+					// Detectar color apropiado basado en fondo del elemento
+					const bionicColor = getBionicColorForBackground(element);
+					
 					const processedWords = words.map((word) => {
 						if (/^\s+$/.test(word)) {
 							return word;
@@ -411,18 +454,12 @@ let text = element.textContent?.trim();
 						
 						if (word.length === 0) return word;
 						
-						const syllables = splitIntoSyllables(word);
+						const { highlighted, rest } = splitWordIntoBionicParts(word, 0.5);
 						
-						if (syllables.length === 0) {
-							return word;
-						} else if (syllables.length === 1 && word.length <= 3) {
-							// Palabra corta, resaltar completa
-							return `<span class=\"bionic-highlight\" style=\"font-weight: 700;\">${word}</span>`;
+						if (!rest) {
+							return `<span class=\"bionic-highlight\" style=\"font-weight: 700; color: ${bionicColor};\">${word}</span>`;
 						} else {
-							// Resaltar primera sílaba
-							const firstSyllable = syllables[0];
-							const rest = word.slice(firstSyllable.length);
-							return `<span class=\"bionic-highlight\" style=\"font-weight: 700;\">${firstSyllable}</span><span class=\"bionic-rest\" style=\"font-weight: 400;\">${rest}</span>`;
+							return `<span class=\"bionic-highlight\" style=\"font-weight: 700; color: ${bionicColor};\">${highlighted}</span><span class=\"bionic-rest\" style=\"font-weight: 400;\">${rest}</span>`;
 						}
 					});
 					
@@ -432,19 +469,16 @@ let text = element.textContent?.trim();
 
 			// En lugar de reemplazar el innerHTML completo (que rompe la estructura), procesamos
 			// cada nodo de texto individualmente y reemplazamos solo lo necesario.
-			const createBionicFragment = (text: string) => {
+			const createBionicFragment = (text: string, el: Element) => {
 				const frag = document.createDocumentFragment();
-				if (!splitIntoSyllables) { frag.appendChild(document.createTextNode(text)); return frag; }
+				const bionicColor = getBionicColorForBackground(el);
 				const tokens = text.split(/(\s+)/);
 				tokens.forEach(token => {
 					if (/^\s+$/.test(token)) { frag.appendChild(document.createTextNode(token)); return; }
-					const syllables = splitIntoSyllables(token);
-					if (!syllables || syllables.length === 0) { frag.appendChild(document.createTextNode(token)); return; }
-					if (syllables.length === 1 && token.length <= 3) {
-						const s = document.createElement('span'); s.className = 'bionic-highlight'; s.textContent = token; frag.appendChild(s); return;
-					}
-					const first = syllables[0]; const rest = token.slice(first.length);
-					const h = document.createElement('span'); h.className = 'bionic-highlight'; h.textContent = first; frag.appendChild(h);
+					if (token.length === 0) { frag.appendChild(document.createTextNode(token)); return; }
+					const { highlighted, rest } = splitWordIntoBionicParts(token, 0.5);
+					if (!rest) { const s = document.createElement('span'); s.className = 'bionic-highlight'; s.style.color = bionicColor; s.textContent = token; frag.appendChild(s); return; }
+					const h = document.createElement('span'); h.className = 'bionic-highlight'; h.style.color = bionicColor; h.textContent = highlighted; frag.appendChild(h);
 					if (rest) { const r = document.createElement('span'); r.className = 'bionic-rest'; r.textContent = rest; frag.appendChild(r); }
 				});
 				return frag;
@@ -462,7 +496,7 @@ let text = element.textContent?.trim();
 						if ($configuraciones.bionicMode) {
 							const walk = (n: Node) => {
 								if (n.nodeType === Node.TEXT_NODE) {
-									const frag = createBionicFragment(n.textContent || ''); n.parentNode?.replaceChild(frag, n);
+									const frag = createBionicFragment(n.textContent || '', element); n.parentNode?.replaceChild(frag, n);
 								} else if (n.nodeType === Node.ELEMENT_NODE && (n as Element).classList.contains('rhyme-highlight')) {
 									Array.from(n.childNodes).forEach(walk);
 								} else if (n.childNodes && n.childNodes.length) { Array.from(n.childNodes).forEach(walk); }
@@ -473,7 +507,7 @@ let text = element.textContent?.trim();
 						node.parentNode?.replaceChild(frag, node);
 						return;
 					}
-					if ($configuraciones.bionicMode) { const f = createBionicFragment(txt); node.parentNode?.replaceChild(f, node); return; }
+					if ($configuraciones.bionicMode) { const f = createBionicFragment(txt, element); node.parentNode?.replaceChild(f, node); return; }
 					return;
 				} else if (node.nodeType === Node.ELEMENT_NODE) {
 					if ((node as Element).classList.contains('bionic-highlight') || (node as Element).classList.contains('rhyme-highlight')) return;

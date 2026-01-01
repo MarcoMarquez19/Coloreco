@@ -29,7 +29,7 @@
 
 	.bionic-text :global(.bionic-word) {
 		font-weight: 700;
-		color: var(--bionic-highlight-color, #0b6efd);
+		color: var(--bionic-highlight-color, #003366);
 	}
 
 	.bionic-text :global(.bionic-rest) {
