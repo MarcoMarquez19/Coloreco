@@ -12,9 +12,20 @@
 	interface Props {
 		/** Ruta al SVG de accesibilidad de la escena */
 		rutaSvgAccesibilidad?: string;
+		/** Nivel de zoom aplicado */
+		nivelZoom?: number;
+		/** Offset horizontal de pan */
+		offsetX?: number;
+		/** Offset vertical de pan */
+		offsetY?: number;
 	}
 
-	let { rutaSvgAccesibilidad }: Props = $props();
+	let { 
+		rutaSvgAccesibilidad,
+		nivelZoom = 1,
+		offsetX = 0,
+		offsetY = 0
+	}: Props = $props();
 
 	// Dispatcher para comunicar eventos de accesibilidad
 	const dispatch = createEventDispatcher<{
@@ -26,6 +37,7 @@
 	// Estado del overlay - siempre visible
 	let contenedorOverlay: HTMLDivElement | null = $state(null);
 	let contenedorSvg: HTMLDivElement | null = $state(null);
+	let contenedorTransformable: HTMLDivElement | null = $state(null);
 	let svgCargado = $state<boolean>(false);
 	let modoNavegacionActivo = $state<boolean>(false);
 	let altoContrasteActivo = $state<boolean>(false);
@@ -435,6 +447,16 @@
 		}
 	});
 
+	// Efecto reactivo: aplicar zoom y offset al overlay (igual que en DibujoCanvas)
+	$effect(() => {
+		if (!contenedorTransformable) return;
+		
+		const transform = `scale(${nivelZoom}) translate(${offsetX}px, ${offsetY}px)`;
+		contenedorTransformable.style.transform = transform;
+		contenedorTransformable.style.transformOrigin = 'center center';
+		contenedorTransformable.style.transition = 'transform 0.3s ease';
+	});
+
 	// Efecto reactivo: ajustar tamaño cuando cambia el contenedor o se redimensiona la ventana
 	$effect(() => {
 		if (contenedorOverlay && svgCargado) {
@@ -473,13 +495,19 @@
 		{/if}
 	</div>
 
-	<!-- Contenedor para el SVG dinámico -->
+	<!-- Contenedor transformable (recibe zoom y pan como DibujoCanvas) -->
 	<div 
-		class="contenedor-svg-accesible"
-		bind:this={contenedorSvg}
-		aria-label="Mapa interactivo de la escena"
+		class="contenedor-overlay-transform"
+		bind:this={contenedorTransformable}
 	>
-		<!-- El SVG se inyectará aquí dinámicamente -->
+		<!-- Contenedor para el SVG dinámico -->
+		<div 
+			class="contenedor-svg-accesible"
+			bind:this={contenedorSvg}
+			aria-label="Mapa interactivo de la escena"
+		>
+			<!-- El SVG se inyectará aquí dinámicamente -->
+		</div>
 	</div>
 
 </div>
@@ -512,6 +540,15 @@
 	/* Cuando la navegación está activa, fondo sutil */
 	.overlay-accesibilidad.navegacion-activa {
 		background: rgba(0, 100, 255, 0.02);
+	}
+
+	/* Contenedor transformable (recibe zoom y pan) */
+	.contenedor-overlay-transform {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		transform-origin: center center;
+		pointer-events: none;
 	}
 
 	/* Contenedor del SVG accesible */

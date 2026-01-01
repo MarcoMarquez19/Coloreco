@@ -21,6 +21,7 @@
 	// Referencias a los componentes
 	let canvasRef: DibujoCanvas;
 	let overlayRef: DibujoOverlay;
+	let contenedorLienzoRef: HTMLDivElement | null = null;
 
 	// Estado del taller de dibujo
 	let tallerInicializado = $state<boolean>(false);
@@ -46,6 +47,15 @@
 	let mensajeTexto = $state<string>('');
 	let mensajeTipo = $state<'success' | 'error'>('success');
 	let timeoutMensaje: ReturnType<typeof setTimeout> | null = null;
+
+	// Estado de zoom y pan
+	let nivelZoom = $state<number>(1); // 1 = sin zoom, 1.5 = medio, 2.5 = alto
+	let offsetX = $state<number>(0); // Desplazamiento horizontal
+	let offsetY = $state<number>(0); // Desplazamiento vertical
+	let estaDraggeando = $state<boolean>(false);
+	let ultimaPosX = $state<number>(0);
+	let ultimaPosY = $state<number>(0);
+	let herramientaMoverActiva = $state<boolean>(false);
 
 	// Estado del panel de información de navegación
 	let zonaEnfocada = $state<string>('');
@@ -177,6 +187,9 @@
 
 		switch (type) {
 			case 'cambiarHerramienta':
+				// Desactivar modo mover al cambiar de herramienta (pero mantener zoom)
+				herramientaMoverActiva = false;
+				aplicarTransformacion();
 				servicioDibujo.cambiarHerramienta(detail.herramienta);
 				break;
 			
@@ -202,8 +215,14 @@
 				break;
 			
 			case 'accionMover':
-				// TODO: Implementar funcionalidad de mover/pan
-				console.log('[TallerDibujo] Función mover no implementada aún');
+				// Activar herramienta mover (no toggle)
+				herramientaMoverActiva = true;
+				aplicarTransformacion();
+				console.log('[TallerDibujo] Herramienta mover activada');
+				break;
+			
+			case 'cambiarZoom':
+				cambiarZoom(detail.nivel);
 				break;
 			
 			case 'seleccionarSticker':
@@ -272,6 +291,95 @@
 	function volverAtras() {
 		// TODO: Navegar a la pantalla de selección de escenas
 		goto('/taller-escenas');
+	}
+
+	/**
+	 * Cambia el nivel de zoom
+	 */
+	function cambiarZoom(nivel: number) {
+		nivelZoom = nivel;
+		// Resetear offset cuando cambia el zoom
+		if (nivel === 1) {
+			offsetX = 0;
+			offsetY = 0;
+		}
+		aplicarTransformacion();
+		console.log(`[TallerDibujo] Zoom cambiado a: ${nivel}x`);
+	}
+
+	/**
+	 * Aplica la transformación de zoom y pan al contenedor del lienzo
+	 */
+	function aplicarTransformacion() {
+		// Bloquear/desbloquear canvas según si mover está activo
+		if (herramientaMoverActiva) {
+			servicioDibujo.bloquear();
+		} else {
+			servicioDibujo.desbloquear();
+		}
+	}
+
+	/**
+	 * Inicia el arrastre para pan
+	 */
+	function iniciarDrag(event: MouseEvent) {
+		if (!herramientaMoverActiva || nivelZoom === 1) return;
+		
+		estaDraggeando = true;
+		ultimaPosX = event.clientX;
+		ultimaPosY = event.clientY;
+		
+		if (contenedorLienzoRef) {
+			contenedorLienzoRef.style.cursor = 'grabbing';
+		}
+	}
+
+	/**
+	 * Procesa el movimiento durante el arrastre
+	 */
+	function procesarDrag(event: MouseEvent) {
+		if (!estaDraggeando) return;
+		
+		const deltaX = (event.clientX - ultimaPosX) / nivelZoom;
+		const deltaY = (event.clientY - ultimaPosY) / nivelZoom;
+		
+		offsetX += deltaX;
+		offsetY += deltaY;
+		
+		// Limitar el offset para no salirse de los bordes
+		// Cuando hay zoom, podemos movernos, pero sin exceder los límites del canvas
+		if (contenedorLienzoRef && nivelZoom > 1) {
+			const containerRect = contenedorLienzoRef.getBoundingClientRect();
+			const canvasWidth = containerRect.width;
+			const canvasHeight = containerRect.height;
+			
+			// Calcular el máximo offset permitido
+			// El canvas escalado tiene un tamaño efectivo mayor, podemos movernos hasta que los bordes queden visibles
+			const maxOffsetX = (canvasWidth * (nivelZoom - 1)) / (2 * nivelZoom);
+			const maxOffsetY = (canvasHeight * (nivelZoom - 1)) / (2 * nivelZoom);
+			
+			// Limitar el offset
+			offsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, offsetX));
+			offsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, offsetY));
+		}
+		
+		ultimaPosX = event.clientX;
+		ultimaPosY = event.clientY;
+		
+		aplicarTransformacion();
+	}
+
+	/**
+	 * Finaliza el arrastre
+	 */
+	function finalizarDrag() {
+		if (!estaDraggeando) return;
+		
+		estaDraggeando = false;
+		
+		if (contenedorLienzoRef && herramientaMoverActiva && nivelZoom > 1) {
+			contenedorLienzoRef.style.cursor = 'grab';
+		}
 	}
 
 	/**
@@ -397,6 +505,7 @@
 				on:accionGuardar={manejarEventoBarra}
 				on:accionTerminar={manejarEventoBarra}
 				on:accionMover={manejarEventoBarra}
+				on:cambiarZoom={manejarEventoBarra}
 			/>
 
 			<!-- Panel de información de navegación - posicionado absolutamente -->
@@ -418,13 +527,31 @@
 
 		<!-- Área del lienzo -->
 		<section class="seccion-lienzo" aria-label="Lienzo de dibujo">
-			<div class="contenedor-lienzo">
-				<DibujoCanvas bind:this={canvasRef} />
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<div 
+				class="contenedor-lienzo"
+				bind:this={contenedorLienzoRef}
+				onmousedown={iniciarDrag}
+				onmousemove={procesarDrag}
+				onmouseup={finalizarDrag}
+				onmouseleave={finalizarDrag}
+				style="cursor: {herramientaMoverActiva && nivelZoom > 1 ? (estaDraggeando ? 'grabbing' : 'grab') : 'default'};"
+			>
+				<DibujoCanvas 
+					bind:this={canvasRef} 
+					nivelZoom={nivelZoom}
+					offsetX={offsetX}
+					offsetY={offsetY}
+					modoMoverActivo={herramientaMoverActiva}
+				/>
 				
 				<!-- Overlay de accesibilidad -->
 				<DibujoOverlay
 					bind:this={overlayRef}
 					rutaSvgAccesibilidad={escena?.rutaAccesibilidad}
+					nivelZoom={nivelZoom}
+					offsetX={offsetX}
+					offsetY={offsetY}
 					on:seleccionar={manejarEventoOverlay}
 					on:zonaEnfocada={manejarEventoOverlay}
 					on:modoNavegacionCambiado={manejarEventoOverlay}

@@ -24,6 +24,10 @@ export interface EstadoDibujo {
 	// Estado de stickers
 	stickerActual: Sticker | null;
 	escalaSticker: number;
+	// Estado de zoom y pan
+	nivelZoom: number;
+	offsetX: number;
+	offsetY: number;
 }
 
 // Herramientas disponibles
@@ -79,7 +83,10 @@ class ServicioDibujo {
 			estaDibujando: false,
 			modoAccesible: false,
 			stickerActual: null,
-			escalaSticker: 1.0
+			escalaSticker: 1.0,
+			nivelZoom: 1,
+			offsetX: 0,
+			offsetY: 0
 		};
 	}
 
@@ -368,7 +375,10 @@ class ServicioDibujo {
 			estaDibujando: false,
 			modoAccesible: false,
 			stickerActual: null,
-			escalaSticker: 1.0
+			escalaSticker: 1.0,
+			nivelZoom: 1,
+			offsetX: 0,
+			offsetY: 0
 		};
 		
 		this.aplicarEstiloActualAlCanvas();
@@ -413,6 +423,44 @@ class ServicioDibujo {
 	 */
 	estaBloqueado(): boolean {
 		return this.bloqueado;
+	}
+
+	/**
+	 * Cambia el nivel de zoom
+	 */
+	cambiarZoom(nivel: number): void {
+		this.estado.nivelZoom = nivel;
+		// Resetear offset cuando se vuelve a zoom normal
+		if (nivel === 1) {
+			this.estado.offsetX = 0;
+			this.estado.offsetY = 0;
+		}
+		console.log(`[ServicioDibujo] Zoom cambiado a: ${nivel}x`);
+	}
+
+	/**
+	 * Actualiza el offset de pan
+	 */
+	actualizarOffset(x: number, y: number): void {
+		this.estado.offsetX = x;
+		this.estado.offsetY = y;
+	}
+
+	/**
+	 * Obtiene el nivel de zoom actual
+	 */
+	obtenerNivelZoom(): number {
+		return this.estado.nivelZoom;
+	}
+
+	/**
+	 * Obtiene el offset actual
+	 */
+	obtenerOffset(): { x: number; y: number } {
+		return {
+			x: this.estado.offsetX,
+			y: this.estado.offsetY
+		};
 	}
 }
 

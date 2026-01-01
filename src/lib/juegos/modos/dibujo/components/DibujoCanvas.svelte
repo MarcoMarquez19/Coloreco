@@ -13,11 +13,27 @@
 	import { guardarObra } from '$lib/db/obras.service';
 	import { obtenerSesionActual } from '$lib/db/artistas.service';
 
+	// Props para zoom y pan
+	interface Props {
+		nivelZoom?: number;
+		offsetX?: number;
+		offsetY?: number;
+		modoMoverActivo?: boolean;
+	}
+
+	let { 
+		nivelZoom = 1,
+		offsetX = 0,
+		offsetY = 0,
+		modoMoverActivo = false
+	}: Props = $props();
+
 	// Referencias del canvas y contexto
 	let canvasDibujoRef: HTMLCanvasElement | undefined = $state<HTMLCanvasElement | undefined>(undefined); // Canvas para el dibujo del usuario
 	let canvasEscenaRef: HTMLCanvasElement | undefined = $state<HTMLCanvasElement | undefined>(undefined); // Canvas para la imagen de la escena
 	let contextoDibujo: CanvasRenderingContext2D; // Contexto para dibujar
 	let contextoEscena: CanvasRenderingContext2D; // Contexto para la escena
+	let contenedorCanvasRef: HTMLDivElement | undefined = $state<HTMLDivElement | undefined>(undefined); // Contenedor de los canvas
 	
 	// Estado de la escena
 	let escena: EscenaCatalogo | null = $state<EscenaCatalogo | null>(null);
@@ -139,10 +155,16 @@
 			clientY = evento.touches[0].clientY;
 		}
 
-		return {
-			x: clientX - rect.left,
-			y: clientY - rect.top
-		};
+		// 1. Calculamos la posición relativa al borde visual del canvas
+		const xVisual = clientX - rect.left;
+		const yVisual = clientY - rect.top;
+
+		// 2. Ajustamos la coordenada visual dividiéndola por el factor de zoom
+		// Esto mapea el píxel de la pantalla al píxel del buffer del canvas
+		const x = xVisual * (canvasDibujoRef!.width / rect.width);
+		const y = yVisual * (canvasDibujoRef!.height / rect.height);
+
+		return { x, y };
 	}
 
 	/**
@@ -324,6 +346,22 @@
 	}
 
 	/**
+	 * Deshabilita los eventos del canvas (para modo mover)
+	 */
+	export function deshabilitarEventos() {
+		if (!canvasDibujoRef) return;
+		canvasDibujoRef.style.pointerEvents = 'none';
+	}
+
+	/**
+	 * Habilita los eventos del canvas
+	 */
+	export function habilitarEventos() {
+		if (!canvasDibujoRef) return;
+		canvasDibujoRef.style.pointerEvents = 'auto';
+	}
+
+	/**
 	 * Guarda el dibujo como obra en la galería
 	 */
 	export async function guardarDibujo(): Promise<void> {
@@ -389,6 +427,16 @@
 		}
 	});
 
+	// Efecto para aplicar zoom y offset a los canvas
+	$effect(() => {
+		if (!contenedorCanvasRef) return;
+		
+		const transform = `scale(${nivelZoom}) translate(${offsetX}px, ${offsetY}px)`;
+		contenedorCanvasRef.style.transform = transform;
+		contenedorCanvasRef.style.transformOrigin = 'center center';
+		contenedorCanvasRef.style.transition = 'transform 0.3s ease';
+	});
+
 	// Cargar escena al montar el componente
 	onMount(() => {
 		void cargarEscena();
@@ -425,24 +473,27 @@
 			<p>{error}</p>
 		</div>
 	{:else if escena}
-		<!-- Canvas de dibujo (capa inferior - donde dibuja el usuario) -->
-		<canvas
-			bind:this={canvasDibujoRef}
-			class="lienzo-dibujo"
-			aria-label={`Lienzo para dibujar sobre la escena: ${escena.nombre}`}
-			onmousedown={iniciarDibujo}
-			onmousemove={dibujar}
-			onmouseup={terminarDibujo}
-			onmouseleave={terminarDibujo}
+		<!-- Contenedor interno que recibe el transform de zoom -->
+		<div bind:this={contenedorCanvasRef} class="contenedor-canvas-transform">
+			<!-- Canvas de dibujo (capa inferior - donde dibuja el usuario) -->
+			<canvas
+				bind:this={canvasDibujoRef}
+				class="lienzo-dibujo"
+				aria-label={`Lienzo para dibujar sobre la escena: ${escena.nombre}`}
+				onmousedown={iniciarDibujo}
+				onmousemove={dibujar}
+				onmouseup={terminarDibujo}
+				onmouseleave={terminarDibujo}
 
-		></canvas>
-		
-		<!-- Canvas de escena (capa superior - imagen que permanece encima) -->
-		<canvas
-			bind:this={canvasEscenaRef}
-			class="lienzo-escena"
-			aria-hidden="true"
-		></canvas>
+			></canvas>
+			
+			<!-- Canvas de escena (capa superior - imagen que permanece encima) -->
+			<canvas
+				bind:this={canvasEscenaRef}
+				class="lienzo-escena"
+				aria-hidden="true"
+			></canvas>
+		</div>
 	{/if}
 </div>
 
@@ -457,6 +508,13 @@
 		background:#f5f5f5;
 		border-radius: 8px;
 		overflow: hidden;
+	}
+
+	.contenedor-canvas-transform {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		transform-origin: center center;
 	}
 
 	.lienzo-dibujo,
