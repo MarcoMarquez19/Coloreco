@@ -247,9 +247,9 @@
             <div class="estado-logro" aria-hidden="true">
                 <p>
                 {#if logrosDisplay[logroActualIndex]?.desbloqueado}
-                    <span class="badge desbloqueado">✓ Desbloqueado</span>
+                    <span class="badge desbloqueado"><span class="icono">✓</span> Desbloqueado</span>
                 {:else}
-                    <span class="badge bloqueado">🔒 Bloqueado</span>
+                    <span class="badge bloqueado"><span class="icono">🔒</span> Bloqueado</span>
                 {/if}
                 </p>
             </div>
