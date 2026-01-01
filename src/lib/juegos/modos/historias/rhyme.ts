@@ -32,24 +32,26 @@ function getBionicHighlightLength(endingLength: number): number {
 	return Math.min(endingLength - 1, Math.max(1, Math.ceil(endingLength * pct)));
 }
 
-// Paleta de colores con alto contraste
+// Paleta de colores predefinidos (versiones oscuras para alto contraste)
 const RHYME_COLORS = [
-	'#D32F2F', // rojo oscuro
-	'#1976D2', // azul oscuro
-	'#388E3C', // verde oscuro
-	'#F57C00', // naranja oscuro
-	'#7B1FA2', // morado oscuro
-	'#0097A7', // cian oscuro
-	'#C2185B', // rosa oscuro
-	'#5D4037', // marrón
-	'#E64A19', // naranja rojizo
-	'#00796B', // verde azulado
-	'#455A64', // gris azulado
-	'#6A1B9A', // morado intenso
-	'#C62828', // rojo intenso
-	'#AD1457', // rosa intenso
-	'#00838F', // cian intenso
-	'#4E342E', // marrón oscuro
+    '#C00000', // Rojo oscuro
+    '#0000CC', // Azul oscuro
+    '#008000', // Verde oscuro
+    '#CC6600', // Naranja oscuro
+    '#660066', // Púrpura oscuro
+    '#CC00CC', // Magenta oscuro
+    '#006666', // Cian oscuro
+    '#CC0066', // Rosa oscuro
+    '#999900', // Amarillo oscuro (oliva)
+    '#000000', // Negro
+    '#006B54', // Verde mar oscuro
+    '#556B2F', // Verde oliva muy oscuro
+    '#3A006F', // Índigo oscuro
+    '#CC4400', // Coral oscuro
+    '#B8860B', // Dorado oscuro
+    '#004D4D', // Verde azulado oscuro
+    '#8B0000', // Rojo muy oscuro
+    '#000066'  // Azul marino oscuro
 ];
 
 /**
@@ -95,19 +97,22 @@ export function detectRhymes(text: string): RhymePattern[] {
 		type: string;
 		priority: number;
 		groupId: number;
+		colorIndex: number;
 	}>();
 	
-	// Asignar IDs usando hash del key para colores consistentes y únicos
-	rhymeGroups.forEach((group, key) => {
-		// Para sufijos comunes, permitir incluso 1 palabra (son terminaciones importantes)
-		const isSuffix = key.startsWith('suf:');
-		const minWords = isSuffix ? 1 : 2;
-		
-		if (group.words.size >= minWords) {
-			// Generar un ID único basado en el hash del key
-			const groupId = hashStringToNumber(key);
-			validGroups.set(key, { ...group, groupId });
-		}
+	// Asignar IDs y colores únicos a cada grupo
+	// Ordenar por tamaño de grupo (descendente) para asignar colores a los grupos más importantes primero
+	const sortedGroups = Array.from(rhymeGroups.entries())
+		.filter(([, group]) => group.words.size >= 2)
+		.sort((a, b) => b[1].words.size - a[1].words.size);
+	
+	let colorIndex = 0;
+	sortedGroups.forEach(([key, group]) => {
+		// Generar un ID único basado en el hash del key
+		const groupId = hashStringToNumber(key);
+		// Asignar color secuencialmente para evitar repeticiones
+		validGroups.set(key, { ...group, groupId, colorIndex: colorIndex % RHYME_COLORS.length });
+		colorIndex++;
 	});
 
 	// Asignar patrones a palabras
@@ -116,23 +121,42 @@ export function detectRhymes(text: string): RhymePattern[] {
 		let bestMatchGroupId = -1;
 		let bestMatchType = '';
 		let bestMatchPriority = -1;
+		let bestMatchGroupSize = 0;
+		let bestMatchEndingLength = 0;
 		let hasBestMatch = false;
 
-		// Buscar el mejor grupo (mayor prioridad)
+		// Buscar el mejor grupo: priorizar longitud de terminación, luego tamaño del grupo
 		validGroups.forEach((group, key) => {
 			if (group.words.has(word)) {
-				if (!hasBestMatch || group.priority > bestMatchPriority) {
+				const groupSize = group.words.size;
+				const ending = extractEnding(word, key, group.type);
+				const endingLength = ending.length;
+				
+				// Estrategia de selección:
+				// 1. Priorizar terminaciones más largas (3 letras > 2 letras)
+				// 2. Si hay empate en longitud, preferir grupos más grandes
+				// 3. Si hay empate en tamaño, usar mayor prioridad
+				const isBetter = !hasBestMatch || 
+					endingLength > bestMatchEndingLength ||
+					(endingLength === bestMatchEndingLength && groupSize > bestMatchGroupSize) ||
+					(endingLength === bestMatchEndingLength && groupSize === bestMatchGroupSize && group.priority > bestMatchPriority);
+				
+				if (isBetter) {
 					bestMatchKey = key;
 					bestMatchGroupId = group.groupId;
 					bestMatchType = group.type;
 					bestMatchPriority = group.priority;
+					bestMatchGroupSize = groupSize;
+					bestMatchEndingLength = endingLength;
 					hasBestMatch = true;
 				}
 			}
 		});
 
 		if (hasBestMatch) {
-			const color = RHYME_COLORS[bestMatchGroupId % RHYME_COLORS.length];
+			// Usar el colorIndex del grupo en lugar del groupId para evitar colisiones
+			const groupData = validGroups.get(bestMatchKey);
+			const color = groupData ? RHYME_COLORS[groupData.colorIndex] : RHYME_COLORS[0];
 			const ending = extractEnding(word, bestMatchKey, bestMatchType);
 
 			return {
@@ -165,53 +189,98 @@ function analyzeWord(word: string): Array<{ key: string; type: string; priority:
 			type: 'terminación',
 			priority: 100
 		});
+		
+		// También añadir las últimas 2 letras del sufijo como rima adicional
+		// para que palabras con sufijos diferentes pero misma terminación rimen
+		// (ej: "historias" [ias] y "escenas" [as] ambas riman por "as")
+		if (suffix.length >= 2) {
+			const shortEnding = suffix.slice(-2);
+			results.push({
+				key: `suf-short:${shortEnding}`,
+				type: 'terminación corta',
+				priority: 95
+			});
+		}
+		
+		// Para sufijos de 3+ letras, también añadir las últimas 3 letras
+		// (ej: "hombre" [bre], "madre" [dre], "entre" [tre] todas riman por "re")
+		if (suffix.length >= 3) {
+			const mediumEnding = suffix.slice(-3);
+			results.push({
+				key: `suf-medium:${mediumEnding}`,
+				type: 'terminación media',
+				priority: 96
+			});
+		}
 	}
 	
-	// 2. Rima consonante - últimas 2-3 letras exactas
+	// 2. Rima consonante - últimas 2-4 letras exactas (RIMA REAL)
+	// Esta es la rima que los niños realmente escuchan y reconocen
 	if (word.length >= 3) {
-		const ending3 = word.slice(-3);
+		const ending4 = word.length >= 4 ? word.slice(-4) : '';
+		const ending3 = word.length >= 4 ? word.slice(-3) : '';
 		const ending2 = word.slice(-2);
 		
-		// Verificar que tenga al menos una vocal
-		if (/[aeiouáéíóú]/.test(ending3)) {
+		// Verificar que tenga al menos una vocal Y una consonante (no solo vocales)
+		const hasVowel4 = ending4 && /[aeiouáéíóú]/.test(ending4);
+		const hasConsonant4 = ending4 && /[bcdfghjklmnpqrstvwxyz]/.test(ending4);
+		
+		const hasVowel3 = ending3 && /[aeiouáéíóú]/.test(ending3);
+		const hasConsonant3 = ending3 && /[bcdfghjklmnpqrstvwxyz]/.test(ending3);
+		
+		const hasVowel2 = /[aeiouáéíóú]/.test(ending2);
+		const hasConsonant2 = /[bcdfghjklmnpqrstvwxyz]/.test(ending2);
+		
+		// Para 4 letras: debe tener vocal y consonante
+		if (hasVowel4 && hasConsonant4) {
 			results.push({
-				key: `cons3:${ending3}`,
-				type: 'consonante (3)',
+				key: `cons4:${ending4}`,
+				type: 'consonante (4)',
 				priority: 90
 			});
 		}
 		
-		if (/[aeiouáéíóú]/.test(ending2)) {
+		// Para 3 letras: debe tener vocal y consonante
+		if (word.length >= 4 && hasVowel3 && hasConsonant3) {
 			results.push({
-				key: `cons2:${ending2}`,
-				type: 'consonante (2)',
+				key: `cons3:${ending3}`,
+				type: 'consonante (3)',
 				priority: 85
 			});
 		}
+		
+		// Para 2 letras: debe tener vocal y consonante Y ser una sílaba completa
+		if (word.length >= 3 && hasVowel2 && hasConsonant2) {
+			// Verificar que las últimas 2 letras formen una sílaba completa
+			const syllables = splitIntoSyllables(word);
+			const lastSyllable = syllables[syllables.length - 1];
+			if (lastSyllable && lastSyllable.length === 2 && lastSyllable === ending2) {
+				results.push({
+					key: `cons2:${ending2}`,
+					type: 'consonante (2)',
+					priority: 80
+				});
+			}
+		}
 	}
 	
-	// 3. Rima asonante - últimas 2 vocales
-	const vowelPattern = extractVowels(word);
-	if (vowelPattern.length >= 2) {
-		results.push({
-			key: `ason:${vowelPattern}`,
-			type: 'asonante',
-			priority: 75
-		});
-	}
-	
-	// 4. Rima por última sílaba
+	// 3. Rima por última sílaba - ALTA PRIORIDAD (después de sufijos)
+	// Ayuda a la conciencia fonológica
 	const syllables = splitIntoSyllables(word);
 	if (syllables.length > 0) {
 		const lastSyll = syllables[syllables.length - 1];
-		if (lastSyll.length >= 1) {
+		if (lastSyll.length >= 2) {
 			results.push({
 				key: `syll:${lastSyll}`,
 				type: 'sílaba',
-				priority: 70
+				priority: 95 // Alta prioridad - es la segunda más importante
 			});
 		}
 	}
+	
+	// ❌ RIMA ASONANTE ELIMINADA
+	// La rima asonante (solo vocales) genera demasiados falsos positivos
+	// y es confusa para niños con dislexia (ej: joven/noche por "o-e")
 	
 	return results;
 }
@@ -235,33 +304,88 @@ function extractVowels(word: string): string {
 
 /**
  * Detecta sufijos comunes del español
- * Incluye terminaciones para palabras agudas, graves y esdrújulas
+ * Incluye terminaciones significativas y comunes
  */
 function getCommonSuffix(word: string): string | null {
 	// Ordenados por longitud descendente para evitar matches parciales
+	// Solo sufijos significativos de 3+ letras para evitar falsos positivos
 	const suffixes = [
-		// Terminaciones largas (esdrújulas y graves)
-		'ibilidad', 'amiento', 'imiento',
-		// Terminaciones medias - graves comunes
-		'ción', 'sión', 'mente', 'idad', 'edad', 'ador', 'edor', 'idor',
-		'ante', 'ente', 'tad', 'dad', 'ura', 'ura',
-		// Verbos y participios - graves
-		'ando', 'iendo', 'ado', 'ido', 'aba', 'ían', 'aba', 'ían',
-		// Diminutivos y aumentativos - graves
-		'ito', 'ita', 'illo', 'illa', 'ón', 'ona', 'azo', 'aza',
-		// Adjetivos - graves
-		'able', 'ible', 'oso', 'osa', 'ivo', 'iva', 'ica', 'ico',
-		// Profesiones y oficios
-		'ero', 'era', 'ista', 'or', 'ora',
-		// Terminaciones agudas (palabras con acento en última sílaba)
-		'ión', 'ón', 'án', 'és', 'ás',
-		// Otras terminaciones comunes
-		'tes', 'ar', 'er', 'ir', 'en', 'to', 'ta', 'no', 'na',
-		'al', 'el', 'il', 'ol', 'ul'
+		// --- ACCIONES Y PROCESOS (Sustantivos de verbos) ---
+		'ibilidad', 'abilidad', 'amiento', 'imiento', 'adura', 'edura', 'idura',
+		'anza', 'ción', 'sión', 'xión', 'aje',
+
+		// --- CUALIDADES Y ESTADOS (Sustantivos abstractos) ---
+		'idad', 'edad', 'tad', 'dad', 'ez', 'eza', 'ura', 'ia', 'icía', 'itúd', 
+		'ancia', 'encia', 'ismo', 'ería',
+
+		// --- QUIÉN LO HACE (Oficios y agentes) ---
+		'ador', 'edor', 'idor', 'ante', 'ente', 'iente', 'ero', 'era', 
+		'ista', 'ario', 'aria', 'triz', 'dor',
+
+		// --- DIMINUTIVOS (Claves en textos infantiles) ---
+		'ito', 'ita', 'illo', 'illa', 'ico', 'ica', 'ín', 'ina', 'uelo', 'uela',
+
+		// --- AUMENTATIVOS Y DESPECTIVOS ---
+		'ón', 'ona', 'azo', 'aza', 'ote', 'ota', 'ucha', 'ucho', 'aco', 'aca',
+
+		// --- CÓMO ES ALGO (Adjetivos) ---
+		'able', 'ible', 'oso', 'osa', 'ivo', 'iva', 'ido', 'ida', 'ado', 'ada',
+		'esco', 'esca', 'iento', 'ienta', 'izo', 'iza', 'udo', 'uda', 'al', 'ar',
+		'ento', 'enta', 'ico', 'ica', 'ista', 'il',
+
+		// --- TIEMPOS VERBALES COMUNES (Para rimas de narración) ---
+		'ábamos', 'ábais', 'aban', 'ieron', 'amos', 'emos', 'imos',
+		'asteis', 'isteis', 'aban', 'ían',
+		'aba', 'abas', 'aste', 'iste', 'ías',
+		'ará', 'erá', 'irá', 'aría', 'ería', 'iría', 'ando', 'iendo',
+		'ara', 'era', 'iera', 'ese', 'iese', 'ase', 'ias',
+
+		// --- INFINITIVOS Y FORMAS VERBALES ---
+		'uar', 'iar', 'ear', // actuar, estudiar, pasear
+		'ais', 'eis', 'ías', // váis, seáis, tenéis, venías
+		
+		// --- LUGAR Y CONJUNTO ---
+		'ería', 'ario', 'ero', 'eda', 'edo', 'edero',
+
+		// --- TERMINACIONES COMUNES (Sustantivos y otras) ---
+		'che', // noche, leche, coche
+		'día', // melodía, alegría
+		'bre', // hombre, nombre,iembre
+		'tre', // mientras, entre
+		'dre', // madre, padre, piedre
+		'rre', // corre, barre, amarre
+		
+		// --- TERMINACIONES VOCÁLICAS + CONSONANTE (2 letras) ---
+		// Vocal + R
+		'ar', 'er', 'ir', 'or', 'ur', // hablar, comer, vivir, color, azur
+		
+		// Vocal + S  
+		'as', 'es', 'is', 'os', 'us', // casas, jueves, crisis, ojos, autobús
+		
+		// Vocal + Z
+		'az', 'ez', 'iz', 'oz', 'uz', // paz, pez, nariz, voz, luz
+		
+		// Vocal + N
+		'án', 'en', 'ín', 'ón', 'ún', // pan, bien, jardín, ratón, algún
+		'an', 'in', 'un', // fan, fin, tun
+		
+		// Vocal + L
+		'al', 'el', 'il', 'ol', 'ul', // mal, piel, abril, sol, azul
+		
+		// Vocal + D
+		'ad', 'ed', 'id', 'od', 'ud', // verdad, pared, Madrid,ود, salud
+		
+		// Otras consonantes finales comunes
+		'ay', 'ey', 'oy', 'uy', // hay, rey, voy, muy
+
+		// --- MODO (Adverbios) ---
+		'mente'
 	];
 	
 	for (const suffix of suffixes) {
-		if (word.endsWith(suffix) && word.length > suffix.length) {
+		// Requiere que la palabra sea significativamente más larga que el sufijo
+		// (al menos 2 letras antes del sufijo)
+		if (word.endsWith(suffix) && word.length > suffix.length + 1) {
 			return suffix;
 		}
 	}
@@ -271,38 +395,34 @@ function getCommonSuffix(word: string): string | null {
 
 /**
  * Extrae la terminación según el tipo
- * Para palabras graves/esdrújulas: últimas 3 letras
- * Para palabras agudas: últimas 2 letras o desde vocal acentuada
+ * Para sufijos: devuelve el sufijo completo
+ * Para otros tipos: últimas 3-4 letras
  */
 function extractEnding(word: string, key: string, type: string): string {
-	if (key.startsWith('cons3:')) {
+	if (key.startsWith('cons4:')) {
+		return word.slice(-4);
+	} else if (key.startsWith('cons3:')) {
 		return word.slice(-3);
 	} else if (key.startsWith('cons2:')) {
 		return word.slice(-2);
-	} else if (key.startsWith('ason:')) {
-		// Para asonante, retornar desde la primera vocal del patrón
-		const pattern = key.replace('ason:', '');
-		return findVowelSection(word, pattern);
 	} else if (key.startsWith('syll:')) {
 		const syllables = splitIntoSyllables(word);
 		return syllables[syllables.length - 1] || '';
 	} else if (key.startsWith('suf:')) {
+		// Para sufijos, devolver el sufijo completo
 		const suffix = key.replace('suf:', '');
-		// Para sufijos, determinar si es aguda o grave
-		const hasAccentedVowel = /[áéíóú]/.test(word);
-		const endsInVowelNS = /[aeiou]$|[ns]$/.test(word);
-		
-		// Si tiene vocal acentuada o termina en consonante (excepto n,s) = aguda
-		if (hasAccentedVowel || !endsInVowelNS) {
-			// Aguda: últimas 2 letras o el sufijo si es corto
-			return suffix.length <= 3 ? suffix : word.slice(-2);
-		} else {
-			// Grave: últimas 3 letras o el sufijo
-			return suffix.length <= 4 ? suffix : word.slice(-3);
-		}
+		return suffix;
+	} else if (key.startsWith('suf-medium:')) {
+		// Para sufijos medios, devolver las últimas 3 letras
+		const mediumSuffix = key.replace('suf-medium:', '');
+		return mediumSuffix;
+	} else if (key.startsWith('suf-short:')) {
+		// Para sufijos cortos, devolver las últimas 2 letras
+		const shortSuffix = key.replace('suf-short:', '');
+		return shortSuffix;
 	}
 	
-	// Por defecto, usar últimas 3 letras para palabras graves
+	// Por defecto, usar últimas 3 letras
 	return word.slice(-3);
 }
 
@@ -403,6 +523,18 @@ export function applyRhymeHighlight(
 ): string {
 	const words = text.split(/(\s+)/);
 	
+	// Crear un mapa de grupos de rima para búsqueda eficiente
+	const rhymeGroupMap = new Map<number, { color: string; rhymeType: string; ending: string }>();
+	patterns.forEach(p => {
+		if (p.hasRhyme && p.rhymeGroup !== -1) {
+			rhymeGroupMap.set(p.rhymeGroup, {
+				color: p.color,
+				rhymeType: p.rhymeType,
+				ending: p.ending
+			});
+		}
+	});
+	
 	const result = words.map(segment => {
 		if (/^\s+$/.test(segment)) return segment;
 		
@@ -411,7 +543,31 @@ export function applyRhymeHighlight(
 		
 		const [, wordPart, punctuation] = match;
 		const cleanWord = wordPart.toLowerCase();
-		const pattern = patterns.find(p => p.word === cleanWord);
+		
+		// Primero buscar coincidencia exacta de palabra
+		let pattern = patterns.find(p => p.word === cleanWord);
+		
+		// Si no hay coincidencia exacta, buscar por terminación
+		if (!pattern || !pattern.hasRhyme) {
+			// Intentar encontrar un grupo de rima que coincida con esta palabra
+			for (const p of patterns) {
+				if (p.hasRhyme && p.ending && cleanWord.endsWith(p.ending.toLowerCase())) {
+					// Verificar que sea una terminación válida (no solo parte de la palabra)
+					const beforeEnding = cleanWord.substring(0, cleanWord.length - p.ending.length);
+					if (beforeEnding.length > 0) {
+						pattern = {
+							word: cleanWord,
+							rhymeGroup: p.rhymeGroup,
+							color: p.color,
+							hasRhyme: true,
+							rhymeType: p.rhymeType,
+							ending: p.ending
+						};
+						break;
+					}
+				}
+			}
+		}
 		
 		if (!pattern || !pattern.hasRhyme || !pattern.ending) {
 			return segment;
@@ -445,8 +601,8 @@ export function applyRhymeHighlight(
 			? ensureContrast(pattern.color, backgroundColor)
 			: pattern.color;
 		
-		// Convertir color hex a rgba con opacidad suave (15%)
-		const bgColor = hexToRgba(color, 0.15);
+		// Convertir color hex a rgba con opacidad suave (25%)
+		const bgColor = hexToRgba(color, 0.20);
 		
 		// Aplicar solo fondo resaltado suave y subrayado, sin alterar el texto
 		// Usar clase "rhyme-highlight" para que +layout.svelte lo detecte y no lo procese

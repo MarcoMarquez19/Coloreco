@@ -229,6 +229,10 @@
 	// Mapa para observers que limpian data-original-html si el DOM cambia
 	const originalObservers = new WeakMap<Element, MutationObserver>();
 
+	// Cache de patrones de rimas para mantener colores consistentes
+	let cachedRhymePatterns: any[] = [];
+	let cachedMainContent = '';
+
 /**
  * Calcula cuántos caracteres resaltar según la longitud de la palabra
  * Reglas:
@@ -380,6 +384,35 @@ function darkenColorSimple(hex: string, amount: number): string {
 		// Selector de elementos a procesar dentro de cada raíz
 		const selector = 'h1, h2, h3, h4, h5, h6, .seccion-titulo, p, button:not(.control-button):not(.boton-volver):not(.boton-configuracion):not(.switch-toggle), label:not(.switch-knob), .switch-label, span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-highlight):not(.switch-knob):not(.control-valor):not(.icono), small, div.control-ayuda, .control-label span';
 
+		// Si el modo rima está activo, primero recolectar TODO el texto visible de la página PRINCIPAL (sin modales)
+		let globalRhymePatterns: any[] = [];
+		if ($configuraciones.rhymeMode && detectRhymes) {
+			// Solo considerar el mainEl para el cálculo de patrones base
+			let mainContent = '';
+			if (mainEl) {
+				const elements = mainEl.querySelectorAll(selector);
+				elements.forEach((element) => {
+					// Solo incluir elementos visibles
+					const computedStyle = window.getComputedStyle(element as Element);
+					if (computedStyle.display !== 'none' && computedStyle.visibility !== 'hidden') {
+						const text = element.textContent?.trim();
+						if (text) {
+							mainContent += ' ' + text;
+						}
+					}
+				});
+			}
+			
+			// Solo recalcular si el contenido principal cambió
+			if (mainContent !== cachedMainContent) {
+				cachedMainContent = mainContent;
+				cachedRhymePatterns = detectRhymes(mainContent);
+			}
+			
+			// Usar los patrones cacheados
+			globalRhymePatterns = cachedRhymePatterns;
+		}
+
 		roots.forEach((root) => {
 			const elements = root.querySelectorAll(selector);
 
@@ -472,12 +505,12 @@ let text = element.textContent?.trim();
 				let processedHTML = text;
 				
 				// Aplicar modo rima primero si está activo
-				if ($configuraciones.rhymeMode && detectRhymes && applyRhymeHighlight) {
-					const patterns = detectRhymes(text);
+				if ($configuraciones.rhymeMode && applyRhymeHighlight) {
+					// Usar los patrones globales calculados previamente para toda la página
 					const backgroundColor = $configuraciones.modoNoche 
 						? ($configuraciones.modoInverso ? '#ffffff' : '#121212')
 						: '#ffffff';
-					processedHTML = applyRhymeHighlight(text, patterns, backgroundColor);
+					processedHTML = applyRhymeHighlight(text, globalRhymePatterns, backgroundColor);
 				}
 				
 				// Aplicar modo biónico después si está activo
@@ -608,7 +641,8 @@ let text = element.textContent?.trim();
 					
 					// NUEVO ENFOQUE: Procesar palabra por palabra aplicando AMBOS modos simultáneamente
 					if (($configuraciones.bionicMode || $configuraciones.rhymeMode) && detectRhymes && applyRhymeHighlight) {
-						const patterns = $configuraciones.rhymeMode ? detectRhymes(txt) : [];
+						// Usar los patrones globales de rima (ya detectados para toda la página)
+						const patterns = globalRhymePatterns;
 						const words = txt.split(/(\s+|[.,;:!?¿¡()"""'])/);
 						const frag = document.createDocumentFragment();
 						const bionicColor = getBionicColorForBackground(element);
@@ -652,8 +686,17 @@ let text = element.textContent?.trim();
 								if (rhymeStartIndex >= 0 && rhymeStartIndex < word.length) {
 									const rgb = hexToRgbSimple(pattern.color);
 									const lum = rgb ? (0.2126 * rgb[0]/255 + 0.7152 * rgb[1]/255 + 0.0722 * rgb[2]/255) : 0.5;
-									rhymeColor = lum > 0.4 ? darkenColorSimple(pattern.color, 0.4) : pattern.color;
-									rhymeBgColor = rgb ? `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.15)` : 'rgba(0,0,0,0.15)';
+									
+									// Ajustar colores según el modo
+									if ($configuraciones.modoNoche) {
+										// En modo noche, usar opacidad mayor y aclarar el color del borde
+										rhymeColor = pattern.color; // Color original más brillante
+										rhymeBgColor = rgb ? `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.45)` : 'rgba(255,255,255,0.45)';
+									} else {
+										// En modo claro, oscurecer el borde y usar opacidad baja
+										rhymeColor = lum > 0.4 ? darkenColorSimple(pattern.color, 0.4) : pattern.color;
+										rhymeBgColor = rgb ? `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.20)` : 'rgba(0,0,0,0.20)';
+									}
 								} else {
 									rhymeStartIndex = -1;
 								}
