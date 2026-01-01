@@ -9,6 +9,7 @@ import { getDB } from './database';
 import { browser } from '$app/environment';
 import type { Artista, Sesion } from './schemas'; 
 import { cargarAjustesDelArtista, guardarAjustesDesdeUI } from './ajustes.service';
+import { cargarLogrosArtista } from '$lib/stores/logros';
 
 // ============================================================================
 // GESTIÓN DE ARTISTAS
@@ -32,8 +33,7 @@ export async function crearArtista(nombre: string): Promise<number> {
 	const nuevoArtista: Omit<Artista, 'id'> = {
 		nombre: nombre.trim(),
 		fechaCreacion: ahora,
-		ultimaActividad: ahora,
-		puntuacion: 0
+		ultimaActividad: ahora
 	};
 
 	const id = await db.artistas.add(nuevoArtista as Artista);
@@ -105,21 +105,6 @@ export async function actualizarUltimaActividad(artistaId: number): Promise<void
 	});
 }
 
-/**
- * Actualiza la puntuación del artista
- * 
- * @param artistaId - ID del artista
- * @param nuevaPuntuacion - Nueva puntuación total
- */
-export async function actualizarPuntuacion(artistaId: number, nuevaPuntuacion: number): Promise<void> {
-	const db = getDB();
-	if (!db) return;
-
-	await db.artistas.update(artistaId, {
-		puntuacion: nuevaPuntuacion
-	});
-}
-
 // ============================================================================
 // GESTIÓN DE SESIÓN
 // ============================================================================
@@ -187,6 +172,13 @@ export async function cambiarArtista(artistaId: number): Promise<void> {
 
 	// Cargar y aplicar ajustes del artista a la UI
 	await cargarAjustesDelArtista(artistaId);
+
+	// Cargar logros para este artista (asegura que contadores/rachas por artista se inicialicen)
+	try {
+		await cargarLogrosArtista(artistaId);
+	} catch (e) {
+		console.error('[ArtistasService] Error cargando logros al cambiar de artista:', e);
+	}
 
 	console.log(`[ArtistasService] Cambiado a artista: ${artista.nombre} (ID: ${artistaId})`);
 }

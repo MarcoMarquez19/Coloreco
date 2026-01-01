@@ -1,0 +1,31 @@
+{
+  "capituloId": "padre-almeida-cap2",
+  "historiaId": "padre-almeida",
+  "titulo": "El Padre Almeida - Capítulo 2",
+  "imagenPrincipal": "/historias/padre-almeida/padre-almeida-cap2.jpg",
+  "texto": "Después de escuchar la voz del Cristo, el Padre Almeida se quedó paralizado de miedo. Sin embargo, su deseo de ir a la fiesta era más fuerte. Decidió ignorar la advertencia y salió como todas las noches. La ciudad lo esperaba con sus luces y música, pero algo había cambiado en su corazón.",
+  "pregunta": {
+    "texto": "¿Qué crees que sintió el Padre Almeida después de escuchar al Cristo?",
+    "opciones": [
+      {
+        "id": "opcion1",
+        "texto": "Miedo pero siguió adelante",
+        "esCorrecta": true,
+        "feedback": "¡Correcto! Sintió miedo pero su deseo era más fuerte."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Decidió quedarse a rezar",
+        "esCorrecta": false,
+        "feedback": "No, su deseo de fiesta era muy fuerte."
+      },
+      {
+        "id": "opcion3",
+        "texto": "No le importó para nada",
+        "esCorrecta": false,
+        "feedback": "Sí le afectó, pero no lo suficiente."
+      }
+    ]
+  },
+  "personajes": []
+}

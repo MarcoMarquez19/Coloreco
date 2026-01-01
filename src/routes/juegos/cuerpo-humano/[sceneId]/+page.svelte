@@ -15,7 +15,12 @@
 	import ZonasValidasOverlay from '$lib/juegos/modos/cuerpo-humano/components/ZonasValidasOverlay.svelte';
 	import MensajeFeedback from '$lib/juegos/modos/cuerpo-humano/components/MensajeFeedback.svelte';
 	import Modal from '$lib/components/modales/Modal.svelte';
+	import LogroDesbloqueado from '$lib/components/modales/LogroDesbloqueado.svelte';
 	import { servicioDibujo } from '$lib/juegos/modos/dibujo/dibujo.service';
+	import { obtenerArtistaActivo } from '$lib/db/artistas.service';
+	import * as logrosStore from '$lib/stores/logros';
+	import * as progresoService from '$lib/db/progreso.service';
+	import type { LogroDefinicion } from '$lib/db/schemas';
 	import type { EscenaConfig } from '$lib/juegos/modos/cuerpo-humano/types/cuerpo-humano.types';
 	import { obtenerConfiguracionEscena } from '$lib/juegos/modos/cuerpo-humano/configuraciones-escenas';
 
@@ -50,7 +55,16 @@
 	// Estado de modales de guardado
 	let modalConfirmarGuardado = $state<boolean>(false);
 	let modalGuardadoExitoso = $state<boolean>(false);
+	let modalGuardarAntesDeTerminar = $state<boolean>(false);
 	let guardandoObra = $state<boolean>(false);
+	let guardarYTerminar = $state<boolean>(false); // Flag para saber si después de guardar debe terminar
+
+	// Estado de logros (mínimo, solo para tracking)
+	let artistaId = $state<number | null>(null);
+	let erroresEnEscenaActual = $state<number>(0);
+	let partesColocadasTotalesArtista = $state<number>(0);
+	let logroDesbloqueadoActual = $state<LogroDefinicion | null>(null);
+	let mostrarModalLogro = $state<boolean>(false);
 
 	// Configuración de la escena (cargar según sceneId)
 	let escenaConfig = $state<EscenaConfig | null>(null);
@@ -69,6 +83,18 @@
 			console.error('[CuerpoHumano] No se encontró configuración para:', sceneId);
 			// Fallback a cuerpo-humano por defecto
 			escenaConfig = obtenerConfiguracionEscena('cuerpo-humano');
+		}
+
+		// Cargar artista activo para logros (sin bloquear)
+		const artista = await obtenerArtistaActivo();
+		artistaId = artista?.id ?? null;
+		if (artistaId) {
+			console.log('[CuerpoHumano] Artista cargado para logros:', artistaId);
+			
+			// Cargar estadísticas del progreso
+			const stats = await progresoService.obtenerEstadisticasCuerpoHumano(artistaId);
+			partesColocadasTotalesArtista = stats.partesColocadas;
+			console.log('[CuerpoHumano] Estadísticas cargadas - Partes:', stats.partesColocadas, 'Escenas:', stats.escenasCompletadas);
 		}
 	});
 
@@ -125,12 +151,14 @@
 				break;
 			
 			case 'accionGuardar':
-				// Abrir modal de confirmación
+				// Abrir modal de confirmación (guardar sin terminar)
+				guardarYTerminar = false;
 				modalConfirmarGuardado = true;
 				break;
 			
 			case 'accionTerminar':
-				// TODO: Preguntar si se desea guardar antes de terminar y luego pasar a la página de evaluación del dibujo
+				// Guardar progreso y navegar a página de actividad completada
+				guardarProgresoYTerminar();
 				break;
 			
 			case 'accionMover':
@@ -201,15 +229,49 @@
 			
 			console.log('[CuerpoHumano] Parte colocada:', parte.nombre, 'Total:', partesColocadas.size);
 			
+			// Procesar logros de forma diferida (no bloquea el render)
+			if (artistaId) {
+				// Incrementar en DB y obtener nuevo total
+				setTimeout(async () => {
+					try {
+						const nuevoTotal = await progresoService.incrementarPartesColocadas(artistaId!);
+						partesColocadasTotalesArtista = nuevoTotal;
+					} catch (error) {
+						console.error('[CuerpoHumano] Error actualizando progreso:', error);
+					}
+				}, 50);
+				
+				// Esperar un poco más para asegurar que el progreso se actualizó
+				setTimeout(async () => {
+					const totalActualizado = partesColocadasTotalesArtista;
+					const esPrimeraParte = totalActualizado === 1;
+					
+					logrosStore.procesarLogroParteColocada(artistaId!, esPrimeraParte, totalActualizado)
+						.then(() => verificarLogroDesbloqueado())
+						.catch(err => console.error('[CuerpoHumano] Error procesando logros:', err));
+				}, 200);
+			}
+			
 			// Verificar si completó todas las partes
 			if (escenaConfig && partesColocadas.size === escenaConfig.partes.length) {
 				setTimeout(() => {
 					mostrarMensajeFeedback('¡Completaste todas las partes!', 'success');
+					// Procesar logros de escena completada
+					procesarEscenaCompletada();
 				}, 500);
 			}
 		} else {
 			// ❌ Incorrecto
+			erroresEnEscenaActual++;
 			mostrarMensajeFeedback('Intenta de nuevo', 'error');
+			
+			// Incrementar errores en DB
+			if (artistaId) {
+				setTimeout(() => {
+					progresoService.incrementarErrores(artistaId!)
+						.catch(err => console.error('[CuerpoHumano] Error registrando error:', err));
+				}, 50);
+			}
 		}
 
 		manejarFinalizarArrastre();
@@ -251,10 +313,119 @@
 	}
 
 	/**
-	 * Cierra el modal de guardado exitoso
+	 * Procesa los logros cuando se completa una escena
+	 */
+	async function procesarEscenaCompletada() {
+		if (!artistaId || !escenaConfig) return;
+		
+		try {
+			const sceneId = $page.params.sceneId || 'default';
+			
+			// Marcar escena como completada en DB
+			const totalEscenas = await progresoService.marcarEscenaCompletada(artistaId, sceneId);
+			
+			const esPrimeraEscena = totalEscenas === 1;
+			const huboErrores = erroresEnEscenaActual > 0;
+			
+			console.log('[CuerpoHumano] Escena completada - Total:', totalEscenas, 'Errores:', huboErrores);
+			
+			await logrosStore.procesarLogrosEscenaCompletada(
+				artistaId,
+				esPrimeraEscena,
+				totalEscenas,
+				huboErrores
+			);
+			
+			await verificarLogroDesbloqueado();
+		} catch (error) {
+			console.error('[CuerpoHumano] Error procesando escena completada:', error);
+		}
+	}
+
+	/**
+	 * Verifica si hay un logro recién desbloqueado y muestra el modal
+	 */
+	async function verificarLogroDesbloqueado() {
+		// Suscribirse brevemente para ver si hay notificación
+		const unsubscribe = logrosStore.logroDesbloqueado.subscribe(logro => {
+			if (logro && !mostrarModalLogro) {
+				logroDesbloqueadoActual = logro;
+				mostrarModalLogro = true;
+				// Limpiar notificación
+				logrosStore.limpiarNotificaciones();
+			}
+		});
+		// Desuscribirse inmediatamente
+		setTimeout(unsubscribe, 100);
+	}
+
+	/**
+	 * Cierra el modal de logro desbloqueado
+	 */
+	function cerrarModalLogro() {
+		mostrarModalLogro = false;
+		logroDesbloqueadoActual = null;
+	}
+
+	/**
+	 
+
+	/**
+	 * Guarda el progreso actual y navega a la página de completada
+	 */
+	async function guardarProgresoYTerminar() {
+		// Abrir modal preguntando si quiere guardar antes de terminar
+		modalGuardarAntesDeTerminar = true;
+	}
+
+	/**
+	 * Confirma que quiere guardar antes de terminar (guarda directamente sin volver a preguntar)
+	 */
+	async function confirmarGuardarAntesDeTerminar() {
+		modalGuardarAntesDeTerminar = false;
+		guardarYTerminar = true; // Activar flag porque viene del flujo de terminar
+		// Guardar directamente sin abrir modal de confirmación
+		await confirmarGuardarObra();
+	}
+
+	/**
+	 * No guardar y proceder a terminar la actividad
+	 */
+	function noGuardarYTerminar() {
+		modalGuardarAntesDeTerminar = false;
+		navegararAPaginaCompletada();
+	}
+
+	/**
+	 * Navega a la página de actividad completada con las estadísticas
+	 */
+	function navegararAPaginaCompletada() {
+		const sceneId = $page.params.sceneId || 'default';
+		
+		// Guardar estadísticas en sessionStorage para pasarlas a la página completada
+		if (typeof window !== 'undefined' && escenaConfig) {
+			sessionStorage.setItem('cuerpoHumano_ultimaActividad', JSON.stringify({
+				partesCorrectas: partesColocadas.size,
+				totalPartes: escenaConfig.partes.length,
+				tienePerfecto: erroresEnEscenaActual === 0 && partesColocadas.size === escenaConfig.partes.length
+			}));
+		}
+		
+		// Navegar a la página de actividad completada
+		goto(`/juegos/cuerpo-humano/${sceneId}/completada`);
+	}
+
+	/**
+	 * Cierra el modal de guardado exitoso y navega a completada solo si viene del flujo de terminar
 	 */
 	function cerrarModalExito() {
 		modalGuardadoExitoso = false;
+		// Solo navegar si viene del flujo de terminar
+		if (guardarYTerminar) {
+			guardarYTerminar = false; // Reset flag
+			navegararAPaginaCompletada();
+		}
+		// Si no viene del flujo de terminar, simplemente cierra el modal y continúa en el juego
 	}
 
 	/**
@@ -496,12 +667,12 @@
 		cerrarAlClickearFuera={!guardandoObra}
 		mostrarBotonCerrar={!guardandoObra}
 	>
-		<div style="padding: 1.5rem 0; text-align: center;">
-			<div style="font-size: 4rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">💾</div>
-			<p style="font-size: 1.2rem; margin-bottom: 1rem; font-weight: 600; color: var(--color-texto, #333);">
+		<div style="padding: calc(var(--spacing-base, 1rem) * 1.5) 0; text-align: center;">
+			<div style="font-size: calc(var(--font-size-base, 1rem) * 4); margin-bottom: calc(var(--spacing-base, 1rem) * 1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">💾</div>
+			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.2); margin-bottom: calc(var(--spacing-base, 1rem) * 1); font-weight: 600; color: var(--fg, #333);">
 				¿Deseas guardar tu obra en la galería?
 			</p>
-			<p style="color: var(--color-texto-secundario, #666); font-size: 1rem; line-height: 1.5;">
+			<p style="color: var(--text-secondary, #666); font-size: calc(var(--font-size-base, 1rem) * 1); line-height: 1.5;">
 				Tu dibujo se guardará y podrás verlo más tarde en la galería de obras.
 			</p>
 		</div>
@@ -530,18 +701,52 @@
 		{/snippet}
 	</Modal>
 
+	<!-- Modal de guardar antes de terminar -->
+	<Modal
+		bind:abierto={modalGuardarAntesDeTerminar}
+		titulo="Guardar antes de terminar"
+		anchoMaximo="500px"
+	>
+		<div style="padding: calc(var(--spacing-base, 1rem) * 1.5) 0; text-align: center;">
+			<div style="font-size: calc(var(--font-size-base, 1rem) * 4); margin-bottom: calc(var(--spacing-base, 1rem) * 1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">💾</div>
+			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.2); margin-bottom: calc(var(--spacing-base, 1rem) * 1); font-weight: 600; color: var(--fg, #333);">
+				¿Deseas guardar tu obra antes de terminar?
+			</p>
+			<p style="color: var(--text-secondary, #666); font-size: calc(var(--font-size-base, 1rem) * 1); line-height: 1.5;">
+				Tu dibujo se guardará en la galería y podrás verlo más tarde.
+			</p>
+		</div>
+
+		{#snippet acciones()}
+			<button
+				class="boton-modal boton-secundario"
+				onclick={noGuardarYTerminar}
+				type="button"
+			>
+				No guardar
+			</button>
+			<button
+				class="boton-modal boton-primario"
+				onclick={confirmarGuardarAntesDeTerminar}
+				type="button"
+			>
+				Guardar
+			</button>
+		{/snippet}
+	</Modal>
+
 	<!-- Modal de guardado exitoso -->
 	<Modal
 		bind:abierto={modalGuardadoExitoso}
 		titulo="¡Obra guardada!"
 		anchoMaximo="450px"
 	>
-		<div style="padding: 1.5rem 0; text-align: center;">
-			<div style="font-size: 4rem; margin-bottom: 1rem;">🎨</div>
-			<p style="font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 600;">
+		<div style="padding: calc(var(--spacing-base, 1rem) * 1.5) 0; text-align: center;">
+			<div style="font-size: calc(var(--font-size-base, 1rem) * 4); margin-bottom: calc(var(--spacing-base, 1rem) * 1);">🎨</div>
+			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.1); margin-bottom: calc(var(--spacing-base, 1rem) * 0.5); font-weight: 600; color: var(--fg, #333);">
 				¡Tu obra ha sido guardada exitosamente!
 			</p>
-			<p style="color: var(--color-texto-secundario, #666); font-size: 0.9rem;">
+			<p style="color: var(--text-secondary, #666); font-size: calc(var(--font-size-base, 1rem) * 0.9);">
 				Puedes verla en la galería cuando quieras.
 			</p>
 		</div>
@@ -552,10 +757,18 @@
 				onclick={cerrarModalExito}
 				type="button"
 			>
-				Aceptar
+				Continuar
 			</button>
 		{/snippet}
 	</Modal>
+
+	<!-- Modal de logro desbloqueado -->
+	{#if logroDesbloqueadoActual}
+		<LogroDesbloqueado
+			logro={logroDesbloqueadoActual}
+			on:close={cerrarModalLogro}
+		/>
+	{/if}
 </div>
 
 <style>
@@ -566,7 +779,7 @@
 		display: flex;
 		flex-direction: column;
 		background: var(--bg, #f5f5f5);
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
         align-items: start;
         justify-content: start;
 
@@ -586,34 +799,34 @@
 	.panel-ayuda {
 		position: absolute;
 		top: 90px;
-		right: 1.5rem;
+		right: calc(var(--spacing-base, 1rem) * 1.5);
 		z-index: 1000;
-		background: var(--color-fondo-panel, #fff);
-		border: 3px solid var(--color-borde-panel, #000);
-		border-radius: 12px;
-		padding: 1.5rem;
+		background: var(--bg, #fff);
+		border: 3px solid var(--icono-color-borde, #000);
+		border-radius: var(--border-radius, 8px);
+		padding: calc(var(--spacing-base, 1rem) * 1.5);
 		box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
 		max-width: 300px;
 	}
 
 	.contenido-ayuda h2 {
-		margin: 0 0 1rem 0;
-		font-size: 1.3rem;
-		color: var(--color-titulo, #333);
+		margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0;
+		font-size: calc(var(--font-size-base, 1rem) * 1.3);
+		color: var(--fg, #333);
 	}
 
 	.lista-atajos {
 		list-style: none;
 		padding: 0;
-		margin: 0 0 1.5rem 0;
+		margin: 0 0 calc(var(--spacing-base, 1rem) * 1.5) 0;
 	}
 
 	.lista-atajos li {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 0.5rem 0;
-		border-bottom: 1px solid var(--color-borde-lista, #eee);
+		padding: calc(var(--spacing-base, 1rem) * 0.5) 0;
+		border-bottom: 1px solid var(--border, #eee);
 	}
 
 	.lista-atajos li:last-child {
@@ -621,28 +834,28 @@
 	}
 
 	.lista-atajos kbd {
-		background: var(--color-fondo-kbd, #f1f1f1);
-		border: 1px solid var(--color-borde-kbd, #ccc);
-		border-radius: 4px;
-		padding: 0.25rem 0.5rem;
+		background: var(--surface, #f1f1f1);
+		border: 1px solid var(--border, #ccc);
+		border-radius: calc(var(--border-radius, 8px) * 0.5);
+		padding: calc(var(--spacing-base, 1rem) * 0.25) calc(var(--spacing-base, 1rem) * 0.5);
 		font-family: monospace;
-		font-size: 0.9rem;
+		font-size: calc(var(--font-size-base, 1rem) * 0.9);
 		font-weight: bold;
 	}
 
 	.boton-cerrar-ayuda {
 		width: 100%;
-		padding: 0.75rem;
-		border: 2px solid var(--color-borde-boton, #000);
-		border-radius: 8px;
-		background: var(--color-fondo-boton, #fff);
+		padding: calc(var(--spacing-base, 1rem) * 0.75);
+		border: 2px solid var(--icono-color-borde, #000);
+		border-radius: var(--border-radius, 8px);
+		background: var(--bg, #fff);
 		cursor: pointer;
 		font-weight: 600;
 		transition: all 0.2s ease;
 	}
 
 	.boton-cerrar-ayuda:hover {
-		background: var(--color-fondo-boton-hover, #f0f0f0);
+		background: var(--surface-hover, #f0f0f0);
 	}
 
 	/* Área principal */
@@ -650,8 +863,8 @@
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
-		padding: 1rem;
+		gap: calc(var(--spacing-base, 1rem) * 1);
+		padding: calc(var(--spacing-base, 1rem) * 1);
 		overflow: hidden;
         justify-content: start;
         align-items: start;
@@ -668,17 +881,17 @@
 		flex: 1;
 		display: flex;
 		flex-direction: row;
-		gap: 2rem;
+		gap: calc(var(--spacing-base, 1rem) * 2);
 		min-height: 0;
 	}
 
 	.contenedor-lienzo {
 		flex: 1;
 		position: relative;
-		border: 3px solid var(--color-borde-lienzo, #000);
-		border-radius: 12px;
+		border: 3px solid var(--icono-color-borde, #000);
+		border-radius: var(--border-radius, 8px);
 		overflow: hidden;
-		background: var(--color-fondo-lienzo, #fff);
+		background: var(--bg, #fff);
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 	}
 
@@ -688,10 +901,10 @@
 		transform: translate(-50%, -50%);
 		background: rgba(76, 175, 80, 0.95);
 		color: white;
-		padding: 0.5rem 1rem;
-		border-radius: 8px;
+		padding: calc(var(--spacing-base, 1rem) * 0.5) calc(var(--spacing-base, 1rem) * 1);
+		border-radius: var(--border-radius, 8px);
 		font-weight: 700;
-		font-size: 0.9rem;
+		font-size: calc(var(--font-size-base, 1rem) * 0.9);
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 		border: 2px solid #2e7d32;
 		pointer-events: none;
@@ -712,10 +925,10 @@
 
 	/* Estilos para botones de modales */
 	:global(.boton-modal) {
-		padding: 0.75rem 1.5rem;
-		border-radius: 8px;
+		padding: calc(var(--spacing-base, 1rem) * 0.75) calc(var(--spacing-base, 1rem) * 1.5);
+		border-radius: var(--border-radius, 8px);
 		font-weight: 600;
-		font-size: 1rem;
+		font-size: calc(var(--font-size-base, 1rem) * 1);
 		cursor: pointer;
 		transition: all 0.2s ease;
 		border: 2px solid transparent;
@@ -740,13 +953,13 @@
 
 	:global(.boton-modal.boton-secundario) {
 		background: transparent;
-		color: var(--color-texto, #333);
-		border-color: var(--color-borde, #ccc);
+		color: var(--fg, #333);
+		border-color: var(--border, #ccc);
 	}
 
 	:global(.boton-modal.boton-secundario:hover:not(:disabled)) {
-		background: var(--color-fondo-hover, #f5f5f5);
-		border-color: var(--color-borde-hover, #999);
+		background: var(--surface-hover, #f5f5f5);
+		border-color: var(--border-strong, #999);
 	}
 
 </style>

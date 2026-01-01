@@ -13,12 +13,12 @@ import type {
 	Ajustes,
 	LogroDefinicion,
 	LogroArtista,
-	UmbralMedalla,
 	Obra,
 	ObraBlob,
 	MiniaturaBlob,
 	EscenaCatalogo,
-	Progreso
+	Progreso,
+	ProgresoHistoria
 } from './schemas';
 
 // ============================================================================
@@ -35,12 +35,12 @@ export class ColorecoDB extends Dexie {
 	ajustes!: Table<Ajustes, string>;
 	logrosDefinicion!: Table<LogroDefinicion, string>;
 	logrosArtista!: Table<LogroArtista, string>;
-	umbralesMedalla!: Table<UmbralMedalla, string>;
 	obras!: Table<Obra, string>;
 	obrasBlobs!: Table<ObraBlob, string>;
 	miniaturasBlobs!: Table<MiniaturaBlob, string>;
 	escenasCatalogo!: Table<EscenaCatalogo, string>;
 	progreso!: Table<Progreso, string>;
+	progresosHistorias!: Table<ProgresoHistoria, string>;
 
 	constructor() {
 		super('ColorecoDB');
@@ -73,8 +73,7 @@ export class ColorecoDB extends Dexie {
 			obrasBlobs: 'idObra',
 			// Nuevos stores
 			logrosDefinicion: 'id, codigo',
-			logrosArtista: 'id, artistaId, logroId',
-			umbralesMedalla: 'id, medalla'
+			logrosArtista: 'id, artistaId, logroId'
 		}).upgrade(async (trans) => {
 			// Migración v1 → v2: inicializar catálogo de logros si está vacío
 			const logrosCount = await trans.table('logrosDefinicion').count();
@@ -96,7 +95,6 @@ export class ColorecoDB extends Dexie {
 			obrasBlobs: 'idObra',
 			logrosDefinicion: 'id, codigo',
 			logrosArtista: 'id, artistaId, logroId',
-			umbralesMedalla: 'id, medalla',
 			// Nuevos stores
 			progreso: 'id, artistaId, modo',
 			miniaturasBlobs: 'idObra'
@@ -120,7 +118,6 @@ export class ColorecoDB extends Dexie {
 			obrasBlobs: 'idObra',
 			logrosDefinicion: 'id, codigo',
 			logrosArtista: 'id, artistaId, logroId',
-			umbralesMedalla: 'id, medalla',
 			progreso: 'id, artistaId, modo',
 			miniaturasBlobs: 'idObra',
 			// Nuevo store
@@ -130,6 +127,84 @@ export class ColorecoDB extends Dexie {
 			const escenasCount = await trans.table('escenasCatalogo').count();
 			if (escenasCount === 0) {
 				console.log('[DB] v4: Tabla de escenas catálogo creada');
+			}
+		});
+
+		// ========================================================================
+		// VERSIÓN 5: Progreso de Historias
+		// ========================================================================
+		this.version(5).stores({
+			// Mantener todos los stores anteriores
+			artistas: '++id, ultimaActividad',
+			sesion: 'id',
+			ajustes: 'id, artistaId',
+			obras: 'id, artistaId, modo, fechaCreacion, titulo',
+			obrasBlobs: 'idObra',
+			logrosDefinicion: 'id, codigo',
+			logrosArtista: 'id, artistaId, logroId',
+			progreso: 'id, artistaId, modo',
+			miniaturasBlobs: 'idObra',
+			escenasCatalogo: 'id, modo, escenaId',
+			// Nuevo store
+			progresosHistorias: 'id, artistaId, historiaId'
+		}).upgrade(async (trans) => {
+			// Migración v4 → v5
+			const progresosHistoriasCount = await trans.table('progresosHistorias').count();
+			if (progresosHistoriasCount === 0) {
+				console.log('[DB] v5: Tabla de progreso de historias creada');
+			}
+		});
+
+		// ========================================================================
+		// VERSIÓN 6: Optimización con índice compuesto en logrosArtista
+		// ========================================================================
+		this.version(6).stores({
+			// Mantener todos los stores anteriores
+			artistas: '++id, ultimaActividad',
+			sesion: 'id',
+			ajustes: 'id, artistaId',
+			obras: 'id, artistaId, modo, fechaCreacion, titulo',
+			obrasBlobs: 'idObra',
+			logrosDefinicion: 'id, codigo',
+			// Índice compuesto para optimizar consultas de logros desbloqueados
+			logrosArtista: 'id, artistaId, logroId, [artistaId+desbloqueado]',
+			progreso: 'id, artistaId, modo',
+			miniaturasBlobs: 'idObra',
+			escenasCatalogo: 'id, modo, escenaId',
+			progresosHistorias: 'id, artistaId, historiaId'
+		}).upgrade(async (trans) => {
+			// Migración v5 → v6: Solo actualiza índices, no hay datos que migrar
+			console.log('[DB] v6: Índice compuesto agregado a logrosArtista');
+		});
+
+		// ========================================================================
+		// VERSIÓN 7: Persistir racha de respuestas consecutivas por artista
+		// ========================================================================
+		this.version(7).stores({
+			// Mantener todos los stores anteriores
+			artistas: '++id, ultimaActividad',
+			sesion: 'id',
+			ajustes: 'id, artistaId',
+			obras: 'id, artistaId, modo, fechaCreacion, titulo',
+			obrasBlobs: 'idObra',
+			logrosDefinicion: 'id, codigo',
+			logrosArtista: 'id, artistaId, logroId, [artistaId+desbloqueado]',
+			progreso: 'id, artistaId, modo',
+			miniaturasBlobs: 'idObra',
+			escenasCatalogo: 'id, modo, escenaId',
+			progresosHistorias: 'id, artistaId, historiaId'
+		}).upgrade(async (trans) => {
+			// Migración v6 → v7: establecer rachaHistorias = 0 para artistas existentes si no está definido
+			try {
+				const artistas = await trans.table('artistas').toArray();
+				for (const art of artistas) {
+					if (typeof art.rachaHistorias !== 'number') {
+						await trans.table('artistas').update(art.id, { rachaHistorias: 0 });
+					}
+				}
+				console.log('[DB] v7: Racha de historias inicializada para artistas existentes');
+			} catch (e) {
+				console.error('[DB] v7: Error inicializando racha de historias:', e);
 			}
 		});
 	}
@@ -196,10 +271,10 @@ export async function limpiarBaseDeDatos(): Promise<void> {
 		database.obrasBlobs,
 		database.logrosDefinicion,
 		database.logrosArtista,
-		database.umbralesMedalla,
 		database.progreso,
 		database.miniaturasBlobs,
-		database.escenasCatalogo
+		database.escenasCatalogo,
+		database.progresosHistorias
 	], async () => {
 		await database.artistas.clear();
 		await database.sesion.clear();
@@ -208,10 +283,10 @@ export async function limpiarBaseDeDatos(): Promise<void> {
 		await database.obrasBlobs.clear();
 		await database.logrosDefinicion.clear();
 		await database.logrosArtista.clear();
-		await database.umbralesMedalla.clear();
 		await database.progreso.clear();
 		await database.miniaturasBlobs.clear();
 		await database.escenasCatalogo.clear();
+		await database.progresosHistorias.clear();
 	});
 	
 	console.log('[DB] Base de datos limpiada completamente');
@@ -236,6 +311,7 @@ export async function obtenerInfoDB(): Promise<{
 	conteos.obras = await database.obras.count();
 	conteos.logrosDefinicion = await database.logrosDefinicion.count();
 	conteos.logrosArtista = await database.logrosArtista.count();
+	conteos.progresosHistorias = await database.progresosHistorias.count();
 	conteos.progreso = await database.progreso.count();
 	conteos.escenasCatalogo = await database.escenasCatalogo.count();
 	

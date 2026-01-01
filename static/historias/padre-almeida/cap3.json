@@ -1,0 +1,31 @@
+{
+  "capituloId": "padre-almeida-cap3",
+  "historiaId": "padre-almeida",
+  "titulo": "El Padre Almeida - Capítulo 3",
+  "imagenPrincipal": "/historias/padre-almeida/padre-almeida-cap3.jpg",
+  "texto": "Noche tras noche, el Padre Almeida seguía escapando del convento. Cada vez que pasaba frente al Cristo, escuchaba la misma pregunta: '¿Hasta cuándo, Padre Almeida?'. Pero él seguía ignorándola. Una noche especial, todo cambiaría para siempre.",
+  "pregunta": {
+    "texto": "¿Qué crees que pasó esa noche especial?",
+    "opciones": [
+      {
+        "id": "opcion1",
+        "texto": "El Cristo bajó de la cruz",
+        "esCorrecta": true,
+        "feedback": "¡Exacto! Esa fue la noche del gran milagro."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Lo descubrieron sus hermanos",
+        "esCorrecta": false,
+        "feedback": "No, fue algo mucho más extraordinario."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Decidió no salir más",
+        "esCorrecta": false,
+        "feedback": "Todavía no había llegado ese momento."
+      }
+    ]
+  },
+  "personajes": []
+}

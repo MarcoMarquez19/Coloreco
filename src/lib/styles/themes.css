@@ -14,6 +14,7 @@
 	/* Colores de fondo y texto principales */
 	--bg: #ffffff;
 	--fg: #111111;
+	--color-texto: #000000;
 	
 	/* Colores de énfasis y acento */
 	--accent: #0b6efd;
@@ -41,7 +42,7 @@
 	   ======================================== */
 	
 	/* HU-02: Lectura biónica */
-	--bionic-highlight-color: #0b6efd;
+	--bionic-highlight-color: #003366;
 	--bionic-rest-opacity: 0.8;
 	
 	/* HU-03: Narración auditiva */
@@ -92,7 +93,7 @@
 	/* Variables de accesibilidad adaptadas */
 	--background-color: #0a0a0a;
 	--text-color: #f5f5f5;
-	--bionic-highlight-color: #60a5fa;
+	--bionic-highlight-color: #90CAF9;
 	--narration-highlight-bg: #fbbf24;
 	--pictogram-bg: #1a1a1a;
 	--pictogram-hover-bg: #2a2a2a;
@@ -130,7 +131,7 @@
 	/* Variables de accesibilidad adaptadas */
 	--background-color: #f5f5f5;
 	--text-color: #0a0a0a;
-	--bionic-highlight-color: #0958d9;
+	--bionic-highlight-color: #003366;
 	--narration-highlight-bg: #fbbf24;
 	--pictogram-bg: #e0e0e0;
 	--pictogram-hover-bg: #d0d0d0;
@@ -217,7 +218,7 @@ body {
 }
 
 /* No aplicar a botones con clase específica (botones de control que ya tienen iconos) */
-[data-pictogram="true"] button:not(.boton-volver):not(.boton-configuracion):not(.control-button):not(.switch-toggle):not(:has(svg))::before {
+[data-pictogram="true"] button:not(.boton-volver):not(.boton-configuracion):not(.control-button):not(.switch-toggle):not(.capitulo-imagen):not(.boton-juego):not(.boton-estudio):not(.boton-nuevo):not(.boton-logro):not(.elemento-interactivo):not(:has(svg))::before {
 	content: "▶️ ";
 	margin-right: 0.5rem;
 	font-size: 1.2em;

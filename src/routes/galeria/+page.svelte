@@ -283,7 +283,7 @@
 					aria-label="Editar obra actual"
 					use:clickSound
 				>
-					✏️ Editar
+					<span class="icono">✏️</span> Editar
 				</button>
 
 				<!-- Botón Descargar (Verde) -->
@@ -293,7 +293,7 @@
 					aria-label="Descargar imagen de la obra"
 					use:clickSound
 				>
-					💾 Descargar
+					<span class="icono">💾</span> Descargar
 				</button>
 
 				<!-- Botón Eliminar (Rojo) -->
@@ -303,7 +303,7 @@
 					aria-label="Eliminar obra de la galería"
 					use:clickSound
 				>
-					🗑️ Eliminar
+					<span class="icono">🗑️</span> Eliminar
 				</button>
 			</section>
 
@@ -395,9 +395,9 @@
 	cerrarAlClickearFuera={false}
 >
 	{#snippet children()}
-		<div style="text-align: center; padding: 1rem 0;">
-			<div style="font-size: 5rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">🗑️</div>
-			<p style="margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0; font-size: calc(var(--font-size-base, 1rem) * 1.1); line-height: 1.5;">
+		<div style="text-align: center; padding: calc(var(--spacing-base, 1rem) * 1) 0;">
+			<div style="font-size: calc(var(--font-size-base, 1rem) * 5); margin-bottom: calc(var(--spacing-base, 1rem) * 1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">🗑️</div>
+			<p style="margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0; font-size: calc(var(--font-size-base, 1rem) * 1.1); line-height: 1.5; color: var(--fg);">
 				¿Estás seguro que deseas eliminar la obra <strong>"{obraActual?.titulo}"</strong>?
 			</p>
 			<p style="margin: 0; color: #d32f2f; font-weight: 600; font-size: calc(var(--font-size-base, 1rem) * 1);">
@@ -431,12 +431,12 @@
 	anchoMaximo="450px"
 >
 	{#snippet children()}
-		<div style="text-align: center; padding: 1.5rem 0;">
-			<div style="font-size: 4rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">✅</div>
-			<p style="font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 600;">
+		<div style="text-align: center; padding: calc(var(--spacing-base, 1rem) * 1.5) 0;">
+			<div style="font-size: calc(var(--font-size-base, 1rem) * 4); margin-bottom: calc(var(--spacing-base, 1rem) * 1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">✅</div>
+			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.1); margin-bottom: calc(var(--spacing-base, 1rem) * 0.5); font-weight: 600; color: var(--fg);">
 				¡La obra ha sido eliminada exitosamente!
 			</p>
-			<p style="color: var(--color-texto-secundario, #666); font-size: 0.9rem;">
+			<p style="color: var(--text-secondary, #666); font-size: calc(var(--font-size-base, 1rem) * 0.9);">
 				La obra ha sido removida de tu galería.
 			</p>
 		</div>
@@ -504,7 +504,7 @@
 	.contador {
 		font-size: calc(var(--font-size-base, 1rem) * 1.5);
 		font-weight: 600;
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
 		margin: 0;
 		letter-spacing: 0.05em;
 	}
@@ -528,7 +528,7 @@
 		justify-content: center;
 		min-height: 400px;
 		font-size: calc(var(--font-size-base, 1rem) * 1.3);
-		color: var(--text-secondary, #666);
+		color: var(--fg, #333);
 		text-align: center;
 	}
 
@@ -593,14 +593,15 @@
 	.marco-obra {
 		/* Marco central para la imagen con estilo de tarjeta */
 		flex: 0 0 auto;
-		max-width: 850px;
-		min-width: 32vw;
+		width: 750px;
+		height: 450px;
 		background: white;
-		border-radius: 12px;
+		border-radius: var(--border-radius, 8px);
 		padding: calc(var(--espaciado) * 1);
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 		display: flex;
 		align-items: center;
+		justify-content: center;
 		transition: transform 0.3s, box-shadow 0.3s;
 	}
 
@@ -610,12 +611,11 @@
 	}
 
 	.imagen-obra {
-		width: 100%;
-		max-height: 410px;
-		display: block;
-		border-radius: 8px;
-		object-fit: contain;
 		max-width: 100%;
+		max-height: 100%;
+		display: block;
+		border-radius: var(--border-radius, 8px);
+		object-fit: contain;
 	}
 
 	/* ============================================================================
@@ -624,8 +624,8 @@
 	.metadatos {
 		text-align: center;
 		padding: calc(var(--espaciado) * 1.5);
-		background: white;
-		border-radius: 12px;
+		background: var(--bg, white);
+		border-radius: var(--border-radius, 8px);
 		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 		flex-shrink: 0;
 	}
@@ -635,7 +635,7 @@
 		font-weight: 600;
 		margin: 0;
 		margin-bottom: calc(var(--espaciado) * 0.5);
-		color: var(--color-texto, #333);
+		color: var(--fg, #333);
 		letter-spacing: 0.05em;
 	}
 
@@ -648,11 +648,11 @@
 	.dato {
 		font-size: calc(var(--font-size-base, 1rem) * 1);
 		margin: 0;
-		color: var(--icono-color-relleno, #666);
+		color: var(--text-secondary, #666);
 	}
 
 	.dato strong {
-		color: var(--icono-color-relleno, #111);
+		color: var(--fg, #111);
 		font-weight: 700;
 	}
 
@@ -744,7 +744,7 @@
 		font-size: calc(var(--font-size-base, 1rem) * 1.1);
 		font-weight: 600;
 		border: none;
-		border-radius: 4px;
+		border-radius: calc(var(--border-radius, 8px) * 0.5);
 		cursor: pointer;
 		transition: transform 120ms ease, background 120ms ease;
 		min-width: 100px;

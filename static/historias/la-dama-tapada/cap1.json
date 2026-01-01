@@ -1,0 +1,31 @@
+{
+  "capituloId": "dama-tapada-cap1",
+  "historiaId": "la-dama-tapada",
+  "titulo": "La Dama Tapada - Capítulo 1",
+  "imagenPrincipal": "/historias/la-dama-tapada/dama-tapada-cap1.jpg",
+  "texto": "En las noches coloniales de Quito, una misteriosa mujer vestida de negro caminaba por las calles oscuras. Su rostro estaba siempre cubierto por un velo, dejando ver solo sus pies delicados y su figura elegante. Los caballeros que la veían quedaban fascinados y la seguían, intentando ver su rostro.",
+  "pregunta": {
+    "texto": "¿Por qué crees que los hombres seguían a la Dama Tapada?",
+    "opciones": [
+      {
+        "id": "opcion1",
+        "texto": "Por curiosidad y atracción",
+        "esCorrecta": true,
+        "feedback": "¡Correcto! Su misterio los atraía irresistiblemente."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Para protegerla del peligro",
+        "esCorrecta": false,
+        "feedback": "No, tenían otras intenciones."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Porque era una conocida",
+        "esCorrecta": false,
+        "feedback": "Nadie sabía quién era realmente."
+      }
+    ]
+  },
+  "personajes": []
+}

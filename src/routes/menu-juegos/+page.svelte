@@ -15,7 +15,7 @@
     }
 
     function irAModoHistorias() {
-        //TODO: PONER LA PAGINA DEL MODO DE HISTORIAS
+        goto('/juegos/historias/seleccionar-historia');
     }
 
 	let contenedorMenuJuegosRef: HTMLElement | null = null;
@@ -33,8 +33,18 @@
 
 	onMount(() => {
 		document.body.style.overflow = 'hidden';
+		
+		// Interceptar el botón de volver del navegador/layout para ir a estudio
+		const handlePopState = (event: PopStateEvent) => {
+			event.preventDefault();
+			goto('/estudio');
+		};
+		
+		window.addEventListener('popstate', handlePopState);
+		
 		return () => {
-			document.body.style.overflow = ''; // Restaurar al desmontar
+			document.body.style.overflow = '';
+			window.removeEventListener('popstate', handlePopState);
 		};
 	});
 
@@ -75,11 +85,11 @@
 	</button>
     <button class="boton-juego"
 		aria-label="Entra al modo de juego de historias" 
-		title="Rincón de historias"
+		title="El rincón de las historias"
 		onclick={irAModoHistorias}
 		>
         <img src={LibroHistorias} alt="Logo modo de juegos historias - Libro de historias">
-		Rincón de historias
+		El rincón de las historias
 	</button>
 </div>
 

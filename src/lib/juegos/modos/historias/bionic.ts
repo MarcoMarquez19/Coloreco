@@ -15,6 +15,12 @@
 export function applyBionic(text: string, intensity: number = 0.5): string {
 	if (!text) return '';
 
+	// Debug: log en modo desarrollo para confirmar ejecución
+	// eslint-disable-next-line no-console
+	if (typeof window !== 'undefined' && (import.meta.env && import.meta.env.DEV)) {
+		console.debug('[bionic] applyBionic called', { text: text.slice(0, 100), intensity });
+	}
+
 	// Dividir en palabras manteniendo espacios y puntuación
 	const words = text.split(/(\s+|[.,;:!?¿¡()])/);
 
@@ -25,19 +31,41 @@ export function applyBionic(text: string, intensity: number = 0.5): string {
 				return word;
 			}
 
-			// Si la palabra tiene menos de 3 caracteres, resaltar toda
-			if (word.length < 3) {
-				return `<strong class="bionic-word">${word}</strong>`;
-			}
-
-			// Calcular cuántos caracteres resaltar
-			const highlightLength = Math.ceil(word.length * intensity);
+			const len = word.length;
+			const highlightLength = getHighlightLength(len, intensity);
 			const highlighted = word.slice(0, highlightLength);
 			const rest = word.slice(highlightLength);
+
+			// Si no queda resto, resaltar toda la palabra
+			if (rest.length === 0) {
+				return `<strong class="bionic-word">${word}</strong>`;
+			}
 
 			return `<strong class="bionic-word">${highlighted}</strong><span class="bionic-rest">${rest}</span>`;
 		})
 		.join('');
+}
+
+/**
+ * Calcula cuántos caracteres resaltar según la longitud de la palabra
+ * Reglas:
+ * - 1-3 letras: resaltar la primera letra
+ * - 4 letras: resaltar 2 letras
+ * - 5-6 letras: resaltar 3 letras
+ * - 7+ letras: resaltar aproximadamente 40% - 50% (se usa `intensity` y se clampa entre 0.4 y 0.5)
+ */
+function getHighlightLength(wordLength: number, intensity: number): number {
+	if (wordLength <= 3) return 1;
+	if (wordLength === 4) return 2;
+	if (wordLength === 5 || wordLength === 6) return 3;
+
+	// Para palabras largas, usar intensidad entre 40% y 50%
+	const minPct = 0.4;
+	const maxPct = 0.5;
+	const pct = Math.max(minPct, Math.min(intensity, maxPct));
+
+	// Asegurarnos de no resaltar toda la palabra y que al menos 1 carácter sea resaltado
+	return Math.min(wordLength - 1, Math.max(1, Math.ceil(wordLength * pct)));
 }
 
 /**
