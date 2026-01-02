@@ -28,12 +28,11 @@
 		modoMoverActivo = false
 	}: Props = $props();
 
-	// Referencias del canvas y contexto
+	// Referencias del canvas y elementos
 	let canvasDibujoRef: HTMLCanvasElement | undefined = $state<HTMLCanvasElement | undefined>(undefined); // Canvas para el dibujo del usuario
-	let canvasEscenaRef: HTMLCanvasElement | undefined = $state<HTMLCanvasElement | undefined>(undefined); // Canvas para la imagen de la escena
+	let imagenEscenaRef: HTMLImageElement | undefined = $state<HTMLImageElement | undefined>(undefined); // Imagen vectorial de fondo
 	let contextoDibujo: CanvasRenderingContext2D; // Contexto para dibujar
-	let contextoEscena: CanvasRenderingContext2D; // Contexto para la escena
-	let contenedorCanvasRef: HTMLDivElement | undefined = $state<HTMLDivElement | undefined>(undefined); // Contenedor de los canvas
+	let contenedorCanvasRef: HTMLDivElement | undefined = $state<HTMLDivElement | undefined>(undefined); // Contenedor de los elementos
 	
 	// Estado de la escena
 	let escena: EscenaCatalogo | null = $state<EscenaCatalogo | null>(null);
@@ -82,47 +81,23 @@
 	}
 
 	/**
-	 * Inicializa el canvas y carga la imagen de fondo
+	 * Inicializa el canvas de dibujo
 	 */
 	function inicializarCanvas() {
-		if (!canvasDibujoRef || !canvasEscenaRef || !escena) return;
+		if (!canvasDibujoRef || !escena) return;
 
-		// Inicializar contextos
+		// Inicializar contexto de dibujo
 		contextoDibujo = canvasDibujoRef.getContext('2d')!;
-		contextoEscena = canvasEscenaRef.getContext('2d')!;
 		
-		// Configurar el tamaño de ambos canvas
+		// Configurar el tamaño del canvas de dibujo
 		const width = canvasDibujoRef.offsetWidth;
 		const height = canvasDibujoRef.offsetHeight;
 		
 		canvasDibujoRef.width = width;
 		canvasDibujoRef.height = height;
-		canvasEscenaRef.width = width;
-		canvasEscenaRef.height = height;
-		
-		// Cargar imagen de escena en el canvas superior
-		cargarImagenDeFondo();
 		
 		// Guardar estado inicial del canvas de dibujo
 		guardarEstadoEnHistorial();
-	}
-
-	/**
-	 * Carga la imagen de fondo de la escena
-	 */
-	function cargarImagenDeFondo() {
-		if (!contextoEscena || !escena) return;
-
-		const imagen = new Image();
-		imagen.onload = () => {
-			// Limpiar canvas de escena
-			contextoEscena.clearRect(0, 0, canvasEscenaRef!.width, canvasEscenaRef!.height);
-			
-			// Dibujar imagen ajustada al 100% del canvas (puede deformarse para ocupar todo el espacio)
-			contextoEscena.drawImage(imagen, 0, 0, canvasEscenaRef!.width, canvasEscenaRef!.height);
-		};
-
-		imagen.src = escena.ruta;
 	}
 
 	/**
@@ -365,7 +340,7 @@
 	 * Guarda el dibujo como obra en la galería
 	 */
 	export async function guardarDibujo(): Promise<void> {
-		if (!canvasDibujoRef || !canvasEscenaRef || !escena) return;
+		if (!canvasDibujoRef || !imagenEscenaRef || !escena) return;
 
 		try {
 			// Obtener el artistaId actual de los ajustes
@@ -380,10 +355,12 @@
 			canvasTemp.height = canvasDibujoRef.height;
 			const ctxTemp = canvasTemp.getContext('2d')!;
 			
-			// Primero dibujar el canvas de dibujo (capa inferior)
+			// Primero dibujar el canvas de dibujo (capa inferior - trazos del usuario)
 			ctxTemp.drawImage(canvasDibujoRef, 0, 0);
-			// Luego dibujar el canvas de escena encima
-			ctxTemp.drawImage(canvasEscenaRef, 0, 0);
+			
+			// Luego dibujar la imagen vectorial encima
+			// La imagen mantiene su calidad vectorial hasta este momento
+			ctxTemp.drawImage(imagenEscenaRef, 0, 0, canvasTemp.width, canvasTemp.height);
 
 			// Convertir el canvas temporal a blob
 			const blob = await new Promise<Blob>((resolve, reject) => {
@@ -422,7 +399,7 @@
 
 	// Efectos reactivos
 	$effect(() => {
-		if (escena && canvasDibujoRef && canvasEscenaRef) {
+		if (escena && canvasDibujoRef) {
 			inicializarCanvas();
 		}
 	});
@@ -487,12 +464,14 @@
 
 			></canvas>
 			
-			<!-- Canvas de escena (capa superior - imagen que permanece encima) -->
-			<canvas
-				bind:this={canvasEscenaRef}
-				class="lienzo-escena"
+			<!-- Imagen vectorial de escena (capa superior - renderizado nativo del navegador) -->
+			<img
+				bind:this={imagenEscenaRef}
+				src={escena.ruta}
+				alt={escena.nombre}
+				class="imagen-escena"
 				aria-hidden="true"
-			></canvas>
+			/>
 		</div>
 	{/if}
 </div>
@@ -518,13 +497,12 @@
 	}
 
 	.lienzo-dibujo,
-	.lienzo-escena {
+	.imagen-escena {
 		position: absolute;
 		top: 0;
 		left: 0;
 		width: 100%;
 		height: 100%;
-		background: transparent;
 	}
 
 	.lienzo-dibujo {
@@ -534,9 +512,12 @@
 		background: white;
 	}
 
-	.lienzo-escena {
-		z-index: 200; /* Capa superior para la imagen de la escena */
+	.imagen-escena {
+		z-index: 200; /* Capa superior para la imagen vectorial */
 		pointer-events: none; /* Permite que los eventos pasen al canvas de dibujo */
+		object-fit: fill; /* Deforma la imagen para ocupar el 100% del contenedor sin mantener proporciones */
+		object-position: center;
+		display: block; /* Elimina espacios en blanco del elemento inline */
 	}
 
 	.lienzo-dibujo:active {
