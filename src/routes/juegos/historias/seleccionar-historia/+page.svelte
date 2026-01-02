@@ -1,7 +1,6 @@
 <script lang="ts">
 	import LibroHistorias from '$lib/components/iconos/LibroAbierto.png';
 	import Instrucciones from '$lib/components/modales/Instrucciones.svelte';
-	import IconoInstrucciones from '$lib/components/iconos/IconoInstrucciones.svelte';
 	import { onMount } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { goto } from '$app/navigation';
@@ -14,10 +13,6 @@
 	let error = $state<string | null>(null);
 	let indiceActual = $state<number>(0);
 	let mostrarInstrucciones = $state<boolean>(false);
-
-	function abrirInstrucciones() {
-		mostrarInstrucciones = true;
-	}
 
 	onMount(async () => {
 		// Cargar historias con progreso desde la BD
@@ -49,11 +44,18 @@
 			goto('/menu-juegos');
 		};
 		
+		// Escuchar evento de abrir instrucciones desde el layout
+		const handleAbrirInstrucciones = () => {
+			mostrarInstrucciones = true;
+		};
+		
 		window.addEventListener('popstate', handlePopState);
+		window.addEventListener('abrir-instrucciones', handleAbrirInstrucciones);
 		
 		return () => {
 			document.body.style.overflow = '';
 			window.removeEventListener('popstate', handlePopState);
+			window.removeEventListener('abrir-instrucciones', handleAbrirInstrucciones);
 		};
 	});
 
@@ -113,9 +115,6 @@
 			navegarAnterior();
 		} else if (event.key === 'ArrowRight') {
 			navegarSiguiente();
-		} else if ((event.key === 'i' || event.key === 'I') && event.ctrlKey) {
-			event.preventDefault();
-			abrirInstrucciones();
 		}
 	}
 
@@ -159,22 +158,6 @@
 	style="width: {tamañoImagen};"
 	data-magnificable
 >
-
-<!-- Botón de instrucciones -->
-<div class="contenedor-flotante-i-instrucciones">
-	<button 
-		class="boton-instrucciones pattern-yellow"
-		onclick={abrirInstrucciones}
-		aria-label="Ver instrucciones"
-		aria-keyshortcuts="Control + I"
-		title="Instrucciones (Control + I)"
-		type="button"
-	>
-		<span class="solo-lectores">Ver instrucciones</span>
-		<IconoInstrucciones />
-	</button>
-	<span class="texto-tecla">Ctrl + I</span>
-</div>
 
 <div class="seleccionar-historias-contenedor" bind:this={contenedorSeleccionarHistoriaRef} aria-label="Contenedor para seleccionar la historia de preferencia" data-magnificable>
 	<h1 data-magnificable data-readable>Elige tu aventura</h1>
@@ -589,61 +572,6 @@
 	gap: 4px;
 	z-index: 100;
 	transition: filter 0.3s ease;
-}
-
-.boton-instrucciones {
-	position: relative;
-	width: calc(8vw * var(--btn-scale, 1));
-	height: calc(15vh * var(--btn-scale, 1));
-	border-radius: var(--border-radius, 8px);
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	background: var(--fondo-botones, #ffca00);
-	border: none;
-	box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
-	cursor: pointer;
-	transition: transform 120ms ease, box-shadow 120ms ease;
-	z-index: 100;
-}
-
-.boton-instrucciones:hover {
-	transform: translateY(-2px);
-	background: var(--fondo-botones-hover, #d1a700);
-}
-
-.boton-instrucciones:active {
-	transform: translateY(0);
-}
-
-.boton-instrucciones:focus {
-	outline: var(--borde-botones, 4px solid #000000);
-	background: var(--fondo-botones-hover, #d1a700);
-	outline-offset: 7px;
-}
-
-.texto-tecla {
-	font-size: calc(4vh * var(--btn-scale, 1));
-	font-weight: 500;
-	width: 100%;
-	text-align: center;
-	padding-top: 1rem;
-	color: var(--color-texto, rgb(0, 0, 0));
-	user-select: none;
-	pointer-events: none;
-	text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
-}
-
-.solo-lectores {
-	position: absolute !important;
-	height: 1px;
-	width: 1px;
-	overflow: hidden;
-	clip: rect(1px, 1px, 1px, 1px);
-	white-space: nowrap;
-	border: 0;
-	padding: 0;
-	margin: -1px;
 }
 
 </style>

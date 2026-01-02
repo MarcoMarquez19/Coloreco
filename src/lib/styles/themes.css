@@ -197,121 +197,9 @@ body {
 	color: inherit !important;
 }
 
-/* MODO PICTOGRAMAS: Agrega indicadores visuales específicos por contexto */
-/* Solo aplicar a elementos que NO tienen contenido SVG o iconos */
-[data-pictogram="true"] h1:not(:has(svg)):not(:has(img))::before {
-	content: "👋 ";
-	margin-right: 0.5rem;
-	font-size: 1.2em;
-}
-
-[data-pictogram="true"] h2:not(:has(svg)):not(:has(img))::before {
-	content: "🎨 ";
-	margin-right: 0.5rem;
-	font-size: 1.2em;
-}
-
-[data-pictogram="true"] h3:not(:has(svg)):not(:has(img))::before {
-	content: "📝 ";
-	margin-right: 0.5rem;
-	font-size: 1em;
-}
-
-/* No aplicar a botones con clase específica (botones de control que ya tienen iconos) */
-[data-pictogram="true"] button:not(.boton-volver):not(.boton-configuracion):not(.control-button):not(.switch-toggle):not(.capitulo-imagen):not(.boton-juego):not(.boton-estudio):not(.boton-nuevo):not(.boton-logro):not(.elemento-interactivo):not(:has(svg))::before {
-	content: "▶️ ";
-	margin-right: 0.5rem;
-	font-size: 1.2em;
-}
-
-/* Labels específicos con pictogramas personalizados según su contenido */
-/* Lupa Mágica */
-[data-pictogram="true"] label.switch-label[for="toggle-magnifier"]::before {
-	content: "🔍 ";
-	margin-right: 0.3rem;
-	font-size: 1em;
-}
-
-/* Tamaño de fuente */
-[data-pictogram="true"] label.switch-label[for="toggle-font-size"]::before {
-	content: "🔤 ";
-	margin-right: 0.3rem;
-	font-size: 1em;
-}
-
-/* Espaciado */
-[data-pictogram="true"] label.switch-label[for="toggle-spacing"]::before {
-	content: "↔️ ";
-	margin-right: 0.3rem;
-	font-size: 1em;
-}
-
-/* Modo Noche */
-[data-pictogram="true"] label.switch-label[for="toggle-modo-noche"]::before {
-	content: "🌙 ";
-	margin-right: 0.3rem;
-	font-size: 1em;
-}
-
-/* Modo Inverso */
-[data-pictogram="true"] label.switch-label[for="toggle-modo-inverso"]::before {
-	content: "🔄 ";
-	margin-right: 0.3rem;
-	font-size: 1em;
-}
-
-/* Modo Biónico */
-[data-pictogram="true"] label.switch-label[for="toggle-bionic"]::before {
-	content: "🧠 ";
-	margin-right: 0.3rem;
-	font-size: 1em;
-}
-
-/* Modo Rima */
-[data-pictogram="true"] label.switch-label[for="toggle-rhyme"]::before {
-	content: "🎵 ";
-	margin-right: 0.3rem;
-	font-size: 1em;
-}
-
-/* Modo Pictograma */
-[data-pictogram="true"] label.switch-label[for="toggle-pictogram"]::before {
-	content: "🖼️ ";
-	margin-right: 0.3rem;
-	font-size: 1em;
-}
-
-/* Narración */
-[data-pictogram="true"] label.switch-label[for="toggle-narration"]::before {
-	content: "🔊 ";
-	margin-right: 0.3rem;
-	font-size: 1em;
-}
-
-/* Fallback para otros labels */
-[data-pictogram="true"] label.switch-label:not([for])::before {
-	content: "⚙️ ";
-	margin-right: 0.3rem;
-	font-size: 1em;
-}
-
-/* Fondo sutil para elementos en modo pictograma */
-[data-pictogram="true"] h1:not(:has(svg)),
-[data-pictogram="true"] h2:not(:has(svg)),
-[data-pictogram="true"] h3:not(:has(svg)) {
-	background: var(--pictogram-bg);
-	padding: 0.4rem 0.8rem;
-	border-radius: 8px;
-	transition: all 0.2s ease;
-}
-
-[data-pictogram="true"] h1:not(:has(svg)):hover,
-[data-pictogram="true"] h2:not(:has(svg)):hover,
-[data-pictogram="true"] h3:not(:has(svg)):hover {
-	background: var(--pictogram-hover-bg, #e0e0e0);
-	transform: translateY(-2px);
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+/* MODO PICTOGRAMAS: Los pictogramas ahora se gestionan desde JavaScript */
+/* Ver: src/lib/juegos/modos/historias/pictograms/index.ts */
+/* Solo mantenemos estilos generales, NO añadimos contenido con ::before */
 
 /* MODO RIMA: Colorea el fondo de palabras que riman */
 [data-rhyme="true"] .rhyme-word {
@@ -373,14 +261,6 @@ body {
 [data-narration="true"] h1,
 [data-narration="true"] h2,
 [data-narration="true"] p {
-	transition: background 0.3s ease;
-}
-
-[data-narration="true"] h1:hover,
-[data-narration="true"] h2:hover,
-[data-narration="true"] p:hover {
-	background: var(--narration-highlight-bg);
-	padding: 0.2rem 0.4rem;
-	border-radius: 4px;
+	/* Estilos de narración sin efectos hover */
 }
 

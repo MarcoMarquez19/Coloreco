@@ -1,0 +1,597 @@
+[
+	{
+		"word": "comer",
+		"icon": "🍽️",
+		"category": "accion"
+	},
+	{
+		"word": "beber",
+		"icon": "🥤",
+		"category": "accion"
+	},
+	{
+		"word": "dormir",
+		"icon": "😴",
+		"category": "accion"
+	},
+	{
+		"word": "correr",
+		"icon": "🏃",
+		"category": "accion"
+	},
+	{
+		"word": "caminar",
+		"icon": "🚶",
+		"category": "accion"
+	},
+	{
+		"word": "jugar",
+		"icon": "🎮",
+		"category": "accion"
+	},
+	{
+		"word": "leer",
+		"icon": "📖",
+		"category": "accion"
+	},
+	{
+		"word": "escribir",
+		"icon": "✍️",
+		"category": "accion"
+	},
+	{
+		"word": "pintar",
+		"icon": "🎨",
+		"category": "accion"
+	},
+	{
+		"word": "dibujar",
+		"icon": "✏️",
+		"category": "accion"
+	},
+	{
+		"word": "iniciar",
+		"icon": "▶️",
+		"category": "accion"
+	},
+	{
+		"word": "crear",
+		"icon": "➕",
+		"category": "accion"
+	},
+	{
+		"word": "nuevo",
+		"icon": "🆕",
+		"category": "accion"
+	},
+	{
+		"word": "volver",
+		"icon": "⬅️",
+		"category": "accion"
+	},
+	{
+		"word": "casa",
+		"icon": "🏠",
+		"category": "lugar"
+	},
+	{
+		"word": "escuela",
+		"icon": "🏫",
+		"category": "lugar"
+	},
+	{
+		"word": "parque",
+		"icon": "🏞️",
+		"category": "lugar"
+	},
+	{
+		"word": "tienda",
+		"icon": "🏪",
+		"category": "lugar"
+	},
+	{
+		"word": "hospital",
+		"icon": "🏥",
+		"category": "lugar"
+	},
+	{
+		"word": "estudio",
+		"icon": "🎨",
+		"category": "lugar"
+	},
+	{
+		"word": "feliz",
+		"icon": "😊",
+		"category": "emocion"
+	},
+	{
+		"word": "triste",
+		"icon": "😢",
+		"category": "emocion"
+	},
+	{
+		"word": "enojado",
+		"icon": "😠",
+		"category": "emocion"
+	},
+	{
+		"word": "sorprendido",
+		"icon": "😮",
+		"category": "emocion"
+	},
+	{
+		"word": "asustado",
+		"icon": "😨",
+		"category": "emocion"
+	},
+	{
+		"word": "bienvenido",
+		"icon": "👋",
+		"category": "emocion"
+	},
+	{
+		"word": "rojo",
+		"icon": "🔴",
+		"category": "color"
+	},
+	{
+		"word": "azul",
+		"icon": "🔵",
+		"category": "color"
+	},
+	{
+		"word": "amarillo",
+		"icon": "🟡",
+		"category": "color"
+	},
+	{
+		"word": "verde",
+		"icon": "🟢",
+		"category": "color"
+	},
+	{
+		"word": "naranja",
+		"icon": "🟠",
+		"category": "color"
+	},
+	{
+		"word": "morado",
+		"icon": "🟣",
+		"category": "color"
+	},
+	{
+		"word": "perro",
+		"icon": "🐕",
+		"category": "animal"
+	},
+	{
+		"word": "gato",
+		"icon": "🐈",
+		"category": "animal"
+	},
+	{
+		"word": "pájaro",
+		"icon": "🐦",
+		"category": "animal"
+	},
+	{
+		"word": "pez",
+		"icon": "🐟",
+		"category": "animal"
+	},
+	{
+		"word": "mariposa",
+		"icon": "🦋",
+		"category": "animal"
+	},
+	{
+		"word": "lápiz",
+		"icon": "✏️",
+		"category": "objeto"
+	},
+	{
+		"word": "libro",
+		"icon": "📚",
+		"category": "objeto"
+	},
+	{
+		"word": "pelota",
+		"icon": "⚽",
+		"category": "objeto"
+	},
+	{
+		"word": "computadora",
+		"icon": "💻",
+		"category": "objeto"
+	},
+	{
+		"word": "teléfono",
+		"icon": "📱",
+		"category": "objeto"
+	},
+	{
+		"word": "artista",
+		"icon": "🎨",
+		"category": "concepto"
+	},
+	{
+		"word": "pintura",
+		"icon": "🖼️",
+		"category": "concepto"
+	},
+	{
+		"word": "historia",
+		"icon": "📖",
+		"category": "concepto"
+	},
+	{
+		"word": "historias",
+		"icon": "📚",
+		"category": "concepto"
+	},
+	{
+		"word": "ajustes",
+		"icon": "⚙️",
+		"category": "concepto"
+	},
+	{
+		"word": "configuración",
+		"icon": "🔧",
+		"category": "concepto"
+	},
+	{
+		"word": "lupa",
+		"icon": "🔍",
+		"category": "concepto"
+	},
+	{
+		"word": "buscar",
+		"icon": "🔎",
+		"category": "accion"
+	},
+	{
+		"word": "galería",
+		"icon": "🖼️",
+		"category": "concepto"
+	},
+	{
+		"word": "taller",
+		"icon": "🛠️",
+		"category": "concepto"
+	},
+	{
+		"word": "escenas",
+		"icon": "🎭",
+		"category": "concepto"
+	},
+	{
+		"word": "escena",
+		"icon": "🎬",
+		"category": "concepto"
+	},
+	{
+		"word": "logros",
+		"icon": "🏆",
+		"category": "concepto"
+	},
+	{
+		"word": "logro",
+		"icon": "🥇",
+		"category": "concepto"
+	},
+	{
+		"word": "juegos",
+		"icon": "🎮",
+		"category": "concepto"
+	},
+	{
+		"word": "juego",
+		"icon": "🎯",
+		"category": "concepto"
+	},
+	{
+		"word": "menú",
+		"icon": "📋",
+		"category": "concepto"
+	},
+	{
+		"word": "música",
+		"icon": "🎵",
+		"category": "concepto"
+	},
+	{
+		"word": "sonido",
+		"icon": "🔊",
+		"category": "concepto"
+	},
+	{
+		"word": "volumen",
+		"icon": "🔉",
+		"category": "concepto"
+	},
+	{
+		"word": "voz",
+		"icon": "🗣️",
+		"category": "concepto"
+	},
+	{
+		"word": "narración",
+		"icon": "🎙️",
+		"category": "concepto"
+	},
+	{
+		"word": "instrucciones",
+		"icon": "ℹ️",
+		"category": "concepto"
+	},
+	{
+		"word": "ayuda",
+		"icon": "❓",
+		"category": "concepto"
+	},
+	{
+		"word": "guardar",
+		"icon": "💾",
+		"category": "accion"
+	},
+	{
+		"word": "borrar",
+		"icon": "🗑️",
+		"category": "accion"
+	},
+	{
+		"word": "seleccionar",
+		"icon": "👆",
+		"category": "accion"
+	},
+	{
+		"word": "elegir",
+		"icon": "✅",
+		"category": "accion"
+	},
+	{
+		"word": "cuerpo",
+		"icon": "🧍",
+		"category": "concepto"
+	},
+	{
+		"word": "humano",
+		"icon": "👤",
+		"category": "concepto"
+	},
+	{
+		"word": "cerebro",
+		"icon": "🧠",
+		"category": "concepto"
+	},
+	{
+		"word": "corazón",
+		"icon": "❤️",
+		"category": "concepto"
+	},
+	{
+		"word": "completar",
+		"icon": "✔️",
+		"category": "accion"
+	},
+	{
+		"word": "continuar",
+		"icon": "▶️",
+		"category": "accion"
+	},
+	{
+		"word": "siguiente",
+		"icon": "⏭️",
+		"category": "accion"
+	},
+	{
+		"word": "anterior",
+		"icon": "⏮️",
+		"category": "accion"
+	},
+	{
+		"word": "salir",
+		"icon": "🚪",
+		"category": "accion"
+	},
+	{
+		"word": "cerrar",
+		"icon": "❌",
+		"category": "accion"
+	},
+	{
+		"word": "abrir",
+		"icon": "📂",
+		"category": "accion"
+	},
+	{
+		"word": "ver",
+		"icon": "👁️",
+		"category": "accion"
+	},
+	{
+		"word": "mirar",
+		"icon": "👀",
+		"category": "accion"
+	},
+	{
+		"word": "escuchar",
+		"icon": "👂",
+		"category": "accion"
+	},
+	{
+		"word": "activar",
+		"icon": "✅",
+		"category": "accion"
+	},
+	{
+		"word": "desactivar",
+		"icon": "❌",
+		"category": "accion"
+	},
+	{
+		"word": "mágica",
+		"icon": "✨",
+		"category": "concepto"
+	},
+	{
+		"word": "duplicar",
+		"icon": "×2",
+		"category": "accion"
+	},
+	{
+		"word": "tamaño",
+		"icon": "📊",
+		"category": "concepto"
+	},
+	{
+		"word": "texto",
+		"icon": "📝",
+		"category": "concepto"
+	},
+	{
+		"word": "fuente",
+		"icon": "🔤",
+		"category": "concepto"
+	},
+	{
+		"word": "pantalla",
+		"icon": "📺",
+		"category": "concepto"
+	},
+	{
+		"word": "contraste",
+		"icon": "🎨",
+		"category": "concepto"
+	},
+	{
+		"word": "alto",
+		"icon": "⬆️",
+		"category": "concepto"
+	},
+	{
+		"word": "bajo",
+		"icon": "⬇️",
+		"category": "concepto"
+	},
+	{
+		"word": "noche",
+		"icon": "🌙",
+		"category": "concepto"
+	},
+	{
+		"word": "día",
+		"icon": "☀️",
+		"category": "concepto"
+	},
+	{
+		"word": "claro",
+		"icon": "💡",
+		"category": "concepto"
+	},
+	{
+		"word": "oscuro",
+		"icon": "🌑",
+		"category": "concepto"
+	},
+	{
+		"word": "biónico",
+		"icon": "🧠",
+		"category": "concepto"
+	},
+	{
+		"word": "rima",
+		"icon": "🎵",
+		"category": "concepto"
+	},
+	{
+		"word": "rimas",
+		"icon": "🎶",
+		"category": "concepto"
+	},
+	{
+		"word": "pictográfico",
+		"icon": "🖼️",
+		"category": "concepto"
+	},
+	{
+		"word": "pictograma",
+		"icon": "🖼️",
+		"category": "concepto"
+	},
+	{
+		"word": "pictogramas",
+		"icon": "🎞️",
+		"category": "concepto"
+	},
+	{
+		"word": "inverso",
+		"icon": "🔄",
+		"category": "concepto"
+	},
+	{
+		"word": "visual",
+		"icon": "👁️",
+		"category": "concepto"
+	},
+	{
+		"word": "accesibilidad",
+		"icon": "♿",
+		"category": "concepto"
+	},
+	{
+		"word": "mejora",
+		"icon": "⬆️",
+		"category": "accion"
+	},
+	{
+		"word": "mejorar",
+		"icon": "🚀",
+		"category": "accion"
+	},
+	{
+		"word": "aplicación",
+		"icon": "📱",
+		"category": "concepto"
+	},
+	{
+		"word": "toda",
+		"icon": "🌐",
+		"category": "concepto"
+	},
+	{
+		"word": "elementos",
+		"icon": "🧱",
+		"category": "concepto"
+	},
+	{
+		"word": "lectura",
+		"icon": "📖",
+		"category": "accion"
+	},
+	{
+		"word": "lente",
+		"icon": "🔍",
+		"category": "objeto"
+	},
+	{
+		"word": "magnificar",
+		"icon": "🔎",
+		"category": "accion"
+	},
+	{
+		"word": "magnifica",
+		"icon": "🔍",
+		"category": "accion"
+	},
+	{
+		"word": "parte",
+		"icon": "🧩",
+		"category": "concepto"
+	},
+	{
+		"word": "muestra",
+		"icon": "👁️",
+		"category": "accion"
+	}
+]

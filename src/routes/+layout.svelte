@@ -5,6 +5,7 @@
 	import { interpolateMatrix } from '$lib/constants/colorMatrices';
 	import EfectoLupa from '$lib/components/a11y/EfectoLupa.svelte';
 	import NarrationControl from '$lib/components/a11y/NarrationControl.svelte';
+	import { findPictogramSync, preloadPictograms } from '$lib/juegos/modos/historias/pictograms';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
@@ -12,8 +13,10 @@
 	import { obtenerSesionActual } from '$lib/db/artistas.service';
 	import { inicializarCatalogoLogros } from '$lib/db/logros.service';
 	import '../lib/styles/themes.css';
+	import DyslexiaModes from '$lib/styles/DyslexiaModes.svelte';
 	import IconoVolver from '$lib/components/iconos/IconoVolver.svelte';
 	import IconoAccesibilidad from '$lib/components/iconos/Accesibilidad.svelte';
+	import IconoInstrucciones from '$lib/components/iconos/IconoInstrucciones.svelte';
 	import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
 	import FondoLogrosGeneral from '$lib/components/fondos/FondoLogrosGeneral.svelte';
 	import FondoCuerpoHumano from '$lib/components/fondos/FondoCuerpoHumano.svelte';
@@ -54,6 +57,11 @@
 	let estaEnConfiguracion = $derived($page.url.pathname === '/ajustes');
 	let estaEnInicio = $derived($page.url.pathname === '/');
 	let estaEnEstudio = $derived($page.url.pathname.startsWith('/estudio'));
+	
+	// Detectar si necesita botón de instrucciones (en juegos de historias)
+	let necesitaBotonInstrucciones = $derived(
+		$page.url.pathname.includes('/juegos/historias/')
+	);
 
 	//DETECTAR SI SE NECESITA EL FONDO DE MANCHAS
 	let necesitaFondoManchas = $derived($page.url.pathname === '/' 
@@ -86,6 +94,10 @@
 			goto('/');
 		}
 	}
+	function abrirInstrucciones() {
+		// Disparar evento personalizado para que la página lo maneje
+		window.dispatchEvent(new CustomEvent('abrir-instrucciones'));
+	}
 	function manejarTecla(event: KeyboardEvent) {
 		// No capturar ESC si hay un modal abierto
 		if (event.key === 'Escape') {
@@ -98,6 +110,10 @@
 		if ((event.key === 'a' || event.key === 'A') && event.ctrlKey) {
 			event.preventDefault();
 			abrirConfiguracion();
+		}
+		if ((event.key === 'i' || event.key === 'I') && event.ctrlKey && necesitaBotonInstrucciones) {
+			event.preventDefault();
+			abrirInstrucciones();
 		}
 	}
 
@@ -134,6 +150,9 @@
 	onMount(async () => {
 		if (!browser) return;
 		try {
+			// Precargar diccionario de pictogramas
+			await preloadPictograms();
+			
 			// Inicializar catálogo de logros al cargar la aplicación
 			await inicializarCatalogoLogros();
 			
@@ -157,7 +176,7 @@
 		
 		const handleModalMounted = () => {
 			setTimeout(() => {
-				if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+				if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
 					applyAccessibilityModes();
 				}
 			}, 100);
@@ -167,7 +186,7 @@
 			const detail = (e as CustomEvent)?.detail || {};
 			// Pequeña espera para que Svelte remonte el DOM
 			setTimeout(() => {
-				if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+				if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
 					applyAccessibilityModes();
 				}
 			}, 80);
@@ -175,7 +194,7 @@
 			// Programar una segunda reaplicación tras la animación si se especifica, o usar un fallback
 			const animationDuration = typeof detail.animationDuration === 'number' ? detail.animationDuration : 500;
 			setTimeout(() => {
-				if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+				if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
 					applyAccessibilityModes();
 				}
 			}, animationDuration + 60);
@@ -317,7 +336,7 @@ function darkenColorSimple(hex: string, amount: number): string {
 		
 		// Reaplicar modos después de que el DOM se actualice
 		setTimeout(() => {
-			if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+			if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
 				applyAccessibilityModes();
 			}
 		}, 200);
@@ -325,9 +344,10 @@ function darkenColorSimple(hex: string, amount: number): string {
 
 	// Escuchar cambios en los modos de accesibilidad con debounce
 	$effect(() => {
-		// Observar cambios en bionicMode y rhymeMode
+		// Observar cambios en bionicMode, rhymeMode y pictogramMode
 		const bionicActive = $configuraciones.bionicMode;
 		const rhymeActive = $configuraciones.rhymeMode;
+		const pictogramActive = $configuraciones.pictogramMode;
 		
 		// Limpiar timeout anterior si existe
 		if (debounceTimer) {
@@ -336,10 +356,10 @@ function darkenColorSimple(hex: string, amount: number): string {
 		
 		// Aplicar con debounce de 150ms para evitar múltiples llamadas rápidas
 		debounceTimer = setTimeout(() => {
-			if (bionicActive || rhymeActive) {
+			if (bionicActive || rhymeActive || pictogramActive) {
 				applyAccessibilityModes();
 			} else {
-				// Si ambos están desactivados, restaurar el texto original
+				// Si todos están desactivados, restaurar el texto original
 				restoreOriginalText();
 			}
 		}, 150);
@@ -382,7 +402,7 @@ function darkenColorSimple(hex: string, amount: number): string {
 		}
 
 		// Selector de elementos a procesar dentro de cada raíz
-		const selector = 'h1, h2, h3, h4, h5, h6, .seccion-titulo, p, button:not(.control-button):not(.boton-volver):not(.boton-configuracion):not(.switch-toggle), label:not(.switch-knob), .switch-label, span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-highlight):not(.switch-knob):not(.control-valor):not(.icono), small, div.control-ayuda, .control-label span';
+		const selector = 'h1, h2, h3, h4, h5, h6, .seccion-titulo, p, button:not(.control-button):not(.boton-volver):not(.boton-configuracion):not(.boton-instrucciones):not(.switch-toggle):not(.pictogram-word), label:not(.switch-knob), .switch-label, span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-highlight):not(.pictogram-wrapper):not(.pictogram-icon):not(.pictogram-popover):not(.switch-knob):not(.control-valor):not(.icono), small, div.control-ayuda, .control-label span';
 
 		// Si el modo rima está activo, primero recolectar TODO el texto visible de la página PRINCIPAL (sin modales)
 		let globalRhymePatterns: any[] = [];
@@ -421,23 +441,30 @@ function darkenColorSimple(hex: string, amount: number): string {
 				// Verificar qué modos están activos y qué highlights ya existen
 				const hasBionic = !!element.querySelector('.bionic-highlight');
 				const hasRhyme = !!element.querySelector('.rhyme-highlight');
+				const hasPictogram = !!element.querySelector('.pictogram-wrapper');
 				
-				// Determinar si el elemento ya está correctamente procesado para el estado actual
-				const bionicOk = $configuraciones.bionicMode ? hasBionic : !hasBionic;
-				const rhymeOk = $configuraciones.rhymeMode ? hasRhyme : !hasRhyme;
+				// Si el modo pictográfico está activo y ya tiene pictogramas, saltar
+				if ($configuraciones.pictogramMode && hasPictogram) return;
 				
-				// Solo saltamos si el elemento ya tiene exactamente los highlights que necesita
-				if (bionicOk && rhymeOk) return;
+				// Si solo modos biónico/rima están activos y ya los tiene, saltar
+				if (!$configuraciones.pictogramMode && ($configuraciones.bionicMode || $configuraciones.rhymeMode)) {
+					const bionicOk = $configuraciones.bionicMode ? hasBionic : !hasBionic;
+					const rhymeOk = $configuraciones.rhymeMode ? hasRhyme : !hasRhyme;
+					if (bionicOk && rhymeOk) return;
+				}
+				
+				// Si ningún modo está activo y no tiene highlights, saltar
+				if (!$configuraciones.bionicMode && !$configuraciones.rhymeMode && !$configuraciones.pictogramMode && !hasBionic && !hasRhyme && !hasPictogram) return;
 				
 				// Si llegamos aquí, el elemento no coincide con el estado deseado
 				// Primero, asegurarnos de que tenemos el HTML original guardado
 				if (!element.hasAttribute('data-original-html')) {
 					// Si el elemento actualmente tiene highlights, necesitamos limpiarlo primero
 					// antes de guardarlo como original
-					if (hasBionic || hasRhyme) {
+					if (hasBionic || hasRhyme || hasPictogram) {
 						// Crear una copia temporal para limpiar
 						const tempEl = element.cloneNode(true) as HTMLElement;
-						const highlights = tempEl.querySelectorAll('.bionic-highlight, .bionic-rest, .rhyme-highlight');
+						const highlights = tempEl.querySelectorAll('.bionic-highlight, .bionic-rest, .rhyme-highlight, .pictogram-wrapper');
 						highlights.forEach(h => {
 							// Preservar el contenido interno, solo quitar el wrapper
 							const parent = h.parentNode;
@@ -456,7 +483,7 @@ function darkenColorSimple(hex: string, amount: number): string {
 				}
 				
 				// Limpiar cualquier highlight existente antes de reprocesar
-				if (hasBionic || hasRhyme) {
+				if (hasBionic || hasRhyme || hasPictogram) {
 					const originalHtml = element.getAttribute('data-original-html');
 					if (originalHtml) {
 						(element as HTMLElement).innerHTML = originalHtml;
@@ -470,7 +497,7 @@ let text = element.textContent?.trim();
 			// (evita borrar imágenes u otros nodos no-texto). En su lugar, solo eliminamos
 			// spans de resaltado previos para evitar contenido obsoleto.
 			if ((element as Element).closest('.carrusel-contenedor')) {
-				const highlights = element.querySelectorAll('.bionic-highlight, .bionic-rest, .rhyme-highlight');
+				const highlights = element.querySelectorAll('.bionic-highlight, .bionic-rest, .rhyme-highlight, .pictogram-wrapper');
 				if (highlights.length) {
 					highlights.forEach(h => {
 						const txt = h.textContent || '';
@@ -639,29 +666,222 @@ let text = element.textContent?.trim();
 						return false;
 					})();
 					
-					// NUEVO ENFOQUE: Procesar palabra por palabra aplicando AMBOS modos simultáneamente
-					if (($configuraciones.bionicMode || $configuraciones.rhymeMode) && detectRhymes && applyRhymeHighlight) {
-						// Usar los patrones globales de rima (ya detectados para toda la página)
-						const patterns = globalRhymePatterns;
-						const words = txt.split(/(\s+|[.,;:!?¿¡()"""'])/);
-						const frag = document.createDocumentFragment();
-						const bionicColor = getBionicColorForBackground(element);
+				// NUEVO ENFOQUE: Procesar palabra por palabra aplicando TODOS los modos simultáneamente
+				// Los tres modos pueden coexistir
+				const words = txt.split(/(\s+|[.,;:!?¿¡()"""'])/);
+				const frag = document.createDocumentFragment();
+				const bionicColor = getBionicColorForBackground(element);
+				
+				words.forEach(word => {
+					// Si es espacio o puntuación, añadir tal cual
+					if (/^\s+$/.test(word) || /^[.,;:!?¿¡()"""']$/.test(word)) {
+						frag.appendChild(document.createTextNode(word));
+						return;
+					}
+					
+					if (word.length === 0) {
+						frag.appendChild(document.createTextNode(word));
+						return;
+					}
+					
+					// Limpiar la palabra de puntuación para buscar el pictograma
+					const cleanWord = word.replace(/[.,;:!?¿¡()"""']/g, '');
+					const pictogram = $configuraciones.pictogramMode ? findPictogramSync(cleanWord) : null;
+					
+					// Si hay pictograma, envolver la palabra
+					if (pictogram) {
+						// Crear wrapper para el pictograma con popover
+						const wrapper = document.createElement('span');
+						wrapper.className = 'pictogram-wrapper';
+						wrapper.setAttribute('aria-hidden', 'true');
 						
-						words.forEach(word => {
-							// Si es espacio o puntuación, añadir tal cual
-							if (/^\s+$/.test(word) || /^[.,;:!?¿¡()"""']$/.test(word)) {
-								frag.appendChild(document.createTextNode(word));
-								return;
+						const button = document.createElement('button');
+						button.className = 'pictogram-word';
+						button.type = 'button';
+						button.setAttribute('tabindex', '-1');
+						button.setAttribute('data-pictogram-icon', pictogram.icon);
+						button.setAttribute('data-pictogram-category', pictogram.category);
+						
+						// APLICAR MODOS BIÓNICO/RIMA DENTRO DEL BOTÓN DEL PICTOGRAMA
+						if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+							// Calcular posiciones de biónico
+							let bionicLength = 0;
+							if ($configuraciones.bionicMode) {
+								bionicLength = getHighlightLengthForWord(word.length, 0.5);
 							}
 							
-							if (word.length === 0) {
-								frag.appendChild(document.createTextNode(word));
-								return;
+							// Calcular posiciones de rima
+							let rhymeStartIndex = -1;
+							let rhymeColor = '';
+							let rhymeBgColor = '';
+							
+							if ($configuraciones.rhymeMode && detectRhymes && applyRhymeHighlight) {
+								const patterns = globalRhymePatterns;
+								const pattern = patterns.find(p => p.word === cleanWord.toLowerCase());
+								
+								if (pattern && pattern.hasRhyme && pattern.ending) {
+									const ending = pattern.ending.toLowerCase();
+									const wordLower = cleanWord.toLowerCase();
+									rhymeStartIndex = wordLower.lastIndexOf(ending);
+									
+									if (rhymeStartIndex === -1 || rhymeStartIndex + ending.length !== wordLower.length) {
+										rhymeStartIndex = wordLower.length - ending.length;
+									}
+									
+									if (rhymeStartIndex >= 0 && rhymeStartIndex < word.length) {
+										const rgb = hexToRgbSimple(pattern.color);
+										const lum = rgb ? (0.2126 * rgb[0]/255 + 0.7152 * rgb[1]/255 + 0.0722 * rgb[2]/255) : 0.5;
+										
+										if ($configuraciones.modoNoche) {
+											rhymeColor = pattern.color;
+											rhymeBgColor = rgb ? `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.45)` : 'rgba(255,255,255,0.45)';
+										} else {
+											rhymeColor = lum > 0.4 ? darkenColorSimple(pattern.color, 0.4) : pattern.color;
+											rhymeBgColor = rgb ? `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.20)` : 'rgba(0,0,0,0.20)';
+										}
+									} else {
+										rhymeStartIndex = -1;
+									}
+								}
 							}
 							
-							// Limpiar palabra para buscar patrón de rima
-							const cleanWord = word.toLowerCase().replace(/[.,;:!?¿¡()"""']/g, '');
-							const pattern = patterns.find(p => p.word === cleanWord);
+							// Aplicar estilos combinados a la palabra dentro del botón
+							let currentSegment = '';
+							let currentStyle = { isBionic: false, isRhyme: false };
+							
+							const flushSegment = () => {
+								if (currentSegment.length === 0) return;
+								
+								const span = document.createElement('span');
+								
+								if (currentStyle.isRhyme) {
+									span.style.backgroundColor = rhymeBgColor;
+									span.style.borderBottom = `2px solid ${rhymeColor}`;
+									span.style.padding = '0';
+									span.style.borderRadius = '2px';
+									
+									if ($configuraciones.bionicMode && currentStyle.isBionic) {
+										span.style.fontWeight = hasOriginalBold ? '700' : 'normal';
+										span.style.color = bionicColor;
+										span.className = 'bionic-highlight rhyme-highlight';
+									} else if ($configuraciones.bionicMode) {
+										span.style.fontWeight = hasOriginalBold ? '700' : 'normal';
+										span.className = 'rhyme-highlight';
+									} else {
+										span.className = 'rhyme-highlight';
+									}
+								} else if (currentStyle.isBionic) {
+									span.style.fontWeight = '700';
+									span.style.color = bionicColor;
+									span.className = 'bionic-highlight';
+								} else {
+									span.className = 'bionic-rest';
+									if ($configuraciones.bionicMode) {
+										span.style.fontWeight = hasOriginalBold ? '700' : 'normal';
+									}
+								}
+								
+								span.textContent = currentSegment;
+								button.appendChild(span);
+								currentSegment = '';
+							};
+							
+							for (let i = 0; i < word.length; i++) {
+								const char = word[i];
+								const isBionic = $configuraciones.bionicMode && i < bionicLength;
+								const isRhyme = rhymeStartIndex >= 0 && i >= rhymeStartIndex;
+								
+								if (currentSegment.length > 0 && 
+									(currentStyle.isBionic !== isBionic || currentStyle.isRhyme !== isRhyme)) {
+									flushSegment();
+								}
+								
+								currentSegment += char;
+								currentStyle = { isBionic, isRhyme };
+							}
+							
+							flushSegment();
+						} else {
+							// Sin modos biónico/rima, solo texto
+							button.textContent = word;
+						}
+						
+						const popover = document.createElement('div');
+						popover.className = 'pictogram-popover';
+						popover.setAttribute('role', 'tooltip');
+						popover.setAttribute('aria-hidden', 'true');
+						
+						const iconSpan = document.createElement('span');
+						iconSpan.className = 'pictogram-icon';
+						iconSpan.textContent = pictogram.icon;
+						
+						popover.appendChild(iconSpan);
+						wrapper.appendChild(button);
+						wrapper.appendChild(popover);
+						
+						// Agregar texto oculto visualmente pero accesible para lectores de pantalla
+						const srOnly = document.createElement('span');
+						srOnly.className = 'sr-only';
+						srOnly.textContent = word;
+						srOnly.style.cssText = 'position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;';
+						wrapper.appendChild(srOnly);
+						
+						frag.appendChild(wrapper);
+						
+						// Función para determinar y actualizar dirección del popover
+						const updatePopoverDirection = () => {
+							const buttonRect = button.getBoundingClientRect();
+							const viewportHeight = window.innerHeight;
+							const popoverHeight = 100; // Aumentado para mayor margen
+							const spaceAbove = buttonRect.top;
+							const spaceBelow = viewportHeight - buttonRect.bottom;
+							
+							// Si hay más espacio abajo que arriba Y no hay suficiente espacio arriba
+							if (spaceAbove < popoverHeight + 40 && spaceBelow > spaceAbove) {
+								popover.classList.add('popover-below');
+							} else {
+								popover.classList.remove('popover-below');
+							}
+						};
+						
+						// Determinar dirección inicial
+						setTimeout(updatePopoverDirection, 0);
+						
+						// Actualizar dirección al hacer scroll
+						let scrollContainer = button.closest('.app-main');
+						if (!scrollContainer) scrollContainer = window;
+						const handleScroll = () => updatePopoverDirection();
+						if (scrollContainer === window) {
+							window.addEventListener('scroll', handleScroll, { passive: true });
+						} else {
+							scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+						}
+						
+						// Eventos para mostrar/ocultar popover
+						button.addEventListener('mouseenter', () => {
+							updatePopoverDirection();
+							popover.classList.add('visible');
+						});
+						button.addEventListener('mouseleave', () => {
+							popover.classList.remove('visible');
+						});
+						button.addEventListener('focus', () => {
+							updatePopoverDirection();
+							popover.classList.add('visible');
+							popover.setAttribute('aria-hidden', 'false');
+						});
+						button.addEventListener('blur', () => {
+							popover.classList.remove('visible');
+							popover.setAttribute('aria-hidden', 'true');
+						});
+					}
+					// NO HAY PICTOGRAMA: Aplicar solo biónico/rima
+					else if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+						if (detectRhymes && applyRhymeHighlight) {
+							// Usar los patrones globales de rima (ya detectados para toda la página)
+							const patterns = globalRhymePatterns;
+							const cleanWordForRhyme = word.toLowerCase().replace(/[.,;:!?¿¡()"""']/g, '');
+							const pattern = patterns.find(p => p.word === cleanWordForRhyme);
 							
 							// Calcular posiciones de biónico
 							let bionicLength = 0;
@@ -676,7 +896,7 @@ let text = element.textContent?.trim();
 							
 							if ($configuraciones.rhymeMode && pattern && pattern.hasRhyme && pattern.ending) {
 								const ending = pattern.ending.toLowerCase();
-								const wordLower = cleanWord;
+								const wordLower = cleanWordForRhyme;
 								rhymeStartIndex = wordLower.lastIndexOf(ending);
 								
 								if (rhymeStartIndex === -1 || rhymeStartIndex + ending.length !== wordLower.length) {
@@ -772,19 +992,23 @@ let text = element.textContent?.trim();
 							
 							// Añadir el último segmento
 							flushSegment();
-						});
-						
-						node.parentNode?.replaceChild(frag, node);
-						return;
+						}
 					}
-					
-					return;
+					// Sin ningún modo activo, añadir texto plano
+					else {
+						frag.appendChild(document.createTextNode(word));
+					}
+				});
+				
+				node.parentNode?.replaceChild(frag, node);
+				return;
 				} else if (node.nodeType === Node.ELEMENT_NODE) {
 					// Ignorar elementos SVG y sus hijos
 					if ((node as Element).tagName === 'svg' || (node as Element).closest('svg')) return;
 					// Ignorar elementos con clase .icono y sus hijos
 					if ((node as Element).classList.contains('icono')) return;
-					if ((node as Element).classList.contains('bionic-highlight') || (node as Element).classList.contains('rhyme-highlight')) return;
+					// Ignorar elementos ya procesados
+					if ((node as Element).classList.contains('bionic-highlight') || (node as Element).classList.contains('rhyme-highlight') || (node as Element).classList.contains('pictogram-wrapper') || (node as Element).classList.contains('pictogram-word')) return;
 					Array.from(node.childNodes).forEach(processNode);
 				}
 			};
@@ -807,7 +1031,7 @@ let text = element.textContent?.trim();
 			if (originalHtml === null) return;
 			const el = element as HTMLElement;
 			// Si el elemento contiene highlights, restauramos al original guardado
-			const hasHighlight = !!el.querySelector('.bionic-highlight, .rhyme-highlight');
+			const hasHighlight = !!el.querySelector('.bionic-highlight, .rhyme-highlight, .pictogram-wrapper');
 			if (hasHighlight) {
 				el.innerHTML = originalHtml;
 				element.removeAttribute('data-original-html');
@@ -857,6 +1081,9 @@ let text = element.textContent?.trim();
 
 <!-- Escuchamos el evento de teclado en toda la ventana -->
 <svelte:window onkeydown={manejarTecla} />
+
+<!-- Estilos globales para modos de dislexia -->
+<DyslexiaModes />
 
 <svelte:head>
 	<title>Coloreco - Tu estudio de pinturas e historias</title>
@@ -919,11 +1146,32 @@ let text = element.textContent?.trim();
 	<!-- Control de narración -->
 	<NarrationControl />
 
+	<!-- Botón de instrucciones (solo en páginas de juegos de historias) -->
+	{#if necesitaBotonInstrucciones}
+		<div class="contenedor-flotante-i-instrucciones" style={filterStyle}>
+			<button 
+				class="boton-instrucciones pattern-yellow" 
+				aria-label="Ver instrucciones"
+				aria-keyshortcuts="Control + I" 
+				title="Instrucciones (Control + I)" 
+				type="button"
+				onclick={abrirInstrucciones}
+				use:clickSound
+			>
+				<span class="solo-lectores">Ver instrucciones</span>
+				<IconoInstrucciones />
+			</button>
+
+			<!-- Texto visual indicativo -->
+			<span class="texto-tecla">Ctrl + I</span>
+		</div>
+	{/if}
+
 	<!-- Botón de volver fijo en la esquina inferior izquierda (oculto en página inicial) -->
 	{#if !estaEnInicio && !estaEnEstudio}
 		<div class="contenedor-flotante-i" style={filterStyle}>
 			<button 
-				class="boton-volver pattern-yellow" 
+				class="boton-volver pattern-yellow" 
 				aria-label="Volver a la página anterior"
 				aria-keyshortcuts="Escape" 
 				title="Volver (Esc)" 
@@ -937,7 +1185,6 @@ let text = element.textContent?.trim();
 			<span class="texto-tecla">ESC</span>
 		</div>
 	{/if}
-	
 	<!-- Botón de ajustes fijo en la esquina inferior derecha (oculto en /ajustes) -->
 
 	{#if !estaEnConfiguracion && !estaEnEstudio}
@@ -1010,7 +1257,8 @@ let text = element.textContent?.trim();
 
 	/* Contenedores flotantes: Ahora aceptan filtros y mantienen su posición */
 	.contenedor-flotante-i,
-	.contenedor-flotante-d {
+	.contenedor-flotante-d,
+	.contenedor-flotante-i-instrucciones {
 		position: fixed;
 		bottom: var(--spacing-base, 1rem);
 		display: flex;
@@ -1023,6 +1271,11 @@ let text = element.textContent?.trim();
 
 	.contenedor-flotante-i { left: calc(var(--spacing-base, 1rem) * 2.5); }
 	.contenedor-flotante-d { right: calc(var(--spacing-base, 1rem) * 2.5); }
+	.contenedor-flotante-i-instrucciones { 
+		left: calc(var(--spacing-base, 1rem) * 2.5);
+		top: var(--spacing-base, 1rem);
+		bottom: auto;
+	}
 
 	.texto-tecla {
 		font-size: calc(4vh * var(--btn-scale, 1));
@@ -1047,7 +1300,7 @@ let text = element.textContent?.trim();
 		margin: -1px;
 	}
 	/*Botón volver esquina inferior izquierda y botón ajustes esquina inferior derecha*/
-	.boton-volver, .boton-configuracion{
+	.boton-volver, .boton-configuracion, .boton-instrucciones {
 		position: relative;
 		width: calc(8vw * var(--btn-scale, 1));
 		height: calc(15vh * var(--btn-scale, 1));
@@ -1062,14 +1315,14 @@ let text = element.textContent?.trim();
 		transition: transform 120ms ease, box-shadow 120ms ease;
 		z-index: 100;
 	}
-	.boton-volver:hover, .boton-configuracion:hover {
+	.boton-volver:hover, .boton-configuracion:hover, .boton-instrucciones:hover {
 		transform: translateY(-2px);
 		background: var(--fondo-botones-hover, #d1a700);
 	}
-	.boton-volver:active, .boton-configuracion:active {
+	.boton-volver:active, .boton-configuracion:active, .boton-instrucciones:active {
 		transform: translateY(0);
 	}
-	.boton-volver:focus, .boton-configuracion:focus{
+	.boton-volver:focus, .boton-configuracion:focus, .boton-instrucciones:focus{
 		outline: var(--borde-botones, 4px solid #000000);
 		background: var(--fondo-botones-hover, #d1a700);
 		outline-offset: 7px;
