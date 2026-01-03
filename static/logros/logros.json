@@ -31,11 +31,12 @@
   ],
   "dibujo": [
     {
-      "codigo": "PRIMER_DIBUJO",
-      "nombre": "Primer Dibujo",
-      "descripcion": "Completa tu primera escena de dibujo",
-      "criterio": "Completar una escena",
-      "icono": "🎨"
+      "codigo": "NATURALEZA_EN_ESCENA_CABAÑA",
+      "nombre": "Naturaleza Viva",
+      "descripcion": "Coloca 3 stickers del entorno natural que armonicen con la escena",
+      "criterio": "Agregar 3 stickers relacionados con el entorno natural",
+      "icono": "🌿",
+      "escenaId": "cabaña-bosque"
     }
   ],
   "cuerpoHumano": [

@@ -4,11 +4,15 @@
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 	import { buscarPorEscenaId } from '$lib/db/escenas.service';
+	import { obtenerLogrosPorEscenaId } from '$lib/db/logros.service';
+	import { obtenerSesionActual } from '$lib/db/artistas.service';
 	import type { EscenaCatalogo } from '$lib/db/schemas';
+	import type { LogroConEstado } from '$lib/stores/logros';
 
 	let escena: EscenaCatalogo | null = $state<EscenaCatalogo | null>(null);
+	let logros: LogroConEstado[] = $state<LogroConEstado[]>([]);
 	let error: string | null = $state<string | null>(null);
-	let cargando = $state<boolean>(true); // Estado de carga inicial ;
+	let cargando = $state<boolean>(true);
 
 	async function cargarEscena() {
 		try {
@@ -28,6 +32,50 @@
 
 			escena = resultados[0];
 			error = null;
+
+			// Cargar logros asociados a la escena con estado de desbloqueo
+			if (escenaId) {
+				try {
+					// Obtener artistaId de la sesión
+					const sesion = await obtenerSesionActual();
+					const artistaId = sesion?.artistaActualId;
+
+					if (artistaId) {
+						// Obtener todas las definiciones de logros de la escena
+						const definiciones = await obtenerLogrosPorEscenaId(escenaId);
+						
+						// Importar el servicio de logros para obtener el estado
+						const { obtenerLogrosArtista } = await import('$lib/db/logros.service');
+						const logrosConEstado = await obtenerLogrosArtista(artistaId);
+						
+						// Combinar definiciones con su estado
+						logros = definiciones.map(definicion => {
+							const logroConEstado = logrosConEstado.find(l => l.definicion.id === definicion.id);
+							const estado = logroConEstado?.estado;
+							return {
+								definicion,
+								estado: estado ?? null,
+								desbloqueado: estado?.desbloqueado ?? false,
+								progreso: estado?.progresoParcial ?? 0
+							};
+						});
+						
+						console.log(`[descripcion-escena] ${logros.length} logros cargados para escena ${escenaId}`);
+					} else {
+						// Si no hay artista, solo mostrar las definiciones sin estado
+						const definiciones = await obtenerLogrosPorEscenaId(escenaId);
+						logros = definiciones.map(definicion => ({
+							definicion,
+							estado: null,
+							desbloqueado: false,
+							progreso: 0
+						}));
+					}
+				} catch (e) {
+					console.error('[descripcion-escena] Error cargando logros:', e);
+					logros = [];
+				}
+			}
 		} catch (e) {
 			console.error('[descripcion-escena] Error al cargar escena:', e);
 			error = 'Ocurrió un error al cargar la escena.';
@@ -130,7 +178,23 @@
                 <h2 tabindex="-1">Retos de la escena</h2>
 
 				<section class="panel panel-retos" aria-label="Retos y logros" tabindex="-1">
-					<p class="placeholder-retos">TODO: cargar logros asociados a la escena (obtenerLogrosEscenaID()).</p>
+					{#if logros.length > 0}
+						<div class="logros-lista">
+							{#each logros as logro (logro.definicion.id)}
+								<div class="logro-item" role="listitem">
+									<div 
+										class="logro-circulo" 
+										class:desbloqueado={logro.desbloqueado}
+										aria-label={logro.desbloqueado ? 'Logro desbloqueado' : 'Logro bloqueado'}
+									></div>
+									<h3 class="logro-nombre">{logro.definicion.nombre}</h3>
+									<p class="logro-descripcion">{logro.definicion.descripcion}</p>
+								</div>
+							{/each}
+						</div>
+					{:else}
+						<p class="sin-logros">No hay retos especiales disponibles para esta escena.</p>
+					{/if}
 				</section>
 			</div>
 		</section>
@@ -259,15 +323,60 @@
         font-size: calc(var(--font-size-base, 1rem) * 1.2);
 	}
 
-	.placeholder-retos {
-		margin: 0;
-		line-height: 1.6;
-		color: var(--color-texto, #000000);
-        font-size: calc(var(--font-size-base, 1rem) * 1.2);
+	/* Estilos para la lista de logros */
+	.logros-lista {
+		display: flex;
+		flex-direction: column;
+		gap: calc(var(--spacing-base, 1rem) * 1.5);
 	}
 
-    .boton-crear {      
-        padding: calc(var(--spacing-base,2rem) * 1.5) 1rem;
+	.logro-item {
+		display: flex;
+		align-items: baseline;
+		gap: calc(var(--spacing-base, 1rem) * 0.75);
+		line-height: 1.5;
+	}
+
+	.logro-circulo {
+		flex-shrink: 0;
+		width: 1.25rem;
+		height: 1.25rem;
+		border-radius: 50%;
+		border: 2px solid var(--icono-color-borde, #000000);
+		background: var(--bg, white);
+		transition: background-color 200ms ease, border-color 200ms ease;
+	}
+
+	.logro-circulo.desbloqueado {
+		background: #4caf50;
+		border-color: #2e7d32;
+	}
+
+	.logro-nombre {
+		margin: 0;
+		font-weight: 700;
+		font-size: calc(var(--font-size-base, 1rem) * 1.1);
+		color: var(--color-texto, #333);
+		display: inline;
+	}
+
+	.logro-descripcion {
+		margin: 0;
+		display: inline;
+		font-size: calc(var(--font-size-base, 1rem) * 0.95);
+		color: var(--color-texto, #666);
+	}
+
+	.sin-logros {
+		margin: 0;
+		padding: calc(var(--spacing-base, 1rem) * 0.5) 0;
+		font-size: calc(var(--font-size-base, 1rem) * 1);
+		color: var(--color-texto, #999);
+		font-style: italic;
+	}
+
+	.boton-crear {      
+        padding: calc(var(--spacing-base, 1rem) * 1.5) 1rem;
         margin-top: 2rem;
 		background: var(--fondo-botones, #ffca00);
 		color: var(--icono-color-relleno, black);

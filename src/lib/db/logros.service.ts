@@ -19,6 +19,7 @@ export interface LogroJSON {
 	descripcion: string;
 	criterio: string;
 	icono: string;
+	escenaId?: string;
 }
 
 interface LogrosData {
@@ -54,20 +55,29 @@ async function cargarDefinicionesLogros(): Promise<LogrosData> {
  * Obtiene las definiciones de logros para un modo específico
  * 
  * @param modo - Modo del juego
- * @returns Array de definiciones de logros
+ * @returns Array de definiciones de logros sin ID (se genera después en la BD)
  */
 async function obtenerDefinicionesPorModo(modo: Modo): Promise<Omit<LogroDefinicion, 'id'>[]> {
 	const logrosData = await cargarDefinicionesLogros();
 	const logrosJSON = logrosData[modo] || [];
 
-	return logrosJSON.map(logro => ({
-		codigo: logro.codigo,
-		nombre: logro.nombre,
-		descripcion: logro.descripcion,
-		modo: modo,
-		criterio: logro.criterio,
-		icono: logro.icono
-	}));
+	return logrosJSON.map(logro => {
+		const defLogro: Omit<LogroDefinicion, 'id'> = {
+			codigo: logro.codigo,
+			nombre: logro.nombre,
+			descripcion: logro.descripcion,
+			modo: modo,
+			criterio: logro.criterio,
+			icono: logro.icono
+		};
+		
+		// Incluir escenaId si existe en el JSON (campo opcional)
+		if (logro.escenaId) {
+			defLogro.escenaId = logro.escenaId;
+		}
+		
+		return defLogro;
+	});
 }
 
 // ============================================================================

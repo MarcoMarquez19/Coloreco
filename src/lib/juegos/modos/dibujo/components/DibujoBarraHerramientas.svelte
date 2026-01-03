@@ -798,7 +798,7 @@
 	}
 
 	.boton-grosor:hover {
-		background: var(--fondo-botones-hover, #000000);
+		background: var(--fondo-botones-hover, #7a7a7a);
 		transform: translateY(-2px);
 	}
 
