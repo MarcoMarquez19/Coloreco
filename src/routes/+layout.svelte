@@ -17,6 +17,7 @@
 	import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
 	import FondoLogrosGeneral from '$lib/components/fondos/FondoLogrosGeneral.svelte';
 	import FondoCuerpoHumano from '$lib/components/fondos/FondoCuerpoHumano.svelte';
+	import { adaptiveObserver, adaptiveEngine } from '$lib/a11y/adaptive-engine';
 
 	// Pequeño helper de accesibilidad: enfocar el contenido principal al navegar
 	let mainEl: HTMLElement | null = null;
@@ -104,6 +105,13 @@
 		} else {
 			document.body.removeAttribute('data-theme');
 		}
+	});
+
+	// Efecto para resetear el motor adaptativo en cada cambio de ruta
+	$effect(() => {
+		if (!browser) return;
+		const currentPath = $page.url.pathname;
+		adaptiveEngine.onRouteChange(currentPath);
 	});
 
 	// Efecto para reproducir música según la pantalla actual
@@ -636,7 +644,7 @@ let text = element.textContent?.trim();
 	<FondoCuerpoHumano style={filterStyle}/>
 {/if}
 
-	<div class="app-filtered-content" style={filterStyle}>
+	<div use:adaptiveObserver class="app-filtered-content" style={filterStyle}>
 		
 		<main bind:this={mainEl} class="app-main">
 			{@render children()}
