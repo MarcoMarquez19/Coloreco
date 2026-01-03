@@ -58,9 +58,10 @@
 	let estaEnInicio = $derived($page.url.pathname === '/');
 	let estaEnEstudio = $derived($page.url.pathname.startsWith('/estudio'));
 	
-	// Detectar si necesita botón de instrucciones (en juegos de historias)
+	// Detectar si necesita botón de instrucciones (solo en seleccionar-historia y progreso)
 	let necesitaBotonInstrucciones = $derived(
-		$page.url.pathname.includes('/juegos/historias/')
+		$page.url.pathname === '/juegos/historias/seleccionar-historia' ||
+		$page.url.pathname.includes('/progreso')
 	);
 
 	//DETECTAR SI SE NECESITA EL FONDO DE MANCHAS
@@ -1164,11 +1165,13 @@ let text = element.textContent?.trim();
 	{/if}
 
 	<!-- Control de narración -->
-	<NarrationControl />
+	<div id="narration-controls-container">
+		<NarrationControl />
+	</div>
 
 	<!-- Botón de instrucciones (solo en páginas de juegos de historias) -->
 	{#if necesitaBotonInstrucciones}
-		<div class="contenedor-flotante-i-instrucciones" style={filterStyle}>
+		<div id="floating-instructions-button" class="contenedor-flotante-i-instrucciones" style={filterStyle}>
 			<button 
 				class="boton-instrucciones pattern-yellow" 
 				aria-label="Ver instrucciones"
@@ -1189,7 +1192,7 @@ let text = element.textContent?.trim();
 
 	<!-- Botón de volver fijo en la esquina inferior izquierda (oculto en página inicial) -->
 	{#if !estaEnInicio && !estaEnEstudio}
-		<div class="contenedor-flotante-i" style={filterStyle}>
+		<div id="floating-back-button" class="contenedor-flotante-i" style={filterStyle}>
 			<button 
 				class="boton-volver pattern-yellow" 
 				aria-label="Volver a la página anterior"
@@ -1208,7 +1211,7 @@ let text = element.textContent?.trim();
 	<!-- Botón de ajustes fijo en la esquina inferior derecha (oculto en /ajustes) -->
 
 	{#if !estaEnConfiguracion && !estaEnEstudio}
-		<div class="contenedor-flotante-d" style={filterStyle}>
+		<div id="floating-settings-button" class="contenedor-flotante-d" style={filterStyle}>
 			<button 
 				class="boton-configuracion pattern-yellow" 
 				aria-label="Abrir los ajustes"

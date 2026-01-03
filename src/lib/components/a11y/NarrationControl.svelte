@@ -69,7 +69,7 @@
 		if (!mainContent) return '';
 		
 		// Solo elementos de texto visibles de nivel superior (sin incluir elementos anidados)
-		const selector = 'h1, h2, h3, h4, h5, h6, p, button:not(.pictogram-word):not(.boton-instrucciones), label, a';
+		const selector = 'h1, h2, h3, h4, h5, h6, p, button:not(.pictogram-word):not(.boton-instrucciones), label, a, [data-readable]';
 		const elements = mainContent.querySelectorAll(selector);
 		
 		const texts: string[] = [];
@@ -269,11 +269,11 @@
 		if (!browser) return [];
 		
 		// Buscar primero en modales activos (tienen mayor prioridad)
-		const modal = document.querySelector('.modal[role="dialog"]');
+		const modal = document.querySelector('[role="dialog"]');
 		const mainContent = modal || document.querySelector('main');
 		if (!mainContent) return [];
 		
-		const selector = 'h1, h2, h3, h4, h5, h6, p, button:not(.pictogram-word):not(.boton-instrucciones), label';
+		const selector = 'h1, h2, h3, h4, h5, h6, p, button:not(.pictogram-word):not(.boton-instrucciones), label, [data-readable]';
 		const elements = mainContent.querySelectorAll(selector);
 		
 		const readableElements: HTMLElement[] = [];
@@ -643,7 +643,7 @@
 		border: 2px solid var(--icono-color-borde, #000);
 		border-radius: 8px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-		z-index: 1000;
+		z-index: 50000001;
 	}
 
 	.narration-label {
