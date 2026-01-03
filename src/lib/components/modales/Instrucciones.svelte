@@ -137,7 +137,7 @@
     aria-labelledby="modal-title" 
     tabindex="-1"
   >
-    <button class="close-btn no-pictogram" onclick={handleClose} aria-label="Cerrar instrucciones" type="button">×</button>
+    <button class="close-btn no-pictogram" onclick={handleClose} aria-label="Cerrar instrucciones" aria-hidden="true" type="button">×</button>
     
     <h2 id="modal-title" data-readable>Instrucciones</h2>
     

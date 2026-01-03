@@ -143,7 +143,7 @@
     aria-labelledby="modal-title" 
     tabindex="-1"
   >
-    <button class="close-btn no-pictogram" onclick={handleClose} aria-label="Cerrar modal" type="button">×</button>
+    <button class="close-btn no-pictogram" onclick={handleClose} aria-label="Cerrar modal" aria-hidden="true" type="button">×</button>
     
     <div class="celebration-container">
       <div class="sparkles" aria-hidden="true">✨</div>

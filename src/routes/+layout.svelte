@@ -666,6 +666,12 @@ let text = element.textContent?.trim();
 						return false;
 					})();
 					
+					// Obtener el font-weight computado del elemento original para preservarlo
+					const originalFontWeight = (() => {
+						const computed = window.getComputedStyle(element);
+						return computed.fontWeight;
+					})();
+					
 				// NUEVO ENFOQUE: Procesar palabra por palabra aplicando TODOS los modos simultáneamente
 				// Los tres modos pueden coexistir
 				const words = txt.split(/(\s+|[.,;:!?¿¡()"""'])/);
@@ -761,13 +767,17 @@ let text = element.textContent?.trim();
 									span.style.borderRadius = '2px';
 									
 									if ($configuraciones.bionicMode && currentStyle.isBionic) {
-										span.style.fontWeight = hasOriginalBold ? '700' : 'normal';
+										// Cuando ambos modos están activos, rima no debe tener negrita
+										span.style.fontWeight = '400';
 										span.style.color = bionicColor;
 										span.className = 'bionic-highlight rhyme-highlight';
 									} else if ($configuraciones.bionicMode) {
-										span.style.fontWeight = hasOriginalBold ? '700' : 'normal';
+										// Modo biónico activo pero esta parte no es biónica
+										span.style.fontWeight = '400';
 										span.className = 'rhyme-highlight';
 									} else {
+										// Solo rima activa - preservar font-weight original completamente
+										span.style.fontWeight = originalFontWeight;
 										span.className = 'rhyme-highlight';
 									}
 								} else if (currentStyle.isBionic) {
@@ -776,8 +786,12 @@ let text = element.textContent?.trim();
 									span.className = 'bionic-highlight';
 								} else {
 									span.className = 'bionic-rest';
+									// Si modo biónico está activo, usar font-weight normal para contraste
+									// Si solo modo rima, preservar originalFontWeight
 									if ($configuraciones.bionicMode) {
-										span.style.fontWeight = hasOriginalBold ? '700' : 'normal';
+										span.style.fontWeight = '400';
+									} else {
+										span.style.fontWeight = originalFontWeight;
 									}
 								}
 								
@@ -802,8 +816,11 @@ let text = element.textContent?.trim();
 							
 							flushSegment();
 						} else {
-							// Sin modos biónico/rima, solo texto
-							button.textContent = word;
+							// Sin modos biónico/rima, preservar font-weight original
+							const span = document.createElement('span');
+							span.style.fontWeight = originalFontWeight;
+							span.textContent = word;
+							button.appendChild(span);
 						}
 						
 						const popover = document.createElement('div');
@@ -849,9 +866,8 @@ let text = element.textContent?.trim();
 						
 						// Actualizar dirección al hacer scroll
 						let scrollContainer = button.closest('.app-main');
-						if (!scrollContainer) scrollContainer = window;
 						const handleScroll = () => updatePopoverDirection();
-						if (scrollContainer === window) {
+						if (!scrollContainer) {
 							window.addEventListener('scroll', handleScroll, { passive: true });
 						} else {
 							scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
@@ -941,16 +957,17 @@ let text = element.textContent?.trim();
 									
 									// Si ambos modos están activos
 									if ($configuraciones.bionicMode && currentStyle.isBionic) {
-										// Mantener negrita si el texto original la tenía, sino normal
-										span.style.fontWeight = hasOriginalBold ? '700' : 'normal';
+										// Cuando ambos modos están activos, rima no debe tener negrita
+										span.style.fontWeight = '400';
 										span.style.color = bionicColor;
 										span.className = 'bionic-highlight rhyme-highlight';
 									} else if ($configuraciones.bionicMode) {
-										// Solo modo biónico activo (pero esta parte es rima, no biónica)
-										span.style.fontWeight = hasOriginalBold ? '700' : 'normal';
+										// Modo biónico activo pero esta parte no es biónica
+										span.style.fontWeight = '400';
 										span.className = 'rhyme-highlight';
 									} else {
-										// Solo rima activa, no tocar font-weight (preservar negrita original)
+										// Solo rima activa - preservar font-weight original completamente
+										span.style.fontWeight = originalFontWeight;
 										span.className = 'rhyme-highlight';
 									}
 								} else if (currentStyle.isBionic) {
@@ -961,11 +978,12 @@ let text = element.textContent?.trim();
 								} else {
 									// Ninguno: texto normal
 									span.className = 'bionic-rest';
-									// Solo aplicar font-weight normal si el modo biónico está activo
-									// (para diferenciar partes resaltadas vs no resaltadas)
-									// Si solo está el modo rima, no tocar font-weight (preservar negrita original)
+									// Si modo biónico está activo, usar font-weight normal para contraste
+									// Si solo modo rima, preservar originalFontWeight
 									if ($configuraciones.bionicMode) {
-										span.style.fontWeight = hasOriginalBold ? '700' : 'normal';
+										span.style.fontWeight = '400';
+									} else {
+										span.style.fontWeight = originalFontWeight;
 									}
 								}
 								
@@ -994,8 +1012,10 @@ let text = element.textContent?.trim();
 							flushSegment();
 						}
 					}
-					// Sin ningún modo activo, añadir texto plano
+					// Sin ningún modo activo
 					else {
+						// Solo preservar font-weight si no hay modos activos
+						// (esta rama solo se ejecuta si NO hay modo biónico ni rima)
 						frag.appendChild(document.createTextNode(word));
 					}
 				});

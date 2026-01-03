@@ -148,7 +148,7 @@
     aria-labelledby="modal-title" 
     tabindex="-1"
   >
-    <button class="close-btn no-pictogram" onclick={handleClose} aria-label="Cerrar modal" type="button">×</button>
+    <button class="close-btn no-pictogram" onclick={handleClose} aria-label="Cerrar modal" aria-hidden="true" type="button">×</button>
     <div class="icon-container">
       {#if correct}
         <div class="icon success" aria-hidden="true">✔</div>

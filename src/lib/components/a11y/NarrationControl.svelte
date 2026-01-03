@@ -64,7 +64,7 @@
 		if (!browser) return '';
 		
 		// Buscar primero en modales activos (tienen mayor prioridad)
-		const modal = document.querySelector('.modal[role="dialog"]');
+		const modal = document.querySelector('[role="dialog"]');
 		const mainContent = modal || document.querySelector('main');
 		if (!mainContent) return '';
 		
@@ -140,6 +140,9 @@
 
 		// Ignorar etiquetas de narración
 		if (element.classList.contains('narration-label')) return;
+		
+		// Ignorar botón cerrar de modales
+		if (element.classList.contains('modal-boton-cerrar')) return;
 
 		// Si la narración automática está activa, NO leer elementos enfocados
 		// porque el focus es parte del proceso automático

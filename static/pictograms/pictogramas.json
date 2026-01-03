@@ -1,128 +1,333 @@
 [
 	{
-		"word": "comer",
-		"icon": "🍽️",
+		"word": "indígena",
+		"icon": "👨",
+		"category": "persona"
+	},
+	{
+		"word": "atrio",
+		"icon": "⛪",
+		"category": "lugar"
+	},
+	{
+		"word": "iglesia",
+		"icon": "⛪",
+		"category": "lugar"
+	},
+	{
+		"word": "desesperado",
+		"icon": "😰",
+		"category": "emocion"
+	},
+	{
+		"word": "impensable",
+		"icon": "💭",
+		"category": "concepto"
+	},
+	{
+		"word": "pacto",
+		"icon": "🤝",
+		"category": "concepto"
+	},
+	{
+		"word": "diablo",
+		"icon": "😈",
+		"category": "persona"
+	},
+	{
+		"word": "alma",
+		"icon": "👻",
+		"category": "concepto"
+	},
+	{
+		"word": "demonio",
+		"icon": "👿",
+		"category": "persona"
+	},
+	{
+		"word": "demonios",
+		"icon": "👿",
+		"category": "persona"
+	},
+	{
+		"word": "astuto",
+		"icon": "🦊",
+		"category": "cualidad"
+	},
+	{
+		"word": "astucia",
+		"icon": "🦊",
+		"category": "cualidad"
+	},
+	{
+		"word": "infernal",
+		"icon": "🔥",
+		"category": "cualidad"
+	},
+	{
+		"word": "estipulaba",
+		"icon": "📜",
 		"category": "accion"
 	},
 	{
-		"word": "beber",
-		"icon": "🥤",
+		"word": "colonial",
+		"icon": "🏛️",
+		"category": "cualidad"
+	},
+	{
+		"word": "misteriosa",
+		"icon": "❓",
+		"category": "cualidad"
+	},
+	{
+		"word": "misterio",
+		"icon": "❓",
+		"category": "concepto"
+	},
+	{
+		"word": "velo",
+		"icon": "👰",
+		"category": "objeto"
+	},
+	{
+		"word": "elegante",
+		"icon": "💃",
+		"category": "cualidad"
+	},
+	{
+		"word": "fascinados",
+		"icon": "😍",
+		"category": "emocion"
+	},
+	{
+		"word": "caballero",
+		"icon": "🤵",
+		"category": "persona"
+	},
+	{
+		"word": "atrevido",
+		"icon": "💪",
+		"category": "cualidad"
+	},
+	{
+		"word": "calavera",
+		"icon": "💀",
+		"category": "objeto"
+	},
+	{
+		"word": "cuencas",
+		"icon": "👁️",
+		"category": "objeto"
+	},
+	{
+		"word": "mueca",
+		"icon": "😬",
 		"category": "accion"
 	},
 	{
-		"word": "dormir",
-		"icon": "😴",
+		"word": "despavorido",
+		"icon": "😱",
+		"category": "emocion"
+	},
+	{
+		"word": "apariencias",
+		"icon": "🎭",
+		"category": "concepto"
+	},
+	{
+		"word": "fraile",
+		"icon": "🧑‍⚖️",
+		"category": "persona"
+	},
+	{
+		"word": "convento",
+		"icon": "⛪",
+		"category": "lugar"
+	},
+	{
+		"word": "votos",
+		"icon": "🙏",
+		"category": "concepto"
+	},
+	{
+		"word": "claustro",
+		"icon": "🏛️",
+		"category": "lugar"
+	},
+	{
+		"word": "crucifijo",
+		"icon": "✝️",
+		"category": "objeto"
+	},
+	{
+		"word": "agonía",
+		"icon": "😖",
+		"category": "emocion"
+	},
+	{
+		"word": "paralizado",
+		"icon": "🧊",
+		"category": "emocion"
+	},
+	{
+		"word": "advertencia",
+		"icon": "⚠️",
+		"category": "concepto"
+	},
+	{
+		"word": "milagro",
+		"icon": "✨",
+		"category": "concepto"
+	},
+	{
+		"word": "arrepentido",
+		"icon": "😔",
+		"category": "emocion"
+	},
+	{
+		"word": "arrepentimiento",
+		"icon": "😔",
+		"category": "emocion"
+	},
+	{
+		"word": "divino",
+		"icon": "🙏",
+		"category": "cualidad"
+	},
+	{
+		"word": "vocación",
+		"icon": "✨",
+		"category": "concepto"
+	},
+	{
+		"word": "amanecer",
+		"icon": "🌅",
+		"category": "concepto"
+	},
+	{
+		"word": "rodillas",
+		"icon": "🙇",
 		"category": "accion"
 	},
 	{
-		"word": "correr",
+		"word": "debilidad",
+		"icon": "💔",
+		"category": "concepto"
+	},
+	{
+		"word": "nocturna",
+		"icon": "🌙",
+		"category": "cualidad"
+	},
+	{
+		"word": "escapar",
 		"icon": "🏃",
 		"category": "accion"
 	},
 	{
-		"word": "caminar",
-		"icon": "🚶",
+		"word": "fiesta",
+		"icon": "🎉",
+		"category": "concepto"
+	},
+	{
+		"word": "gallo",
+		"icon": "🐓",
+		"category": "animal"
+	},
+	{
+		"word": "piedra",
+		"icon": "🪨",
+		"category": "objeto"
+	},
+	{
+		"word": "piedras",
+		"icon": "🪨",
+		"category": "objeto"
+	},
+	{
+		"word": "terminar",
+		"icon": "🏁",
 		"category": "accion"
 	},
 	{
-		"word": "jugar",
-		"icon": "🎮",
+		"word": "obra",
+		"icon": "🏗️",
+		"category": "concepto"
+	},
+	{
+		"word": "construir",
+		"icon": "🏗️",
 		"category": "accion"
 	},
 	{
-		"word": "leer",
-		"icon": "📖",
-		"category": "accion"
+		"word": "trato",
+		"icon": "🤝",
+		"category": "concepto"
 	},
 	{
-		"word": "escribir",
-		"icon": "✍️",
-		"category": "accion"
+		"word": "engañado",
+		"icon": "🎭",
+		"category": "emocion"
 	},
 	{
-		"word": "pintar",
-		"icon": "🎨",
-		"category": "accion"
-	},
-	{
-		"word": "dibujar",
-		"icon": "✏️",
-		"category": "accion"
-	},
-	{
-		"word": "iniciar",
-		"icon": "▶️",
-		"category": "accion"
-	},
-	{
-		"word": "crear",
-		"icon": "➕",
-		"category": "accion"
-	},
-	{
-		"word": "nuevo",
-		"icon": "🆕",
-		"category": "accion"
-	},
-	{
-		"word": "volver",
-		"icon": "⬅️",
-		"category": "accion"
-	},
-	{
-		"word": "casa",
-		"icon": "🏠",
-		"category": "lugar"
-	},
-	{
-		"word": "escuela",
-		"icon": "🏫",
-		"category": "lugar"
-	},
-	{
-		"word": "parque",
-		"icon": "🏞️",
-		"category": "lugar"
-	},
-	{
-		"word": "tienda",
-		"icon": "🏪",
-		"category": "lugar"
-	},
-	{
-		"word": "hospital",
-		"icon": "🏥",
-		"category": "lugar"
-	},
-	{
-		"word": "estudio",
-		"icon": "🎨",
-		"category": "lugar"
-	},
-	{
-		"word": "feliz",
+		"word": "rostro",
 		"icon": "😊",
-		"category": "emocion"
+		"category": "objeto"
 	},
 	{
-		"word": "triste",
-		"icon": "😢",
-		"category": "emocion"
+		"word": "leyenda",
+		"icon": "📖",
+		"category": "concepto"
 	},
 	{
-		"word": "enojado",
-		"icon": "😠",
-		"category": "emocion"
+		"word": "símbolo",
+		"icon": "🔣",
+		"category": "concepto"
 	},
 	{
-		"word": "sorprendido",
-		"icon": "😮",
-		"category": "emocion"
+		"word": "legado",
+		"icon": "📜",
+		"category": "concepto"
 	},
 	{
-		"word": "asustado",
-		"icon": "😨",
-		"category": "emocion"
+		"word": "cultural",
+		"icon": "🎭",
+		"category": "cualidad"
+	},
+	{
+		"word": "valores",
+		"icon": "💎",
+		"category": "concepto"
+	},
+	{
+		"word": "inteligencia",
+		"icon": "🧠",
+		"category": "concepto"
+	},
+	{
+		"word": "fe",
+		"icon": "🙏",
+		"category": "concepto"
+	},
+	{
+		"word": "probar",
+		"icon": "🔍",
+		"category": "accion"
+	},
+	{
+		"word": "creativas",
+		"icon": "💡",
+		"category": "cualidad"
+	},
+	{
+		"word": "creativo",
+		"icon": "💡",
+		"category": "cualidad"
+	},
+	{
+		"word": "rincón",
+		"icon": "📚",
+		"category": "lugar"
 	},
 	{
 		"word": "bienvenido",
@@ -130,468 +335,383 @@
 		"category": "emocion"
 	},
 	{
-		"word": "rojo",
-		"icon": "🔴",
-		"category": "color"
-	},
-	{
-		"word": "azul",
-		"icon": "🔵",
-		"category": "color"
-	},
-	{
-		"word": "amarillo",
-		"icon": "🟡",
-		"category": "color"
-	},
-	{
-		"word": "verde",
-		"icon": "🟢",
-		"category": "color"
-	},
-	{
-		"word": "naranja",
-		"icon": "🟠",
-		"category": "color"
-	},
-	{
-		"word": "morado",
-		"icon": "🟣",
-		"category": "color"
-	},
-	{
-		"word": "perro",
-		"icon": "🐕",
-		"category": "animal"
-	},
-	{
-		"word": "gato",
-		"icon": "🐈",
-		"category": "animal"
-	},
-	{
-		"word": "pájaro",
-		"icon": "🐦",
-		"category": "animal"
-	},
-	{
-		"word": "pez",
-		"icon": "🐟",
-		"category": "animal"
-	},
-	{
-		"word": "mariposa",
-		"icon": "🦋",
-		"category": "animal"
-	},
-	{
-		"word": "lápiz",
-		"icon": "✏️",
-		"category": "objeto"
-	},
-	{
-		"word": "libro",
-		"icon": "📚",
-		"category": "objeto"
-	},
-	{
-		"word": "pelota",
-		"icon": "⚽",
-		"category": "objeto"
-	},
-	{
-		"word": "computadora",
-		"icon": "💻",
-		"category": "objeto"
-	},
-	{
-		"word": "teléfono",
-		"icon": "📱",
-		"category": "objeto"
-	},
-	{
-		"word": "artista",
-		"icon": "🎨",
-		"category": "concepto"
-	},
-	{
-		"word": "pintura",
-		"icon": "🖼️",
-		"category": "concepto"
-	},
-	{
-		"word": "historia",
-		"icon": "📖",
-		"category": "concepto"
-	},
-	{
-		"word": "historias",
-		"icon": "📚",
-		"category": "concepto"
-	},
-	{
-		"word": "ajustes",
-		"icon": "⚙️",
-		"category": "concepto"
-	},
-	{
-		"word": "configuración",
-		"icon": "🔧",
-		"category": "concepto"
-	},
-	{
-		"word": "lupa",
-		"icon": "🔍",
-		"category": "concepto"
-	},
-	{
-		"word": "buscar",
-		"icon": "🔎",
-		"category": "accion"
-	},
-	{
-		"word": "galería",
-		"icon": "🖼️",
-		"category": "concepto"
-	},
-	{
-		"word": "taller",
-		"icon": "🛠️",
-		"category": "concepto"
-	},
-	{
-		"word": "escenas",
-		"icon": "🎭",
-		"category": "concepto"
-	},
-	{
-		"word": "escena",
-		"icon": "🎬",
-		"category": "concepto"
-	},
-	{
-		"word": "logros",
-		"icon": "🏆",
-		"category": "concepto"
-	},
-	{
-		"word": "logro",
-		"icon": "🥇",
-		"category": "concepto"
-	},
-	{
-		"word": "juegos",
-		"icon": "🎮",
-		"category": "concepto"
-	},
-	{
-		"word": "juego",
-		"icon": "🎯",
-		"category": "concepto"
-	},
-	{
-		"word": "menú",
+		"word": "plantillas",
 		"icon": "📋",
+		"category": "objeto"
+	},
+	{
+		"word": "plantilla",
+		"icon": "📋",
+		"category": "objeto"
+	},
+	{
+		"word": "rango",
+		"icon": "🏅",
 		"category": "concepto"
 	},
 	{
-		"word": "música",
-		"icon": "🎵",
-		"category": "concepto"
-	},
-	{
-		"word": "sonido",
-		"icon": "🔊",
-		"category": "concepto"
-	},
-	{
-		"word": "volumen",
-		"icon": "🔉",
-		"category": "concepto"
-	},
-	{
-		"word": "voz",
-		"icon": "🗣️",
-		"category": "concepto"
-	},
-	{
-		"word": "narración",
-		"icon": "🎙️",
-		"category": "concepto"
-	},
-	{
-		"word": "instrucciones",
-		"icon": "ℹ️",
-		"category": "concepto"
-	},
-	{
-		"word": "ayuda",
-		"icon": "❓",
-		"category": "concepto"
-	},
-	{
-		"word": "guardar",
-		"icon": "💾",
-		"category": "accion"
-	},
-	{
-		"word": "borrar",
-		"icon": "🗑️",
-		"category": "accion"
-	},
-	{
-		"word": "seleccionar",
-		"icon": "👆",
-		"category": "accion"
-	},
-	{
-		"word": "elegir",
-		"icon": "✅",
-		"category": "accion"
-	},
-	{
-		"word": "cuerpo",
-		"icon": "🧍",
-		"category": "concepto"
-	},
-	{
-		"word": "humano",
-		"icon": "👤",
-		"category": "concepto"
-	},
-	{
-		"word": "cerebro",
-		"icon": "🧠",
-		"category": "concepto"
-	},
-	{
-		"word": "corazón",
-		"icon": "❤️",
-		"category": "concepto"
-	},
-	{
-		"word": "completar",
-		"icon": "✔️",
-		"category": "accion"
-	},
-	{
-		"word": "continuar",
-		"icon": "▶️",
-		"category": "accion"
-	},
-	{
-		"word": "siguiente",
-		"icon": "⏭️",
-		"category": "accion"
-	},
-	{
-		"word": "anterior",
-		"icon": "⏮️",
-		"category": "accion"
-	},
-	{
-		"word": "salir",
-		"icon": "🚪",
-		"category": "accion"
-	},
-	{
-		"word": "cerrar",
-		"icon": "❌",
-		"category": "accion"
-	},
-	{
-		"word": "abrir",
-		"icon": "📂",
-		"category": "accion"
-	},
-	{
-		"word": "ver",
-		"icon": "👁️",
-		"category": "accion"
-	},
-	{
-		"word": "mirar",
-		"icon": "👀",
-		"category": "accion"
-	},
-	{
-		"word": "escuchar",
-		"icon": "👂",
-		"category": "accion"
-	},
-	{
-		"word": "activar",
-		"icon": "✅",
-		"category": "accion"
-	},
-	{
-		"word": "desactivar",
-		"icon": "❌",
-		"category": "accion"
-	},
-	{
-		"word": "mágica",
-		"icon": "✨",
-		"category": "concepto"
-	},
-	{
-		"word": "duplicar",
-		"icon": "×2",
-		"category": "accion"
-	},
-	{
-		"word": "tamaño",
-		"icon": "📊",
-		"category": "concepto"
-	},
-	{
-		"word": "texto",
-		"icon": "📝",
-		"category": "concepto"
-	},
-	{
-		"word": "fuente",
-		"icon": "🔤",
-		"category": "concepto"
-	},
-	{
-		"word": "pantalla",
-		"icon": "📺",
-		"category": "concepto"
-	},
-	{
-		"word": "contraste",
-		"icon": "🎨",
-		"category": "concepto"
-	},
-	{
-		"word": "alto",
-		"icon": "⬆️",
-		"category": "concepto"
-	},
-	{
-		"word": "bajo",
-		"icon": "⬇️",
-		"category": "concepto"
-	},
-	{
-		"word": "noche",
-		"icon": "🌙",
-		"category": "concepto"
-	},
-	{
-		"word": "día",
-		"icon": "☀️",
-		"category": "concepto"
-	},
-	{
-		"word": "claro",
-		"icon": "💡",
-		"category": "concepto"
-	},
-	{
-		"word": "oscuro",
-		"icon": "🌑",
-		"category": "concepto"
-	},
-	{
-		"word": "biónico",
-		"icon": "🧠",
-		"category": "concepto"
-	},
-	{
-		"word": "rima",
-		"icon": "🎵",
-		"category": "concepto"
-	},
-	{
-		"word": "rimas",
-		"icon": "🎶",
-		"category": "concepto"
-	},
-	{
-		"word": "pictográfico",
-		"icon": "🖼️",
-		"category": "concepto"
-	},
-	{
-		"word": "pictograma",
-		"icon": "🖼️",
-		"category": "concepto"
-	},
-	{
-		"word": "pictogramas",
-		"icon": "🎞️",
-		"category": "concepto"
-	},
-	{
-		"word": "inverso",
-		"icon": "🔄",
-		"category": "concepto"
-	},
-	{
-		"word": "visual",
-		"icon": "👁️",
-		"category": "concepto"
-	},
-	{
-		"word": "accesibilidad",
-		"icon": "♿",
-		"category": "concepto"
-	},
-	{
-		"word": "mejora",
-		"icon": "⬆️",
-		"category": "accion"
-	},
-	{
-		"word": "mejorar",
-		"icon": "🚀",
-		"category": "accion"
-	},
-	{
-		"word": "aplicación",
-		"icon": "📱",
-		"category": "concepto"
-	},
-	{
-		"word": "toda",
+		"word": "general",
 		"icon": "🌐",
 		"category": "concepto"
 	},
 	{
-		"word": "elementos",
-		"icon": "🧱",
+		"word": "categoría",
+		"icon": "📂",
 		"category": "concepto"
 	},
 	{
-		"word": "lectura",
-		"icon": "📖",
+		"word": "obtenidos",
+		"icon": "✅",
 		"category": "accion"
 	},
 	{
-		"word": "lente",
-		"icon": "🔍",
+		"word": "obtener",
+		"icon": "🎯",
+		"category": "accion"
+	},
+	{
+		"word": "lámpara",
+		"icon": "💡",
 		"category": "objeto"
 	},
 	{
-		"word": "magnificar",
-		"icon": "🔎",
+		"word": "decorativa",
+		"icon": "✨",
+		"category": "cualidad"
+	},
+	{
+		"word": "decorativo",
+		"icon": "✨",
+		"category": "cualidad"
+	},
+	{
+		"word": "carrusel",
+		"icon": "🎠",
+		"category": "concepto"
+	},
+	{
+		"word": "navegación",
+		"icon": "🧭",
+		"category": "concepto"
+	},
+	{
+		"word": "navegar",
+		"icon": "🧭",
 		"category": "accion"
 	},
 	{
-		"word": "magnifica",
+		"word": "anterior",
+		"icon": "⬅️",
+		"category": "concepto"
+	},
+	{
+		"word": "siguiente",
+		"icon": "➡️",
+		"category": "concepto"
+	},
+	{
+		"word": "eliminar",
+		"icon": "🗑️",
+		"category": "accion"
+	},
+	{
+		"word": "confirmación",
+		"icon": "✓",
+		"category": "concepto"
+	},
+	{
+		"word": "confirmar",
+		"icon": "✓",
+		"category": "accion"
+	},
+	{
+		"word": "exitoso",
+		"icon": "🎉",
+		"category": "cualidad"
+	},
+	{
+		"word": "daltonismo",
+		"icon": "👁️",
+		"category": "concepto"
+	},
+	{
+		"word": "filtro",
+		"icon": "🔧",
+		"category": "concepto"
+	},
+	{
+		"word": "intensidad",
+		"icon": "📊",
+		"category": "concepto"
+	},
+	{
+		"word": "identificación",
+		"icon": "🔍",
+		"category": "concepto"
+	},
+	{
+		"word": "identificar",
 		"icon": "🔍",
 		"category": "accion"
 	},
 	{
-		"word": "parte",
-		"icon": "🧩",
+		"word": "patrones",
+		"icon": "🔲",
 		"category": "concepto"
 	},
 	{
-		"word": "muestra",
-		"icon": "👁️",
+		"word": "patrón",
+		"icon": "🔲",
+		"category": "concepto"
+	},
+	{
+		"word": "único",
+		"icon": "⭐",
+		"category": "cualidad"
+	},
+	{
+		"word": "única",
+		"icon": "⭐",
+		"category": "cualidad"
+	},
+	{
+		"word": "facilitar",
+		"icon": "🤝",
 		"category": "accion"
+	},
+	{
+		"word": "restaurar",
+		"icon": "♻️",
+		"category": "accion"
+	},
+	{
+		"word": "valores",
+		"icon": "💎",
+		"category": "concepto"
+	},
+	{
+		"word": "defecto",
+		"icon": "⚙️",
+		"category": "concepto"
+	},
+	{
+		"word": "constructor",
+		"icon": "👷",
+		"category": "persona"
+	},
+	{
+		"word": "equipo",
+		"icon": "👥",
+		"category": "concepto"
+	},
+	{
+		"word": "terrible",
+		"icon": "😱",
+		"category": "cualidad"
+	},
+	{
+		"word": "arriesgado",
+		"icon": "⚠️",
+		"category": "cualidad"
+	},
+	{
+		"word": "rápido",
+		"icon": "⚡",
+		"category": "cualidad"
+	},
+	{
+		"word": "increíble",
+		"icon": "🤩",
+		"category": "cualidad"
+	},
+	{
+		"word": "secreto",
+		"icon": "🤫",
+		"category": "concepto"
+	},
+	{
+		"word": "inteligente",
+		"icon": "🧠",
+		"category": "cualidad"
+	},
+	{
+		"word": "perfecto",
+		"icon": "👌",
+		"category": "cualidad"
+	},
+	{
+		"word": "sorpresa",
+		"icon": "🎁",
+		"category": "concepto"
+	},
+	{
+		"word": "furioso",
+		"icon": "😡",
+		"category": "emocion"
+	},
+	{
+		"word": "cerebro",
+		"icon": "🧠",
+		"category": "objeto"
+	},
+	{
+		"word": "maravilla",
+		"icon": "✨",
+		"category": "concepto"
+	},
+	{
+		"word": "tesoro",
+		"icon": "💰",
+		"category": "objeto"
+	},
+	{
+		"word": "escondido",
+		"icon": "🙈",
+		"category": "cualidad"
+	},
+	{
+		"word": "poderoso",
+		"icon": "💪",
+		"category": "cualidad"
+	},
+	{
+		"word": "aventura",
+		"icon": "🗺️",
+		"category": "concepto"
+	},
+	{
+		"word": "solitarias",
+		"icon": "🚶",
+		"category": "cualidad"
+	},
+	{
+		"word": "curiosos",
+		"icon": "🤔",
+		"category": "cualidad"
+	},
+	{
+		"word": "valiente",
+		"icon": "🦁",
+		"category": "cualidad"
+	},
+	{
+		"word": "suspenso",
+		"icon": "😮",
+		"category": "concepto"
+	},
+	{
+		"word": "latía",
+		"icon": "💓",
+		"category": "accion"
+	},
+	{
+		"word": "silencio",
+		"icon": "🤐",
+		"category": "concepto"
+	},
+	{
+		"word": "despacio",
+		"icon": "🐌",
+		"category": "cualidad"
+	},
+	{
+		"word": "impactante",
+		"icon": "💥",
+		"category": "cualidad"
+	},
+	{
+		"word": "huecos",
+		"icon": "⭕",
+		"category": "cualidad"
+	},
+	{
+		"word": "vacíos",
+		"icon": "⭕",
+		"category": "cualidad"
+	},
+	{
+		"word": "terrorífica",
+		"icon": "👻",
+		"category": "cualidad"
+	},
+	{
+		"word": "lección",
+		"icon": "📚",
+		"category": "concepto"
+	},
+	{
+		"word": "simple",
+		"icon": "😊",
+		"category": "cualidad"
+	},
+	{
+		"word": "divertido",
+		"icon": "😄",
+		"category": "cualidad"
+	},
+	{
+		"word": "profundo",
+		"icon": "🌊",
+		"category": "cualidad"
+	},
+	{
+		"word": "importante",
+		"icon": "⭐",
+		"category": "cualidad"
+	},
+	{
+		"word": "estatua",
+		"icon": "🗿",
+		"category": "objeto"
+	},
+	{
+		"word": "conflicto",
+		"icon": "⚔️",
+		"category": "concepto"
+	},
+	{
+		"word": "interno",
+		"icon": "💭",
+		"category": "cualidad"
+	},
+	{
+		"word": "diferente",
+		"icon": "🎨",
+		"category": "cualidad"
+	},
+	{
+		"word": "anticipación",
+		"icon": "⏰",
+		"category": "concepto"
+	},
+	{
+		"word": "transformación",
+		"icon": "🦋",
+		"category": "concepto"
+	},
+	{
+		"word": "positiva",
+		"icon": "👍",
+		"category": "cualidad"
+	},
+	{
+		"word": "completamente",
+		"icon": "💯",
+		"category": "cualidad"
+	},
+	{
+		"word": "ayudante",
+		"icon": "🤝",
+		"category": "persona"
+	},
+	{
+		"word": "llorando",
+		"icon": "😢",
+		"category": "accion"
+	},
+	{
+		"word": "perdón",
+		"icon": "🙏",
+		"category": "concepto"
 	}
 ]

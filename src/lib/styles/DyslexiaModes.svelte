@@ -35,7 +35,12 @@
 	:global(.pictogram-wrapper) {
 		position: relative;
 		display: inline-block;
-		z-index: 9999;
+		z-index: 1;
+	}
+
+	/* Wrapper activo (con popover visible) debe estar encima de todo */
+	:global(.pictogram-wrapper:has(.pictogram-popover.visible)) {
+		z-index: 1000000;
 	}
 
     	/* Asegurar que los contenedores padres no corten los pictogramas */
@@ -60,6 +65,7 @@
 		border-radius: 0;
 		transition: all 0.2s ease;
 		outline-offset: 2px;
+		z-index: auto;
 	}
 
 	/* Marcador de esquina estilo "dog-ear" - versión compacta */
@@ -117,14 +123,14 @@
 		opacity: 0;
 		visibility: hidden;
 		pointer-events: none;
-		transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+		transition: none;
 		
 		background: white;
 		border: 3px solid #0b6efd;
 		border-radius: 12px;
 		padding: 8px;
 		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.05);
-		z-index: 2147483647;
+		z-index: 999999;
 		
 		min-width: 50px;
 		min-height: 50px;
@@ -134,6 +140,7 @@
 		
 		/* Asegurar que se renderice por encima de todo */
 		isolation: isolate;
+		will-change: transform, opacity;
 	}
 
 	/* Flecha del popover (arriba por defecto) */
@@ -219,7 +226,7 @@
 			opacity: 0;
 		}
 		50% {
-			transform: translateX(-50%) translateY(-100%) translateY(-10px) scale(1.1);
+			transform: translateX(-50%) translateY(-100%) translateY(-15px) scale(1.1);
 		}
 		100% {
 			transform: translateX(-50%) translateY(-100%) translateY(-10px) scale(1);
