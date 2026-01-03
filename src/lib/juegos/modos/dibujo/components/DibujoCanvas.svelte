@@ -19,13 +19,15 @@
 		offsetX?: number;
 		offsetY?: number;
 		modoMoverActivo?: boolean;
+		onStickerColocado?: (sticker: { emoji: string; escala: number }) => void;
 	}
 
 	let { 
 		nivelZoom = 1,
 		offsetX = 0,
 		offsetY = 0,
-		modoMoverActivo = false
+		modoMoverActivo = false,
+		onStickerColocado
 	}: Props = $props();
 
 	// Referencias del canvas y elementos
@@ -254,6 +256,11 @@
 		
 		// Guardar en historial después de colocar el sticker
 		guardarEstadoEnHistorial();
+		
+		// Notificar que se colocó un sticker (si hay callback)
+		if (onStickerColocado) {
+			onStickerColocado({ emoji, escala });
+		}
 	}
 
 	/**
@@ -334,6 +341,45 @@
 	export function habilitarEventos() {
 		if (!canvasDibujoRef) return;
 		canvasDibujoRef.style.pointerEvents = 'auto';
+	}
+
+	/**
+	 * Calcula el porcentaje del canvas que ha sido pintado/modificado
+	 * @returns Porcentaje entre 0 y 100
+	 */
+	export function calcularPorcentajePintado(): number {
+		if (!canvasDibujoRef || !contextoDibujo) return 0;
+
+		try {
+			// Obtener los datos de píxeles del canvas
+			const imageData = contextoDibujo.getImageData(
+				0, 
+				0, 
+				canvasDibujoRef.width, 
+				canvasDibujoRef.height
+			);
+			const pixeles = imageData.data;
+			
+			let pixelesPintados = 0;
+			let totalPixeles = canvasDibujoRef.width * canvasDibujoRef.height;
+			
+			// Recorrer los píxeles (RGBA, cada píxel son 4 valores)
+			for (let i = 0; i < pixeles.length; i += 4) {
+				const alpha = pixeles[i + 3]; // Canal alpha (transparencia)
+				
+				// Si el píxel tiene alguna opacidad, se considera pintado
+				if (alpha > 0) {
+					pixelesPintados++;
+				}
+			}
+			
+			// Calcular porcentaje
+			const porcentaje = (pixelesPintados / totalPixeles) * 100;
+			return Math.round(porcentaje * 100) / 100; // Redondear a 2 decimales
+		} catch (error) {
+			console.error('Error al calcular porcentaje pintado:', error);
+			return 0;
+		}
 	}
 
 	/**

@@ -17,6 +17,10 @@
 	import MensajeFeedback from '$lib/juegos/modos/cuerpo-humano/components/MensajeFeedback.svelte';
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
+	import { obtenerArtistaActivo } from '$lib/db/artistas.service';
+	import * as logrosStore from '$lib/stores/logros';
+	import LogroDesbloqueado from '$lib/components/modales/LogroDesbloqueado.svelte';
+	import type { LogroDefinicion } from '$lib/db/schemas';
 
 	// Referencias a los componentes
 	let canvasRef: DibujoCanvas;
@@ -69,6 +73,16 @@
     let error: string | null = $state<string | null>(null);
 	let cargando = $state<boolean>(true); // Estado de carga inicial ;
 
+	// Estado de logros
+	let artistaId = $state<number | null>(null);
+	let logroDesbloqueadoActual = $state<LogroDefinicion | null>(null);
+	let mostrarModalLogro = $state<boolean>(false);
+	let escenaIdActual = $state<string | null>(null);
+	
+	// Contadores de stickers por tipo de criterio (categoria_valor o subcategoria_valor)
+	// Ejemplo: "categoria_natural" -> 3, "subcategoria_fauna" -> 2
+	let contadoresStickersPorCriterio = $state<Map<string, number>>(new Map());
+
 	async function cargarEscena() {
 		try {
 			const { params } = get(page);
@@ -78,6 +92,9 @@
 				error = 'Falta el identificador de la escena.';
 				return;
 			}
+
+			// Guardar el escenaId actual para logros
+			escenaIdActual = escenaId;
 
 			const resultados = await buscarPorEscenaId(escenaId);
 			if (!resultados || resultados.length === 0) {
@@ -97,7 +114,24 @@
 
     onMount(() => {
         void cargarEscena();
+		void cargarArtista();
     });
+
+	/**
+	 * Carga el artista activo para tracking de logros
+	 */
+	async function cargarArtista() {
+		try {
+			const artista = await obtenerArtistaActivo();
+			artistaId = artista?.id ?? null;
+			
+			if (artistaId) {
+				console.log('[ModoDibujo] Artista cargado para logros:', artistaId);
+			}
+		} catch (e) {
+			console.error('[ModoDibujo] Error al cargar artista:', e);
+		}
+	}
 
 	/**
 	 * Confirma y ejecuta el guardado de la obra
@@ -107,8 +141,24 @@
 		guardandoObra = true;
 
 		try {
+			// Calcular porcentaje pintado antes de guardar
+			const porcentajePintado = canvasRef.calcularPorcentajePintado();
+			console.log('[ModoDibujo] Porcentaje pintado:', porcentajePintado);
+			
 			// Llamar al método de guardado del canvas
 			await canvasRef.guardarDibujo();
+			
+			// Procesar logro de porcentaje pintado si hay artista activo y escena
+			if (artistaId && escenaIdActual) {
+				await logrosStore.procesarLogroPorcentajePintado(
+					artistaId,
+					porcentajePintado,
+					escenaIdActual
+				);
+				
+				// Verificar si hay logro desbloqueado
+				await verificarLogroDesbloqueado();
+			}
 			
 			// Mostrar modal de éxito
 			modalGuardadoExitoso = true;
@@ -232,6 +282,90 @@
 			case 'cambiarTamanoSticker':
 				servicioDibujo.cambiarTamanoSticker(detail.escala);
 				break;
+			
+			case 'stickerColocado':
+				// Procesar logro cuando se coloca un sticker
+				manejarStickerColocado(detail.sticker);
+				break;
+		}
+	}
+
+	/**
+	 * Maneja cuando se coloca un sticker en el canvas
+	 */
+	async function manejarStickerColocado(sticker: any) {
+		// Solo procesar logros si hay un artista activo y escena cargada
+		if (!artistaId || !escenaIdActual) return;
+
+		// Incrementar contadores por tipo de criterio
+		// Incrementar contador por categoría
+		const keyCategoria = `categoria_${sticker.categoria}`;
+		const contadorCategoria = (contadoresStickersPorCriterio.get(keyCategoria) || 0) + 1;
+		contadoresStickersPorCriterio.set(keyCategoria, contadorCategoria);
+		
+		// Incrementar contador por subcategoría
+		const keySubcategoria = `subcategoria_${sticker.subcategoria}`;
+		const contadorSubcategoria = (contadoresStickersPorCriterio.get(keySubcategoria) || 0) + 1;
+		contadoresStickersPorCriterio.set(keySubcategoria, contadorSubcategoria);
+		
+		console.log('[ModoDibujo] Sticker colocado:', {
+			categoria: sticker.categoria,
+			subcategoria: sticker.subcategoria,
+			escena: escenaIdActual,
+			contadores: Object.fromEntries(contadoresStickersPorCriterio)
+		});
+		
+		// Procesar logro de forma diferida (no bloquea el render)
+		setTimeout(async () => {
+			try {
+				await logrosStore.procesarLogroStickerColocado(
+					artistaId!,
+					sticker,
+					contadoresStickersPorCriterio,
+					escenaIdActual!
+				);
+				
+				// Verificar si hay logro desbloqueado
+				await verificarLogroDesbloqueado();
+			} catch (error) {
+				console.error('[ModoDibujo] Error procesando logro de sticker:', error);
+			}
+		}, 100);
+	}
+
+	/**
+	 * Verifica si hay un logro recién desbloqueado y muestra el modal
+	 */
+	async function verificarLogroDesbloqueado() {
+		const unsubscribe = logrosStore.logroDesbloqueado.subscribe(logro => {
+			if (logro) {
+				logroDesbloqueadoActual = logro;
+				mostrarModalLogro = true;
+			}
+		});
+		// Desuscribirse inmediatamente
+		setTimeout(unsubscribe, 100);
+	}
+
+	/**
+	 * Cierra el modal de logro desbloqueado
+	 */
+	function cerrarModalLogro() {
+		mostrarModalLogro = false;
+		logroDesbloqueadoActual = null;
+		logrosStore.limpiarNotificaciones();
+	}
+
+	/**
+	 * Maneja cuando el canvas coloca un sticker (callback desde DibujoCanvas)
+	 */
+	function manejarStickerColocadoEnCanvas(data: { emoji: string; escala: number }) {
+		// Obtener el sticker actual desde el servicio
+		const stickerActual = servicioDibujo.obtenerStickerActual();
+		
+		if (stickerActual) {
+			// Llamar a la función de procesamiento de logros
+			manejarStickerColocado(stickerActual);
 		}
 	}
 
@@ -543,6 +677,7 @@
 					offsetX={offsetX}
 					offsetY={offsetY}
 					modoMoverActivo={herramientaMoverActiva}
+					onStickerColocado={manejarStickerColocadoEnCanvas}
 				/>
 				
 				<!-- Overlay de accesibilidad -->
@@ -644,6 +779,14 @@
 			</button>
 		{/snippet}
 	</Modal>
+
+	<!-- Modal de logro desbloqueado -->
+	{#if logroDesbloqueadoActual}
+		<LogroDesbloqueado
+			logro={logroDesbloqueadoActual}
+			on:close={cerrarModalLogro}
+		/>
+	{/if}
 </div>
 
 <style>
