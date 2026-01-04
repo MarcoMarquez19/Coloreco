@@ -1,5 +1,14 @@
 [
 	{
+		"modo": "editar",
+		"escenaId": "Edicion-obra",
+		"nombre": "Pantalla de edición",
+		"ruta": "/escenas/Edicion-obra.svg",
+		"version": 1,
+		"descripcion": "Una escena que representa una pantalla de edición de imágenes.",
+		"rutaAccesibilidad": "/escenas/accesibilidad/Edicion-obra-accesible.svg"
+	},
+	{
 		"modo": "dibujo",
 		"escenaId": "cabaña-bosque",
 		"nombre": "Cabaña en el bosque",

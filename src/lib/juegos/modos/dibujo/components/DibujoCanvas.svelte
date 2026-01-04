@@ -291,6 +291,72 @@
 	}
 
 	/**
+	 * Carga una imagen existente en el canvas para edición
+	 * @param urlImagen - URL de la imagen (blob URL o data URL)
+	 */
+	export async function cargarImagenParaEditar(urlImagen: string): Promise<void> {
+		if (!contextoDibujo || !canvasDibujoRef) {
+			console.error('[DibujoCanvas] Canvas no inicializado');
+			return;
+		}
+
+		return new Promise((resolve, reject) => {
+			const imagen = new Image();
+			
+			imagen.onload = () => {
+				// Guardar el estado actual del contexto
+				contextoDibujo.save();
+				
+				// Limpiar el canvas primero
+				contextoDibujo.clearRect(0, 0, canvasDibujoRef!.width, canvasDibujoRef!.height);
+				
+				// Restaurar todos los valores por defecto del contexto para que la imagen se vea correctamente
+				contextoDibujo.globalAlpha = 1.0; // Opacidad completa
+				contextoDibujo.globalCompositeOperation = 'source-over'; // Modo de composición normal
+				contextoDibujo.imageSmoothingEnabled = true;
+				contextoDibujo.imageSmoothingQuality = 'high';
+				
+				// Dibujar la imagen ajustándola al tamaño del canvas
+				// Mantener la proporción si es necesario
+				const canvasWidth = canvasDibujoRef!.width;
+				const canvasHeight = canvasDibujoRef!.height;
+				
+				// Calcular la escala para que la imagen quepa en el canvas
+				const escalaAncho = canvasWidth / imagen.width;
+				const escalaAlto = canvasHeight / imagen.height;
+				const escala = Math.min(escalaAncho, escalaAlto);
+				
+				const nuevoAncho = imagen.width * escala;
+				const nuevoAlto = imagen.height * escala;
+				
+				// Centrar la imagen en el canvas
+				const x = (canvasWidth - nuevoAncho) / 2;
+				const y = (canvasHeight - nuevoAlto) / 2;
+				
+				// Dibujar la imagen en el canvas con máxima calidad
+				contextoDibujo.drawImage(imagen, x, y, nuevoAncho, nuevoAlto);
+				
+				// Restaurar el estado del contexto
+				contextoDibujo.restore();
+				
+				// Guardar este estado como inicio del historial
+				historialDibujo = [];
+				guardarEstadoEnHistorial();
+				
+				console.log('[DibujoCanvas] Imagen cargada para edición');
+				resolve();
+			};
+			
+			imagen.onerror = (error) => {
+				console.error('[DibujoCanvas] Error cargando imagen:', error);
+				reject(error);
+			};
+			
+			imagen.src = urlImagen;
+		});
+	}
+
+	/**
 	 * Limpia todo el canvas y vuelve a cargar la imagen de fondo
 	 */
 	export function limpiar() {
@@ -386,7 +452,9 @@
 	 * Guarda el dibujo como obra en la galería
 	 */
 	export async function guardarDibujo(): Promise<void> {
-		if (!canvasDibujoRef || !imagenEscenaRef || !escena) return;
+		if (!canvasDibujoRef) {
+			throw new Error('Canvas no disponible');
+		}
 
 		try {
 			// Obtener el artistaId actual de los ajustes
@@ -395,7 +463,7 @@
 
 			if (!artistaId) return;
 
-			// Crear un canvas temporal para combinar ambas capas
+			// Crear un canvas temporal para combinar ambas capas (o solo el canvas si no hay escena)
 			const canvasTemp = document.createElement('canvas');
 			canvasTemp.width = canvasDibujoRef.width;
 			canvasTemp.height = canvasDibujoRef.height;
@@ -404,9 +472,11 @@
 			// Primero dibujar el canvas de dibujo (capa inferior - trazos del usuario)
 			ctxTemp.drawImage(canvasDibujoRef, 0, 0);
 			
-			// Luego dibujar la imagen vectorial encima
-			// La imagen mantiene su calidad vectorial hasta este momento
-			ctxTemp.drawImage(imagenEscenaRef, 0, 0, canvasTemp.width, canvasTemp.height);
+			// Si hay una imagen de escena, dibujarla encima
+			if (imagenEscenaRef && escena) {
+				// La imagen mantiene su calidad vectorial hasta este momento
+				ctxTemp.drawImage(imagenEscenaRef, 0, 0, canvasTemp.width, canvasTemp.height);
+			}
 
 			// Convertir el canvas temporal a blob
 			const blob = await new Promise<Blob>((resolve, reject) => {
@@ -419,21 +489,29 @@
 				}, 'image/png');
 			});
 
-			// Generar título basado en la escena y fecha
+			// Generar título basado en la escena (si existe) y fecha
 			const fecha = new Date();
-			const titulo = `${escena.nombre} - ${fecha.toLocaleDateString()}`;
+			const titulo = escena 
+				? `${escena.nombre} - ${fecha.toLocaleDateString()}`
+				: `Obra editada - ${fecha.toLocaleDateString()}`;
 			
 			// Preparar datos de la obra
 			const datosObra = {
 				artistaId,
 				titulo,
-				descripcion: `Dibujo creado en la escena: ${escena.nombre}`,
-				modo: escena.modo,
+				descripcion: escena 
+					? `Dibujo creado en la escena: ${escena.nombre}`
+					: 'Obra editada en el taller de dibujo',
+				modo: (escena?.modo ?? 'dibujo') as 'dibujo' | 'cuerpoHumano' | 'historias',
 				blob,
 				mime: 'image/png',
-				escenaId: escena.escenaId,
-				etiquetas: [escena.nombre, 'dibujo', 'taller'],
-				alt: `Dibujo de ${escena.nombre} creado el ${fecha.toLocaleDateString()}`
+				escenaId: escena?.escenaId,
+				etiquetas: escena 
+					? [escena.nombre, 'dibujo', 'taller']
+					: ['dibujo', 'taller', 'editado'],
+				alt: escena 
+					? `Dibujo de ${escena.nombre} creado el ${fecha.toLocaleDateString()}`
+					: `Obra editada el ${fecha.toLocaleDateString()}`
 			};
 
 			// Guardar la obra en la base de datos
@@ -445,7 +523,8 @@
 
 	// Efectos reactivos
 	$effect(() => {
-		if (escena && canvasDibujoRef) {
+		// Inicializar canvas cuando esté listo (con o sin escena)
+		if (canvasDibujoRef && (escena || !cargando)) {
 			inicializarCanvas();
 		}
 	});
@@ -495,14 +574,14 @@
 		<div class="estado-error" role="alert">
 			<p>{error}</p>
 		</div>
-	{:else if escena}
+	{:else}
 		<!-- Contenedor interno que recibe el transform de zoom -->
 		<div bind:this={contenedorCanvasRef} class="contenedor-canvas-transform">
 			<!-- Canvas de dibujo (capa inferior - donde dibuja el usuario) -->
 			<canvas
 				bind:this={canvasDibujoRef}
 				class="lienzo-dibujo"
-				aria-label={`Lienzo para dibujar sobre la escena: ${escena.nombre}`}
+				aria-label={escena ? `Lienzo para dibujar sobre la escena: ${escena.nombre}` : 'Lienzo de dibujo'}
 				onmousedown={iniciarDibujo}
 				onmousemove={dibujar}
 				onmouseup={terminarDibujo}
@@ -511,13 +590,16 @@
 			></canvas>
 			
 			<!-- Imagen vectorial de escena (capa superior - renderizado nativo del navegador) -->
-			<img
-				bind:this={imagenEscenaRef}
-				src={escena.ruta}
-				alt={escena.nombre}
-				class="imagen-escena"
-				aria-hidden="true"
-			/>
+			<!-- Solo mostrar si hay una escena -->
+			{#if escena}
+				<img
+					bind:this={imagenEscenaRef}
+					src={escena.ruta}
+					alt={escena.nombre}
+					class="imagen-escena"
+					aria-hidden="true"
+				/>
+			{/if}
 		</div>
 	{/if}
 </div>

@@ -70,7 +70,7 @@
 	//DETECTAR SI SE NECESITA EL FONDO DE MANCHAS
 	let necesitaFondoManchas = $derived($page.url.pathname === '/' 
 	|| $page.url.pathname === '/seleccionar-estudio' 
-	|| $page.url.pathname.startsWith('/galeria')
+	|| $page.url.pathname === ('/galeria')
 	|| $page.url.pathname.startsWith('/menu-juegos')
 	|| $page.url.pathname.startsWith('/taller-escenas')
 	);
