@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Instrucciones from '$lib/components/modales/Instrucciones.svelte';
-	import IconoInstrucciones from '$lib/components/iconos/IconoInstrucciones.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -15,10 +14,6 @@
 	let error = $state<string | null>(null);
 	let capituloSeleccionadoIndex = $state<number>(0);
 	let mostrarInstrucciones = $state<boolean>(false);
-
-	function abrirInstrucciones() {
-		mostrarInstrucciones = true;
-	}
 
 	onMount(async () => {
 		try {
@@ -93,13 +88,6 @@
 	}
 
 	function manejarTeclaPresionada(event: KeyboardEvent) {
-		// Manejar Ctrl+I para instrucciones
-		if ((event.key === 'i' || event.key === 'I') && event.ctrlKey) {
-			event.preventDefault();
-			abrirInstrucciones();
-			return;
-		}
-
 		// Solo manejar Enter/Espacio si hay un elemento enfocado (botón)
 		if (event.key === 'Enter' || event.key === ' ') {
 			const elementoActivo = document.activeElement;
@@ -150,9 +138,17 @@
 		actualizarEscala();
 		window.addEventListener('resize', actualizarEscala);
 		window.addEventListener('keydown', manejarTeclaPresionada);
+		
+		// Escuchar evento de abrir instrucciones desde el layout
+		const handleAbrirInstrucciones = () => {
+			mostrarInstrucciones = true;
+		};
+		window.addEventListener('abrir-instrucciones', handleAbrirInstrucciones);
+		
 		return () => {
 			window.removeEventListener('resize', actualizarEscala);
 			window.removeEventListener('keydown', manejarTeclaPresionada);
+			window.removeEventListener('abrir-instrucciones', handleAbrirInstrucciones);
 			if (contenedorProgresoRef) {
 				contenedorProgresoRef.style.transform = '';
 				contenedorProgresoRef.style.transformOrigin = '';
@@ -160,22 +156,6 @@
 		};
 	})
 </script>
-
-<!-- Botón de instrucciones -->
-<div class="contenedor-flotante-i-instrucciones">
-	<button 
-		class="boton-instrucciones pattern-yellow"
-		onclick={abrirInstrucciones}
-		aria-label="Ver instrucciones"
-		aria-keyshortcuts="Control + I"
-		title="Instrucciones (Control + I)"
-		type="button"
-	>
-		<span class="solo-lectores">Ver instrucciones</span>
-		<IconoInstrucciones />
-	</button>
-	<span class="texto-tecla">Ctrl + I</span>
-</div>
 
 <div class="progreso-contenedor" bind:this={contenedorProgresoRef} aria-label="Progreso de la historia" data-magnificable>
 	{#if cargando}

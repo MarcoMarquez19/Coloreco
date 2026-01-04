@@ -19,6 +19,32 @@
 	// Suscripción temporal al evento de fin de narración para acciones (p.ej. avanzar índice)
 	let currentEndUnsubscribe: (() => void) | null = null;
 
+	// Función auxiliar para obtener texto accesible ignorando pictogramas visuales pero usando su texto alternativo
+	function getAccessibleText(element: HTMLElement): string {
+		const clone = element.cloneNode(true) as HTMLElement;
+		
+		// Encontrar todos los pictogram-wrapper
+		const pictogramWrappers = clone.querySelectorAll('.pictogram-wrapper');
+		pictogramWrappers.forEach(wrapper => {
+			// Buscar el texto alternativo (.sr-only)
+			const srOnly = wrapper.querySelector('.sr-only');
+			if (srOnly) {
+				// Reemplazar todo el wrapper con solo el texto alternativo
+				const textNode = document.createTextNode(srOnly.textContent || '');
+				wrapper.parentNode?.replaceChild(textNode, wrapper);
+			} else {
+				// Si no hay texto alternativo, eliminar el wrapper completo
+				wrapper.remove();
+			}
+		});
+		
+		// Eliminar todos los elementos SVG para evitar leer texto dentro de íconos
+		const svgs = clone.querySelectorAll('svg');
+		svgs.forEach(svg => svg.remove());
+		
+		return clone.textContent?.trim() || '';
+	}
+
 	// Sincronizar currentSpeed con las configuraciones
 	$effect(() => {
 		currentSpeed = $configuraciones.ttsSpeed || 1;
@@ -38,12 +64,12 @@
 		if (!browser) return '';
 		
 		// Buscar primero en modales activos (tienen mayor prioridad)
-		const modal = document.querySelector('.modal[role="dialog"]');
+		const modal = document.querySelector('[role="dialog"]');
 		const mainContent = modal || document.querySelector('main');
 		if (!mainContent) return '';
 		
 		// Solo elementos de texto visibles de nivel superior (sin incluir elementos anidados)
-		const selector = 'h1, h2, h3, h4, h5, h6, p, button, label, a';
+		const selector = 'h1, h2, h3, h4, h5, h6, p, button:not(.pictogram-word):not(.boton-instrucciones), label, a, [data-readable]';
 		const elements = mainContent.querySelectorAll(selector);
 		
 		const texts: string[] = [];
@@ -60,21 +86,23 @@
 			if (element.closest('.narration-control')) return;
 			if (element.closest('.contenedor-flotante-i')) return;
 			if (element.closest('.contenedor-flotante-d')) return;
-			// Solo excluir si el elemento mismo tiene aria-hidden, no sus ancestros
-			if (element.hasAttribute('aria-hidden') && element.getAttribute('aria-hidden') === 'true') return;
-			
-			// Verificar que el elemento esté realmente visible en la pantalla
-			const rect = element.getBoundingClientRect();
-			const style = window.getComputedStyle(element);
-			
-			const isVisible = 
-				style.display !== 'none' &&
-				style.visibility !== 'hidden' &&
-				style.opacity !== '0' &&
-				rect.width > 0 &&
-				rect.height > 0;
-			
-			if (isVisible) {
+			// Excluir botones de pictogramas (el texto alternativo se leerá directamente)
+			if (element.classList.contains('pictogram-word')) return;
+		// Excluir botón cerrar de modales
+		if (element.classList.contains('modal-boton-cerrar')) return;
+		// Solo excluir si el elemento mismo tiene aria-hidden, no sus ancestros
+		if (element.hasAttribute('aria-hidden') && element.getAttribute('aria-hidden') === 'true') return;
+		
+		// Verificar que el elemento esté realmente visible en la pantalla
+		const rect = element.getBoundingClientRect();
+		const style = window.getComputedStyle(element);		
+		const isVisible = 
+			style.display !== 'none' &&
+			style.visibility !== 'hidden' &&
+			style.opacity !== '0' &&
+			rect.width > 0 &&
+			rect.height > 0;
+					if (isVisible) {
 				// Obtener solo el texto directo del elemento (no el de sus hijos)
 				let text = '';
 				element.childNodes.forEach(node => {
@@ -112,6 +140,9 @@
 
 		// Ignorar etiquetas de narración
 		if (element.classList.contains('narration-label')) return;
+		
+		// Ignorar botón cerrar de modales
+		if (element.classList.contains('modal-boton-cerrar')) return;
 
 		// Si la narración automática está activa, NO leer elementos enfocados
 		// porque el focus es parte del proceso automático
@@ -130,7 +161,7 @@
 		if (soloLectoresSpan) {
 			text = soloLectoresSpan.textContent?.trim() || '';
 		} else {
-			text = element.getAttribute('aria-label') || element.textContent?.trim() || '';
+			text = element.getAttribute('aria-label') || getAccessibleText(element as HTMLElement);
 		}
 		}
 		
@@ -238,11 +269,11 @@
 		if (!browser) return [];
 		
 		// Buscar primero en modales activos (tienen mayor prioridad)
-		const modal = document.querySelector('.modal[role="dialog"]');
+		const modal = document.querySelector('[role="dialog"]');
 		const mainContent = modal || document.querySelector('main');
 		if (!mainContent) return [];
 		
-		const selector = 'h1, h2, h3, h4, h5, h6, p, button, label';
+		const selector = 'h1, h2, h3, h4, h5, h6, p, button:not(.pictogram-word):not(.boton-instrucciones), label, [data-readable]';
 		const elements = mainContent.querySelectorAll(selector);
 		
 		const readableElements: HTMLElement[] = [];
@@ -255,31 +286,35 @@
 			if (element.closest('.narration-control')) return;
 			if (element.closest('.contenedor-flotante-i')) return;
 			if (element.closest('.contenedor-flotante-d')) return;
-			// Solo excluir si el elemento mismo tiene aria-hidden, no sus ancestros
-			if (element.hasAttribute('aria-hidden') && element.getAttribute('aria-hidden') === 'true') return;
-			
-			const rect = element.getBoundingClientRect();
-			const style = window.getComputedStyle(element);
-			
-			const isVisible = 
-				style.display !== 'none' &&
-				style.visibility !== 'hidden' &&
-				style.opacity !== '0' &&
-				rect.width > 0 &&
-				rect.height > 0;
-			
-			if (isVisible) {
+			// Excluir botones de pictogramas (el texto alternativo se leerá directamente)
+			if (element.classList.contains('pictogram-word')) return;
+		// Excluir botón cerrar de modales
+		if (element.classList.contains('modal-boton-cerrar')) return;
+		// Solo excluir si el elemento mismo tiene aria-hidden, no sus ancestros
+		if (element.hasAttribute('aria-hidden') && element.getAttribute('aria-hidden') === 'true') return;
+		
+		const rect = element.getBoundingClientRect();
+		const style = window.getComputedStyle(element);
+		
+		const isVisible = 
+			style.display !== 'none' &&
+			style.visibility !== 'hidden' &&
+			style.opacity !== '0' &&
+			rect.width > 0 &&
+			rect.height > 0;
+		
+		if (isVisible) {
 			const narrationText = element.getAttribute('data-narration-text');
 			const soloLectoresSpan = element.querySelector('.solo-lectores');
-			const text = narrationText?.trim() || soloLectoresSpan?.textContent?.trim() || element.textContent?.trim() || '';
-				if (text) {
-					readableElements.push(element);
-					processedElements.add(element);
-					element.querySelectorAll(selector).forEach(child => {
-						processedElements.add(child);
-					});
-				}
+			const text = narrationText?.trim() || soloLectoresSpan?.textContent?.trim() || getAccessibleText(element);
+			if (text) {
+				readableElements.push(element);
+				processedElements.add(element);
+				element.querySelectorAll(selector).forEach(child => {
+					processedElements.add(child);
+				});
 			}
+		}
 		});
 		
 		return readableElements;
@@ -324,10 +359,10 @@
 			isAutoFocusing = false;
 		}, 50);
 
-// Obtener texto a leer: primero data-narration-text, luego solo-lectores, finalmente textContent
+// Obtener texto a leer: primero data-narration-text, luego solo-lectores, finalmente getAccessibleText
 	const narrationText = element.getAttribute('data-narration-text');
 	const soloLectoresSpan = element.querySelector('.solo-lectores');
-	const text = narrationText?.trim() || soloLectoresSpan?.textContent?.trim() || element.textContent?.trim() || '';
+	const text = narrationText?.trim() || soloLectoresSpan?.textContent?.trim() || getAccessibleText(element);
 
 		if (text && ttsService.isSupported()) {
 			// Limpiar handler anterior
@@ -608,7 +643,7 @@
 		border: 2px solid var(--icono-color-borde, #000);
 		border-radius: 8px;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-		z-index: 1000;
+		z-index: 50000001;
 	}
 
 	.narration-label {

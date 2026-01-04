@@ -31,12 +31,16 @@
   // Maneja la tecla Escape globalmente para cerrar el modal
   function handleGlobalKeydown(event: KeyboardEvent) {
     if (event.key === 'Escape') {
+      event.stopPropagation();
+      event.preventDefault();
       handleClose();
     }
   }
 
   // Aplicar modos de accesibilidad cuando se monta el modal
   onMount(() => {
+    let blockedElements: Array<{element: HTMLElement, originalTabIndex: string | null}> = [];
+    
     // Prevenir scroll del body cuando el modal está abierto
     document.body.style.overflow = 'hidden';
     
@@ -45,12 +49,37 @@
     if (appMain) {
       appMain.style.overflow = 'hidden';
     }
-
-    // Mover el backdrop al body para evitar que herede contextos de apilamiento/transform del padre
-    const prevParent = backdropRef?.parentElement ?? null;
-    const nextSibling = backdropRef?.nextSibling ?? null;
-    if (backdropRef && backdropRef.parentElement !== document.body) {
-      document.body.appendChild(backdropRef);
+    
+    // Bloquear todos los elementos tabulables excepto el modal y controles permitidos
+    const allowedIds = ['narration-controls-container', 'floating-back-button', 'floating-settings-button', 'floating-instructions-button'];
+    const tabbableElements = document.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    
+    tabbableElements.forEach((element) => {
+      // No bloquear si el elemento está dentro del modal
+      if (modalRef?.contains(element)) {
+        return;
+      }
+      
+      // No bloquear si el elemento está en un contenedor permitido
+      const isInAllowedContainer = allowedIds.some(id => {
+        const container = document.getElementById(id);
+        return container?.contains(element);
+      });
+      
+      if (!isInAllowedContainer) {
+        const originalTabIndex = element.getAttribute('tabindex');
+        blockedElements.push({ element, originalTabIndex });
+        element.setAttribute('tabindex', '-1');
+        element.setAttribute('data-modal-blocked', 'true');
+      }
+    });
+    
+    // Marcar contenido de fondo para lectores de pantalla
+    const mainContent = document.querySelector('main');
+    if (mainContent) {
+      mainContent.setAttribute('aria-hidden', 'true');
     }
 
     // Disparar un evento personalizado para que el layout procese el modal
@@ -81,9 +110,21 @@
       if (appMain) {
         appMain.style.overflow = '';
       }
-      if (backdropRef && document.body.contains(backdropRef)) {
-        document.body.removeChild(backdropRef);
-        // No reinsertemos automáticamente — el componente se desmonta de todas formas
+      
+      // Restaurar tabindex de elementos bloqueados
+      blockedElements.forEach(({ element, originalTabIndex }) => {
+        if (originalTabIndex !== null) {
+          element.setAttribute('tabindex', originalTabIndex);
+        } else {
+          element.removeAttribute('tabindex');
+        }
+        element.removeAttribute('data-modal-blocked');
+      });
+      
+      // Restaurar aria-hidden
+      const mainContent = document.querySelector('main');
+      if (mainContent) {
+        mainContent.removeAttribute('aria-hidden');
       }
     };
   });
@@ -148,7 +189,7 @@
     aria-labelledby="modal-title" 
     tabindex="-1"
   >
-    <button class="close-btn no-pictogram" onclick={handleClose} aria-label="Cerrar modal" type="button">×</button>
+    <button class="close-btn no-pictogram" onclick={handleClose} aria-label="Cerrar modal" aria-hidden="true" type="button">×</button>
     <div class="icon-container">
       {#if correct}
         <div class="icon success" aria-hidden="true">✔</div>
@@ -156,12 +197,16 @@
         <div class="icon error" aria-hidden="true">✖</div>
       {/if}
     </div>
-    <h2 id="modal-title" data-readable>{correct ? '¡Muy bien!' : '¡Oh no!'}</h2>
-    <p class="main-msg" data-readable>La respuesta es {correct ? 'correcta.' : 'incorrecta.'}</p>
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+    <h2 id="modal-title" data-readable tabindex="0">{correct ? '¡Muy bien!' : '¡Oh no!'}</h2>
+    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+    <p class="main-msg" data-readable tabindex="0">La respuesta es {correct ? 'correcta.' : 'incorrecta.'}</p>
     {#if correct}
-      <p class="detalle" data-readable>{mensaje}</p>
+      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+      <p class="detalle" data-readable tabindex="0">{mensaje}</p>
     {:else}
-      <p class="detalle" data-readable>Pista: {pista}</p>
+      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+      <p class="detalle" data-readable tabindex="0">Pista: {pista}</p>
     {/if}
     <button class="action-btn" onclick={handleClose} data-readable>
       {correct ? 'Continuar' : 'Reintentar'}

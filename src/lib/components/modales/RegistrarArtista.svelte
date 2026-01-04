@@ -2,6 +2,7 @@
     import { createEventDispatcher, onMount } from 'svelte';
     import {crearArtista,cambiarArtista} from '$lib/db/artistas.service';
     import { audioStore } from '$lib/stores/audio';
+    import { configuraciones } from '$lib/stores/settings';
 
     // Creamos el despachador de eventos para comunicarnos con el padre
     const dispatch = createEventDispatcher();
@@ -45,7 +46,76 @@
 
     // Usabilidad: Enfocar el input automáticamente al abrir el modal
     onMount(() => {
-        if (inputElement) inputElement.focus();
+        let blockedElements: Array<{element: HTMLElement, originalTabIndex: string | null}> = [];
+        
+        // Bloquear todos los elementos tabulables excepto el modal y controles permitidos
+        const allowedIds = ['narration-controls-container', 'floating-back-button', 'floating-settings-button', 'floating-instructions-button'];
+        const tabbableElements = document.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        
+        tabbableElements.forEach((element) => {
+            // No bloquear si el elemento está dentro del backdrop del modal
+            const backdrop = document.querySelector('.backdrop');
+            if (backdrop?.contains(element)) {
+                return;
+            }
+            
+            // No bloquear si el elemento está en un contenedor permitido
+            const isInAllowedContainer = allowedIds.some(id => {
+                const container = document.getElementById(id);
+                return container?.contains(element);
+            });
+            
+            if (!isInAllowedContainer) {
+                const originalTabIndex = element.getAttribute('tabindex');
+                blockedElements.push({ element, originalTabIndex });
+                element.setAttribute('tabindex', '-1');
+                element.setAttribute('data-modal-blocked', 'true');
+            }
+        });
+        
+        // Marcar contenido de fondo para lectores de pantalla
+        const mainContent = document.querySelector('main');
+        if (mainContent) {
+            mainContent.setAttribute('aria-hidden', 'true');
+        }
+        
+        // Disparar evento personalizado para que el layout procese el modal
+        setTimeout(() => {
+            const event = new CustomEvent('modal-mounted');
+            window.dispatchEvent(event);
+            
+            // Si la narración está activada, iniciar lectura automática del modal
+            if ($configuraciones.narrationEnabled) {
+                setTimeout(() => {
+                    const readModalEvent = new CustomEvent('read-modal');
+                    window.dispatchEvent(readModalEvent);
+                }, 200);
+            } else {
+                // Solo enfocar el input si la narración NO está activada
+                if (inputElement) inputElement.focus();
+            }
+        }, 50);
+        
+        // Cleanup: Restaurar interacción con contenido de fondo
+        return () => {
+            // Restaurar tabindex de elementos bloqueados
+            blockedElements.forEach(({ element, originalTabIndex }) => {
+                if (originalTabIndex !== null) {
+                    element.setAttribute('tabindex', originalTabIndex);
+                } else {
+                    element.removeAttribute('tabindex');
+                }
+                element.removeAttribute('data-modal-blocked');
+            });
+            
+            // Restaurar aria-hidden
+            const mainContent = document.querySelector('main');
+            if (mainContent) {
+                mainContent.removeAttribute('aria-hidden');
+            }
+        };
     });
 
     // Cierra el modal si se hace click fuera de la caja modal
@@ -74,8 +144,10 @@
 <div class="backdrop" role="presentation" on:click={handleBackdropClick} on:keydown={handleBackdropKeydown}>
     <!-- Contenedor del Modal -->
     <div class="modal-box" aria-label="Modal para registrar un nuevo artista" role="dialog" tabindex="0" on:click|stopPropagation on:keydown={handleModalKeydown}>
-        <p>Presiona fuera de esta área para salir</p>
+        <p data-readable>Presiona fuera de esta área para salir</p>
+        <label for="nombre-artista" class="sr-only">Ingresa tu nombre</label>
         <input 
+            id="nombre-artista"
             bind:this={inputElement}
             bind:value={nombre}
             type="text" 
@@ -83,11 +155,13 @@
             maxlength={maxCaracteres}
             on:input={handleInput}
             on:keydown={handleInputKeydown}
+            aria-label="Ingresa tu nombre de artista"
+            aria-hidden="true"
         />
-        <div class="contador-caracteres">
+        <div class="contador-caracteres" aria-hidden="true">
             {maxCaracteres - nombre.length} caracteres restantes
         </div>
-        <div class="mensaje-enter">
+        <div class="mensaje-enter" data-readable>
             Presiona <b>ENTER</b> para agregar el nuevo artista
         </div>
     </div>
@@ -95,6 +169,18 @@
 
 
 <style>
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+    }
+    
     .mensaje-enter {
         margin-top: calc(var(--spacing-base, 1rem) * 1);
         font-size: calc(var(--font-size-base, 1rem) * 1);
