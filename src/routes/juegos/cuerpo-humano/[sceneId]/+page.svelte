@@ -30,7 +30,6 @@
 
 	// Estado del taller de dibujo
 	let tallerInicializado = $state<boolean>(false);
-	let mostrarAyuda = $state<boolean>(false);
 	// Valores iniciales para la barra de herramientas
     let herramientaInicial = $state<string>('pincel');
     let colorInicial = $state<string>('#000000');
@@ -456,61 +455,6 @@
 		goto('/taller-escenas');
 	}
 
-	/**
-	 * Alterna la ayuda del taller
-	 */
-	function alternarAyuda() {
-		mostrarAyuda = !mostrarAyuda;
-	}
-
-	/**
-	 * Activa el modo accesible
-	 */
-	function activarModoAccesible() {
-		servicioDibujo.alternarModoAccesible();
-	}
-
-	/**
-	 * Maneja los atajos de teclado globales
-	 */
-	function manejarAtajosTeclado(evento: KeyboardEvent) {
-		// Solo procesar si no estamos en el modo accesible del overlay
-		const estadoServicio = servicioDibujo.obtenerEstado();
-		if (estadoServicio.modoAccesible) return;
-
-		if (evento.ctrlKey || evento.metaKey) {
-			switch (evento.key.toLowerCase()) {
-				case 'z':
-					evento.preventDefault();
-					servicioDibujo.deshacer();
-					break;
-				
-				case 's':
-					evento.preventDefault();
-					servicioDibujo.guardarDibujo();
-					break;
-				
-				case 'h':
-					evento.preventDefault();
-					alternarAyuda();
-					break;
-			}
-		} else {
-			switch (evento.key) {
-				
-				case 'F1':
-					evento.preventDefault();
-					alternarAyuda();
-					break;
-				
-				case 'a':
-				case 'A':
-					activarModoAccesible();
-					break;
-			}
-		}
-	}
-
 	// Inicializar cuando el canvas esté listo
 	$effect(() => {
 		if (canvasRef && !tallerInicializado) {
@@ -552,29 +496,7 @@
 	})
 </script>
 
-<!-- Event listeners globales -->
-<svelte:window onkeydown={manejarAtajosTeclado} />
-
 <div class="taller-dibujo">
-	<!-- Panel de ayuda -->
-	{#if mostrarAyuda}
-		<aside class="panel-ayuda" aria-label="Panel de ayuda">
-			<div class="contenido-ayuda">
-				<h2>Atajos de Teclado</h2>
-				<ul class="lista-atajos">
-					<li><kbd>Ctrl+Z</kbd> - Deshacer</li>
-					<li><kbd>Ctrl+S</kbd> - Guardar</li>
-					<li><kbd>A</kbd> - Modo accesible</li>
-					<li><kbd>F1</kbd> - Ayuda</li>
-					<li><kbd>Escape</kbd> - Salir</li>
-				</ul>
-				<button class="boton-cerrar-ayuda" onclick={alternarAyuda}>
-					Cerrar ayuda
-				</button>
-			</div>
-		</aside>
-	{/if}
-
 	<!-- Área principal del taller -->
 	<main class="area-principal">
 		<!-- Barra de herramientas -->
@@ -793,69 +715,6 @@
 		width: 1px;
 		height: 1px;
 		overflow: hidden;
-	}
-
-	/* Panel de ayuda */
-	.panel-ayuda {
-		position: absolute;
-		top: 90px;
-		right: calc(var(--spacing-base, 1rem) * 1.5);
-		z-index: 1000;
-		background: var(--bg, #fff);
-		border: 3px solid var(--icono-color-borde, #000);
-		border-radius: var(--border-radius, 8px);
-		padding: calc(var(--spacing-base, 1rem) * 1.5);
-		box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
-		max-width: 300px;
-	}
-
-	.contenido-ayuda h2 {
-		margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0;
-		font-size: calc(var(--font-size-base, 1rem) * 1.3);
-		color: var(--fg, #333);
-	}
-
-	.lista-atajos {
-		list-style: none;
-		padding: 0;
-		margin: 0 0 calc(var(--spacing-base, 1rem) * 1.5) 0;
-	}
-
-	.lista-atajos li {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: calc(var(--spacing-base, 1rem) * 0.5) 0;
-		border-bottom: 1px solid var(--border, #eee);
-	}
-
-	.lista-atajos li:last-child {
-		border-bottom: none;
-	}
-
-	.lista-atajos kbd {
-		background: var(--surface, #f1f1f1);
-		border: 1px solid var(--border, #ccc);
-		border-radius: calc(var(--border-radius, 8px) * 0.5);
-		padding: calc(var(--spacing-base, 1rem) * 0.25) calc(var(--spacing-base, 1rem) * 0.5);
-		font-family: monospace;
-		font-size: calc(var(--font-size-base, 1rem) * 0.9);
-		font-weight: bold;
-	}
-
-	.boton-cerrar-ayuda {
-		width: 100%;
-		padding: calc(var(--spacing-base, 1rem) * 0.75);
-		border: 2px solid var(--icono-color-borde, #000);
-		border-radius: var(--border-radius, 8px);
-		background: var(--bg, #fff);
-		cursor: pointer;
-		font-weight: 600;
-		transition: all 0.2s ease;
-	}
-
-	.boton-cerrar-ayuda:hover {
-		background: var(--surface-hover, #f0f0f0);
 	}
 
 	/* Área principal */

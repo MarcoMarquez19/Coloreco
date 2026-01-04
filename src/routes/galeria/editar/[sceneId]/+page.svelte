@@ -30,7 +30,6 @@
 
 	// Estado del taller de dibujo
 	let tallerInicializado = $state<boolean>(false);
-	let mostrarAyuda = $state<boolean>(false);
 
 	// Configuración de herramientas y acciones visibles
 	// Puedes modificar estos arrays para controlar qué se muestra en la barra
@@ -545,62 +544,7 @@
 		if (contenedorLienzoRef && herramientaMoverActiva && nivelZoom > 1) {
 			contenedorLienzoRef.style.cursor = 'grab';
 		}
-	}
-
-	/**
-	 * Alterna la ayuda del taller
-	 */
-	function alternarAyuda() {
-		mostrarAyuda = !mostrarAyuda;
-	}
-
-	/**
-	 * Activa el modo accesible
-	 */
-	function activarModoAccesible() {
-		servicioDibujo.alternarModoAccesible();
-	}
-
-	/**
-	 * Maneja los atajos de teclado globales
-	 */
-	function manejarAtajosTeclado(evento: KeyboardEvent) {
-		// Solo procesar si no estamos en el modo accesible del overlay
-		const estadoServicio = servicioDibujo.obtenerEstado();
-		if (estadoServicio.modoAccesible) return;
-
-		if (evento.ctrlKey || evento.metaKey) {
-			switch (evento.key.toLowerCase()) {
-				case 'z':
-					evento.preventDefault();
-					servicioDibujo.deshacer();
-					break;
-				
-				case 's':
-					evento.preventDefault();
-					servicioDibujo.guardarDibujo();
-					break;
-				
-				case 'h':
-					evento.preventDefault();
-					alternarAyuda();
-					break;
-			}
-		} else {
-			switch (evento.key) {
-				
-				case 'F1':
-					evento.preventDefault();
-					alternarAyuda();
-					break;
-				
-				case 'a':
-				case 'A':
-					activarModoAccesible();
-					break;
-			}
-		}
-	}
+	}	
 
 	// Inicializar cuando el canvas esté listo
 	$effect(() => {
@@ -652,9 +596,6 @@
 		};
 	})
 </script>
-
-<!-- Event listeners globales -->
-<svelte:window onkeydown={manejarAtajosTeclado} />
 
 <div class="taller-dibujo">
 	<!-- Área principal del taller -->

@@ -1032,7 +1032,7 @@
 	}
 
 	.tab-categoria:hover {
-		background: var(--fondo-botones-hover, #000000);
+		background: var(--fondo-botones-hover, #8e8e8e);
 		transform: translateY(-1px);
 	}
 
@@ -1088,7 +1088,7 @@
 	}
 
 	.tab-subcategoria:hover {
-		background: var(--fondo-botones-hover, #000000);
+		background: var(--fondo-botones-hover, #8e8e8e);
 		transform: translateY(-1px);
 	}
 
@@ -1142,7 +1142,7 @@
 	}
 
 	.boton-sticker:hover {
-		background: var(--fondo-botones-hover, #000000);
+		background: var(--fondo-botones-hover, #8b8b8b);
 		transform: translateY(-1px);
 	}
 
