@@ -62,7 +62,9 @@
 	// Detectar si necesita botón de instrucciones (solo en seleccionar-historia y progreso)
 	let necesitaBotonInstrucciones = $derived(
 		$page.url.pathname === '/juegos/historias/seleccionar-historia' ||
-		$page.url.pathname.includes('/progreso')
+		$page.url.pathname.includes('/progreso') ||
+		$page.url.pathname === '/taller-escenas' ||
+		$page.url.pathname === '/cuerpo-plantillas'
 	);
 
 	//DETECTAR SI SE NECESITA EL FONDO DE MANCHAS

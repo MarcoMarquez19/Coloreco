@@ -4,7 +4,9 @@
 	import { goto } from '$app/navigation';
 	import { escenasStore, escenasFiltradas, cargando, error } from '$lib/stores/escenas';
 	import type { EscenaCatalogo } from '$lib/db/schemas';
-
+	import Instrucciones from '$lib/components/modales/Instrucciones.svelte';
+	
+	let mostrarInstrucciones = $state<boolean>(false);
 	let escenasIniciales: Omit<EscenaCatalogo, 'id'>[] = [];
 	let busqueda = '';
 	let indiceActual = $state<number>(0);
@@ -30,8 +32,15 @@
 
 	onMount(() => {
 		document.body.style.overflow = 'hidden';
+		
+		// Escuchar evento de abrir instrucciones desde el layout
+		const handleAbrirInstrucciones = () => {
+			mostrarInstrucciones = true;
+		};
+		window.addEventListener('abrir-instrucciones', handleAbrirInstrucciones);
 		return () => {
 			document.body.style.overflow = ''; // Restaurar al desmontar
+			window.removeEventListener('abrir-instrucciones', handleAbrirInstrucciones);
 		};
 	});
 
@@ -209,6 +218,12 @@
 		Usar esta escena
 	</button>
 </div>
+
+<!-- Modal de Instrucciones -->
+{#if mostrarInstrucciones}
+	<Instrucciones on:close={() => mostrarInstrucciones = false} />
+{/if}
+
 
 <style>
     .seleccionar-escenas-contenedor {
