@@ -345,6 +345,21 @@ class ServicioDibujo {
 		return [...COLORES_PREDEFINIDOS];
 	}
 
+	/**
+	 * Obtiene una miniatura del canvas combinando el SVG de fondo con el dibujo
+	 * @param maxWidth - Ancho máximo de la miniatura (por defecto 400px)
+	 * @param maxHeight - Alto máximo de la miniatura (por defecto 400px)
+	 * @returns Data URL de la imagen combinada o null si hay error
+	 */
+	obtenerMiniatura(maxWidth: number = 1920, maxHeight: number = 1920): string | null {
+		if (!this.componenteCanvas) {
+			console.error('[ServicioDibujo] Canvas no disponible para miniatura');
+			return null;
+		}
+
+		return this.componenteCanvas.obtenerMiniatura?.(maxWidth, maxHeight) ?? null;
+	}
+
 	// Métodos privados
 
 	/**

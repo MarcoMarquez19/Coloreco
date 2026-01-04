@@ -38,7 +38,9 @@
 	// Estado de modales de guardado
 	let modalConfirmarGuardado = $state<boolean>(false);
 	let modalGuardadoExitoso = $state<boolean>(false);
+	let modalGuardarAntesDeTerminar = $state<boolean>(false);
 	let guardandoObra = $state<boolean>(false);
+	let guardarYTerminar = $state<boolean>(false); // Flag para saber si después de guardar debe terminar
 
     // Valores iniciales para la barra de herramientas
     let herramientaInicial = $state<string>('pincel');
@@ -176,10 +178,70 @@
 	}
 
 	/**
-	 * Cierra el modal de guardado exitoso
+	 * Cierra el modal de guardado exitoso y navega a completada solo si viene del flujo de terminar
 	 */
 	function cerrarModalExito() {
 		modalGuardadoExitoso = false;
+		// Solo navegar si viene del flujo de terminar
+		if (guardarYTerminar) {
+			guardarYTerminar = false;
+			navegararAPaginaCompletada();
+		}
+		// Si no viene del flujo de terminar, simplemente cierra el modal y continúa en el juego
+	}
+
+	/**
+	 * Guarda el progreso actual y navega a la página de completada
+	 */
+	async function guardarProgresoYTerminar() {
+		// Abrir modal preguntando si quiere guardar antes de terminar
+		modalGuardarAntesDeTerminar = true;
+	}
+
+	/**
+	 * Confirma que quiere guardar antes de terminar (guarda directamente sin volver a preguntar)
+	 */
+	async function confirmarGuardarAntesDeTerminar() {
+		modalGuardarAntesDeTerminar = false;
+		guardarYTerminar = true; // Activar flag porque viene del flujo de terminar
+		// Guardar directamente sin abrir modal de confirmación
+		await confirmarGuardarObra();
+	}
+
+	/**
+	 * No guardar y proceder a terminar la actividad
+	 */
+	function noGuardarYTerminar() {
+		modalGuardarAntesDeTerminar = false;
+		navegararAPaginaCompletada();
+	}
+
+	/**
+	 * Navega a la página de actividad completada con las estadísticas
+	 */
+	function navegararAPaginaCompletada() {
+		const sceneId = get(page).params.sceneId || 'default';
+		
+		// Capturar miniatura del canvas usando el servicio de dibujo
+		// El servicio combina el SVG de fondo con el dibujo del usuario
+		let miniaturaDataURL: string | null = null;
+		try {
+			miniaturaDataURL = servicioDibujo.obtenerMiniatura(1920, 1920);
+			console.log('[ModoDibujo] Miniatura capturada:', miniaturaDataURL ? 'OK' : 'null');
+		} catch (error) {
+			console.error('[ModoDibujo] Error capturando miniatura:', error);
+		}
+		
+		// Guardar estadísticas en sessionStorage para pasarlas a la página completada
+		if (typeof window !== 'undefined' && escenaIdActual) {
+			sessionStorage.setItem('dibujo_ultimaActividad', JSON.stringify({
+				escenaId: escenaIdActual,
+				miniatura: miniaturaDataURL
+			}));
+		}
+		
+		// Navegar a la página de actividad completada
+		goto(`/juegos/dibujo/${sceneId}/completada`);
 	}
 
 	/**
@@ -260,8 +322,8 @@
 				break;
 			
 			case 'accionTerminar':
-				// TODO: Preguntar si se desea guardar antes de terminar y luego pasar a la página de evaluación del dibujo
-				break;
+			// Guardar progreso y terminar actividad
+			guardarProgresoYTerminar();
 			
 			case 'accionMover':
 				// Activar herramienta mover (no toggle)
@@ -717,6 +779,40 @@
 				type="button"
 			>
 				Aceptar
+			</button>
+		{/snippet}
+	</Modal>
+
+	<!-- Modal de guardar antes de terminar -->
+	<Modal
+		bind:abierto={modalGuardarAntesDeTerminar}
+		titulo="Guardar antes de terminar"
+		anchoMaximo="500px"
+	>
+		<div style="padding: calc(var(--spacing-base, 1rem) * 1.5) 0; text-align: center;">
+			<div style="font-size: calc(var(--font-size-base, 1rem) * 4); margin-bottom: calc(var(--spacing-base, 1rem) * 1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">💾</div>
+			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.2); margin-bottom: calc(var(--spacing-base, 1rem) * 1); font-weight: 600; color: var(--fg, #333);">
+				¿Deseas guardar tu obra antes de terminar?
+			</p>
+			<p style="color: var(--text-secondary, #666); font-size: calc(var(--font-size-base, 1rem) * 1); line-height: 1.5;">
+				Tu dibujo se guardará en la galería y podrás verlo más tarde.
+			</p>
+		</div>
+
+		{#snippet acciones()}
+			<button
+				class="boton-modal boton-secundario"
+				onclick={noGuardarYTerminar}
+				type="button"
+			>
+				No guardar
+			</button>
+			<button
+				class="boton-modal boton-primario"
+				onclick={confirmarGuardarAntesDeTerminar}
+				type="button"
+			>
+				Guardar
 			</button>
 		{/snippet}
 	</Modal>

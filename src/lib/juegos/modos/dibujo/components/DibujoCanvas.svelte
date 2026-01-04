@@ -410,6 +410,64 @@
 	}
 
 	/**
+	 * Obtiene el elemento canvas de dibujo
+	 * @returns El elemento canvas o undefined si no está disponible
+	 */
+	export function obtenerCanvas(): HTMLCanvasElement | undefined {
+		return canvasDibujoRef;
+	}
+
+	/**
+	 * Obtiene una miniatura combinando el SVG de fondo con el dibujo del usuario
+	 * @param maxWidth - Ancho máximo de la miniatura (por defecto 400px)
+	 * @param maxHeight - Alto máximo de la miniatura (por defecto 400px)
+	 * @returns Data URL de la imagen combinada o null si hay error
+	 */
+	export function obtenerMiniatura(maxWidth: number = 1920, maxHeight: number = 1920): string | null {
+		if (!canvasDibujoRef) {
+			console.error('[DibujoCanvas] Canvas no disponible para miniatura');
+			return null;
+		}
+
+		try {
+			// Crear un canvas temporal para combinar las capas
+			const canvasTemp = document.createElement('canvas');
+			canvasTemp.width = canvasDibujoRef.width;
+			canvasTemp.height = canvasDibujoRef.height;
+			const ctxTemp = canvasTemp.getContext('2d')!;
+			
+			// Fondo blanco para la miniatura
+			ctxTemp.fillStyle = '#ffffff';
+			ctxTemp.fillRect(0, 0, canvasTemp.width, canvasTemp.height);
+			
+			// Primero dibujar el canvas de dibujo (trazos del usuario)
+			ctxTemp.drawImage(canvasDibujoRef, 0, 0);
+			
+			// Si hay una imagen de escena, dibujarla encima
+			if (imagenEscenaRef && escena) {
+				ctxTemp.drawImage(imagenEscenaRef, 0, 0, canvasTemp.width, canvasTemp.height);
+			}
+
+			// Crear canvas para la miniatura redimensionada
+			const scale = Math.min(maxWidth / canvasTemp.width, maxHeight / canvasTemp.height);
+			const miniaturaCanvas = document.createElement('canvas');
+			miniaturaCanvas.width = canvasTemp.width * scale;
+			miniaturaCanvas.height = canvasTemp.height * scale;
+			
+			const ctxMiniatura = miniaturaCanvas.getContext('2d');
+			if (ctxMiniatura) {
+				ctxMiniatura.drawImage(canvasTemp, 0, 0, miniaturaCanvas.width, miniaturaCanvas.height);
+				return miniaturaCanvas.toDataURL('image/png');
+			}
+			
+			return null;
+		} catch (error) {
+			console.error('[DibujoCanvas] Error generando miniatura:', error);
+			return null;
+		}
+	}
+
+	/**
 	 * Calcula el porcentaje del canvas que ha sido pintado/modificado
 	 * @returns Porcentaje entre 0 y 100
 	 */
