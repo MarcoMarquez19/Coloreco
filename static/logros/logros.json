@@ -1,0 +1,191 @@
+{
+  "historias": [
+    {
+      "codigo": "GRAN_LECTOR",
+      "nombre": "Gran Lector",
+      "descripcion": "Completa todos los capítulos de una historia",
+      "criterio": "Completar una historia completa",
+      "icono": "📚"
+    },
+    {
+      "codigo": "LECTOR_ALOCADO",
+      "nombre": "Lector Alocado",
+      "descripcion": "Completa dos historias diferentes",
+      "criterio": "Completar 2 historias completas",
+      "icono": "🤓"
+    },
+    {
+      "codigo": "MENTE_BRILLANTE",
+      "nombre": "Mente Brillante",
+      "descripcion": "Responde correctamente 3 preguntas seguidas",
+      "criterio": "Responder 3 preguntas correctas consecutivas",
+      "icono": "🧠"
+    },
+    {
+      "codigo": "MAESTRO_HISTORIAS",
+      "nombre": "Maestro de Historias",
+      "descripcion": "Completa todas las historias disponibles",
+      "criterio": "Completar todas las historias disponibles",
+      "icono": "👑"
+    }
+  ],
+  "dibujo": [
+    {
+      "codigo": "NATURALEZA_EN_ESCENA_CABAÑA",
+      "nombre": "Naturaleza Viva",
+      "descripcion": "Coloca 3 stickers del entorno natural que armonicen con la escena",
+      "criterio": "Agregar 3 stickers relacionados con el entorno natural",
+      "icono": "🌿",
+      "escenaId": "cabaña-bosque"
+    },
+    {
+      "codigo": "BOSQUE_FRONDOSO_CABAÑA",
+      "nombre": "Bosque Frondoso",
+      "descripcion": "Rodea la cabaña con árboles, flores y plantas",
+      "criterio": "Agregar 4 stickers de flora para decorar el bosque",
+      "icono": "🌳",
+      "escenaId": "cabaña-bosque"
+    },
+    {
+      "codigo": "NATURALEZA_EN_ESCENA_ARCOIRIS",
+      "nombre": "Fauna abundante",
+      "descripcion": "Coloca 5 stickers de fauna que armonicen con la escena",
+      "criterio": "Agregar 5 stickers relacionados con la fauna del entorno natural",
+      "icono": "🦋",
+      "escenaId": "arcoiris-cielo"
+    },
+    {
+      "codigo": "GUARDIAN_DEL_CIELO_ARCOIRIS",
+      "nombre": "Guardián del Cielo",
+      "descripcion": "Llena el cielo con elementos naturales como nubes y estrellas",
+      "criterio": "Agregar 3 stickers de geografía para decorar el cielo",
+      "icono": "☁️",
+      "escenaId": "arcoiris-cielo"
+    },
+    {
+      "codigo": "ARTIFICIALIDAD_EN_ESCENA_ESTANQUE",
+      "nombre": "Hechas por el hombre",
+      "descripcion": "Coloca 2 stickers del entorno artificial que armonicen con la escena",
+      "criterio": "Agregar 2 stickers relacionados con el entorno artificial",
+      "icono": "🏙️​",
+      "escenaId": "estanque-patos"
+    },
+    {
+      "codigo": "VIDA_ACUATICA_ESTANQUE",
+      "nombre": "Vida Acuática",
+      "descripcion": "Puebla el estanque con animales que viven en el agua",
+      "criterio": "Agregar 3 stickers de fauna acuática",
+      "icono": "🐟",
+      "escenaId": "estanque-patos"
+    },
+    {
+      "codigo": "ARTIFICIALIDAD_EN_ESCENA_CIUDAD",
+      "nombre": "Vida urbana",
+      "descripcion": "Coloca 4 stickers de edificaciones arquitectonicas que armonicen con la escena",
+      "criterio": "Agregar 4 stickers relacionados con stickers de subcategoria arquitectura",
+      "icono": "🏢",
+      "escenaId": "parque-ciudad"
+    },
+    {
+      "codigo": "TRAFICO_URBANO_CIUDAD",
+      "nombre": "Tráfico Urbano",
+      "descripcion": "Agrega vehículos que circulan por un parque",
+      "criterio": "Agregar 2 stickers de transporte urbano",
+      "icono": "🚲",
+      "escenaId": "parque-ciudad"
+    },
+    {
+      "codigo": "ARTIFICIALIDAD_EN_ESCENA_SENDERO",
+      "nombre": "Cotidianidad",
+      "descripcion": "Coloca 4 stickers de objetos cotidianos que armonicen con la escena",
+      "criterio": "Agregar 4 stickers relacionados con los objetos cotidianos",
+      "icono": "🧺",
+      "escenaId": "parque-sendero"
+    },
+    {
+      "codigo": "SENDERO_VERDE",
+      "nombre": "Sendero Verde",
+      "descripcion": "Decora el sendero con árboles y plantas que lo rodean",
+      "criterio": "Agregar 3 stickers de flora para embellecer el sendero",
+      "icono": "🌲",
+      "escenaId": "parque-sendero"
+    },
+    {
+      "codigo": "ARTISTA_CABAÑA",
+      "nombre": "Artista del Bosque",
+      "descripcion": "Pinta y decora más de la mitad de la escena con tu creatividad y guarda la obra",
+      "criterio": "Pintar más del 50% del canvas",
+      "icono": "🪵",
+      "escenaId": "cabaña-bosque"
+    },
+    {
+      "codigo": "ARTISTA_ARCOIRIS",
+      "nombre": "Pintor del Cielo",
+      "descripcion": "Llena más de la mitad del cielo con tus trazos y colores y guarda la obra",
+      "criterio": "Pintar más del 50% del canvas",
+      "icono": "🌈",
+      "escenaId": "arcoiris-cielo"
+    },
+    {
+      "codigo": "ARTISTA_ESTANQUE",
+      "nombre": "Creador del Estanque",
+      "descripcion": "Dale vida al estanque pintando más de la mitad de la escena y guarda la obra",
+      "criterio": "Pintar más del 50% del canvas",
+      "icono": "🦆",
+      "escenaId": "estanque-patos"
+    },
+    {
+      "codigo": "ARTISTA_CIUDAD",
+      "nombre": "Ilustrador Urbano",
+      "descripcion": "Colorea más de la mitad del parque con tu imaginación y guarda la obra",
+      "criterio": "Pintar más del 50% del canvas",
+      "icono": "🛝",
+      "escenaId": "parque-ciudad"
+    },
+    {
+      "codigo": "ARTISTA_SENDERO",
+      "nombre": "Maestro del Sendero",
+      "descripcion": "Embellece más de la mitad del sendero con tus pinceladas y guarda la obra",
+      "criterio": "Pintar más del 50% del canvas",
+      "icono": "😌",
+      "escenaId": "parque-sendero"
+    }
+  ],
+  "cuerpoHumano": [
+    {
+      "codigo": "PRIMERA_PARTE",
+      "nombre": "Primera Parte",
+      "descripcion": "Coloca tu primera parte del cuerpo correctamente",
+      "criterio": "Colocar una parte en su lugar correcto",
+      "icono": "🧩"
+    },
+    {
+      "codigo": "ANATOMISTA_NOVATO",
+      "nombre": "Anatomista Novato",
+      "descripcion": "Completa tu primera plantilla del cuerpo humano",
+      "criterio": "Completar todas las partes de una escena",
+      "icono": "👤"
+    },
+    {
+      "codigo": "PRECISION_PERFECTA",
+      "nombre": "Precisión Perfecta",
+      "descripcion": "Completa una escena sin errores",
+      "criterio": "Completar una escena sin colocar partes incorrectas",
+      "icono": "🎯"
+    },
+    {
+      "codigo": "MAESTRO_ANATOMIA",
+      "nombre": "Maestro de Anatomía",
+      "descripcion": "Completa 3 escenas diferentes del cuerpo humano",
+      "criterio": "Completar 3 plantillas diferentes",
+      "icono": "🏆"
+    },
+    {
+      "codigo": "EXPERTO_ORGANOS",
+      "nombre": "Experto en Órganos",
+      "descripcion": "Coloca correctamente 20 partes del cuerpo",
+      "criterio": "Acumular 20 partes colocadas correctamente",
+      "icono": "🫀"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "capituloId": "cantuna-cap5",
+  "historiaId": "cantuna",
+  "titulo": "Cantuña y el Diablo - Capítulo 5",
+  "imagenPrincipal": "/historias/cantuna/cantuna-cap5.jpg",
+  "texto": "¿Quieres saber un secreto? ¡Hoy todavía falta esa piedra en la iglesia! Puedes ir a buscarla. Es como un tesoro escondido que nos recuerda: ¡Ser inteligente es súper poderoso! La gente visita San Francisco y pregunta: '¿Dónde está la piedra de Cantuña?' ¡Es una aventura!",
+  "pregunta": {
+    "texto": "¿Por qué crees que esta leyenda sigue siendo importante?",
+    "opciones": [
+      {
+        "id": "opcion1",
+        "texto": "Enseña valores de astucia y fe",
+        "esCorrecta": true,
+        "feedback": "¡Exacto! Es un legado cultural importante."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Solo es un cuento para asustar",
+        "esCorrecta": false,
+        "feedback": "Tiene un significado más profundo."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Porque habla del diablo",
+        "esCorrecta": false,
+        "feedback": "El mensaje va más allá de eso."
+      }
+    ]
+  },
+  "personajes": []
+}

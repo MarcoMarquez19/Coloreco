@@ -159,11 +159,18 @@
 							role="region"
 						>
 							<h4 class="legend-title" id="legend-title">Patrones de Identificación</h4>
-							<div class="texture-legend" aria-labelledby="legend-title">
-								<div class="legend-item"><div class="swatch pattern-red bg-red" aria-hidden="true"></div><span>Rojo</span></div>
-								<div class="legend-item"><div class="swatch pattern-green bg-green" aria-hidden="true"></div><span>Verde</span></div>
-								<div class="legend-item"><div class="swatch pattern-blue bg-blue" aria-hidden="true"></div><span>Azul</span></div>
-								<div class="legend-item"><div class="swatch pattern-yellow bg-yellow" aria-hidden="true"></div><span>Amarillo</span></div>
+						<p class="legend-description">Cada color tiene un patrón único para facilitar su identificación</p>
+						<div class="texture-legend" aria-labelledby="legend-title">
+							<div class="legend-item"><div class="swatch pattern-black bg-black" aria-hidden="true"></div><span>Negro</span></div>
+							<div class="legend-item"><div class="swatch pattern-red bg-red" aria-hidden="true"></div><span>Rojo</span></div>
+							<div class="legend-item"><div class="swatch pattern-green bg-green" aria-hidden="true"></div><span>Verde</span></div>
+							<div class="legend-item"><div class="swatch pattern-blue bg-blue" aria-hidden="true"></div><span>Azul</span></div>
+							<div class="legend-item"><div class="swatch pattern-yellow bg-yellow" aria-hidden="true"></div><span>Amarillo</span></div>
+							<div class="legend-item"><div class="swatch pattern-magenta bg-magenta" aria-hidden="true"></div><span>Magenta</span></div>
+							<div class="legend-item"><div class="swatch pattern-cyan bg-cyan" aria-hidden="true"></div><span>Cian</span></div>
+							<div class="legend-item"><div class="swatch pattern-orange bg-orange" aria-hidden="true"></div><span>Naranja</span></div>
+							<div class="legend-item"><div class="swatch pattern-purple bg-purple" aria-hidden="true"></div><span>Púrpura</span></div>
+							<div class="legend-item"><div class="swatch pattern-pink bg-pink" aria-hidden="true"></div><span>Rosa</span></div>
 							</div>
 						</div>
 					{/if}
@@ -415,17 +422,11 @@
 							speedDisplay = parseFloat(val).toFixed(2);
 							configuraciones.setTTSSpeed(parseFloat(val));
 							
-							// Leer la velocidad actual
-							if (typeof window !== 'undefined' && window.speechSynthesis) {
-								window.speechSynthesis.cancel();
-								const utterance = new SpeechSynthesisUtterance(`Velocidad ${speedDisplay}`);
-								utterance.lang = 'es-ES';
-								utterance.rate = parseFloat(val);
-								window.speechSynthesis.speak(utterance);
-							}
-							
-							if (typeof window !== 'undefined') {
-								import('$lib/audio/tts.service').then(({ ttsService }) => {
+						// Leer la velocidad actual usando ttsService (mantiene la voz seleccionada)
+						if (typeof window !== 'undefined') {
+							import('$lib/audio/tts.service').then(({ ttsService }) => {
+								ttsService.stop();
+								ttsService.speak(`Velocidad ${speedDisplay}`, { lang: 'es-ES', rate: parseFloat(val) });
 									ttsService.changeSpeed(parseFloat(val));
 								});
 							}
@@ -475,7 +476,7 @@
 						{#if $audioStore.musicEnabled}
 							<div class="control-volumen">
 								<label for="slider-music-volume" class="control-label">
-									Volumen de Música
+									<span>Volumen de Música</span>
 									<span class="control-valor">{($audioStore.musicVolume * 100).toFixed(0)}%</span>
 								</label>
 								<input
@@ -523,7 +524,7 @@
 						{#if $audioStore.soundEnabled}
 							<div class="control-volumen">
 								<label for="slider-sound-volume" class="control-label">
-									Volumen de Efectos
+									<span>Volumen de Efectos</span>
 									<span class="control-valor">{($audioStore.soundVolume * 100).toFixed(0)}%</span>
 								</label>
 								<input
@@ -877,10 +878,24 @@
 	
 	/* Leyenda de Texturas */
 	.texture-legend-container { margin-top: 1rem; padding: 1rem; background: #f9f9f9; border-radius: 8px; border: 1px solid #eee; }
-	.legend-title { margin: 0 0 0.75rem 0; font-size: 0.95rem; color: #444; }
-	.texture-legend { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-	.legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #555; }
-	.swatch { width: 24px; height: 24px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); }
+	.legend-title { margin: 0 0 0.5rem 0; font-size: 1rem; font-weight: 600; color: #333; }
+	.legend-description { margin: 0 0 0.75rem 0; font-size: 0.85rem; color: #666; }
+	.texture-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem; }
+	.legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: #333; font-weight: 500; }
+	.swatch { width: 32px; height: 32px; border-radius: 4px; border: 2px solid rgba(0,0,0,0.2); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+	
+	/* Colores de fondo para las muestras */
+	.bg-black { background: #000000; }
+	.bg-red { background: #FF0000; }
+	.bg-green { background: #00FF00; }
+	.bg-blue { background: #0000FF; }
+	.bg-yellow { background: #FFFF00; }
+	.bg-magenta { background: #FF00FF; }
+	.bg-cyan { background: #00FFFF; }
+	.bg-orange { background: #FFA500; }
+	.bg-purple { background: #800080; }
+	.bg-pink { background: #FFC0CB; }
+
 	
 	/* Referencia a las clases globales de texturas */
 	.bg-red { background-color: #ff4d4f; }

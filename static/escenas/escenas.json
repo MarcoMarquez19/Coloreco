@@ -1,44 +1,63 @@
 [
 	{
-		"modo": "dibujo",
-		"escenaId": "bosque-magico",
-		"nombre": "Bosque Mágico",
-		"ruta": "/escenas/bosque-magico.svg",
-		"version": 1
+		"modo": "editar",
+		"escenaId": "Edicion-obra",
+		"nombre": "Pantalla de edición",
+		"ruta": "/escenas/Edicion-obra.svg",
+		"version": 1,
+		"descripcion": "Una escena que representa una pantalla de edición de imágenes.",
+		"rutaAccesibilidad": "/escenas/accesibilidad/Edicion-obra-accesible.svg"
 	},
 	{
 		"modo": "dibujo",
-		"escenaId": "ciudad-futurista",
-		"nombre": "Ciudad Futurista",
-		"ruta": "/escenas/ciudad-futurista.svg",
-		"version": 1
+		"escenaId": "cabaña-bosque",
+		"nombre": "Cabaña en el bosque",
+		"ruta": "/escenas/cabaña-bosque.svg",
+		"version": 1,
+		"descripcion": "Una acogedora cabaña rodeada de árboles y naturaleza, perfecta para una escapada tranquila. Alrededor hay muchos árboles altos cubiertos de nieve blanca. De la chimenea sale humito, lo que significa que adentro está calientito.",
+		"rutaAccesibilidad": "/escenas/accesibilidad/cabaña-bosque-accesible.svg"
 	},
 	{
 		"modo": "dibujo",
-		"escenaId": "fondo-marino",
-		"nombre": "Fondo Marino",
-		"ruta": "/escenas/fondo-marino.svg",
-		"version": 1
+		"escenaId": "parque-sendero",
+		"nombre": "Sendero del parque",
+		"ruta": "/escenas/parque-sendero.svg",
+		"version": 1,
+		"descripcion":"Una tranquila banca en un sendero de un parque, rodeada de árboles y naturaleza, con faroles que iluminan el camino como si cuidaran el lugar. Es un espacio calmado donde se puede descansar.",
+		"rutaAccesibilidad": "/escenas/accesibilidad/parque-sendero-accesible.svg"
 	},
 	{
 		"modo": "dibujo",
-		"escenaId": "espacio-estelar",
-		"nombre": "Espacio Estelar",
-		"ruta": "/escenas/espacio-estelar.svg",
-		"version": 1
+		"escenaId": "parque-ciudad",
+		"nombre": "Parque en la ciudad",
+		"ruta": "/escenas/parque-ciudad.svg",
+		"version": 1,
+		"descripcion": "Un alegre parque para niños, los columpios suben tan alto que casi tocan las nubes, en la caja de arena cualquiera se divierte y la resbaladera es para los más valientes.",
+		"rutaAccesibilidad": "/escenas/accesibilidad/parque-ciudad-accesible.svg"
 	},
 	{
 		"modo": "dibujo",
-		"escenaId": "jardin-flores",
-		"nombre": "Jardín de Flores",
-		"ruta": "/escenas/jardin-flores.svg",
-		"version": 1
+		"escenaId": "estanque-patos",
+		"nombre": "Estanque con patos",
+		"ruta": "/escenas/estanque-patos.svg",
+		"version": 1,
+		"descripcion":"Un tranquilo estanque lleno de agua brillante donde una familia de patos nada muy feliz. Aunque solo se ven ellos, se siente que hay muchos animalitos más viviendo allí, ocultos bajo el agua y entre las plantas.",
+		"rutaAccesibilidad": "/escenas/accesibilidad/estanque-patos-accesible.svg"
+	},
+	{
+		"modo": "dibujo",
+		"escenaId": "arcoiris-cielo",
+		"nombre": "Cielo con arcoíris",
+		"ruta": "/escenas/arcoiris-cielo.svg",
+		"version": 1,
+		"descripcion":"Un cielo amplio y brillante donde el sol ilumina todo con calidez. Algunas nubes suaves flotan tranquilas y, de repente, aparece un hermoso arcoíris lleno de colores que parece sonreírle al mundo.",
+		"rutaAccesibilidad": "/escenas/accesibilidad/arcoiris-cielo-accesible.svg"
 	},
 	{
 		"modo": "cuerpoHumano",
-		"escenaId": "cuerpo-completo",
+		"escenaId": "cuerpo-humano",
 		"nombre": "Cuerpo Humano Completo",
-		"ruta": "/escenas/cuerpo-completo.svg",
+		"ruta": "/escenas/cuerpo-humano.svg",
 		"version": 1
 	},
 	{
@@ -57,16 +76,44 @@
 	},
 	{
 		"modo": "cuerpoHumano",
-		"escenaId": "sistema-oseo",
-		"nombre": "Sistema Óseo",
-		"ruta": "/escenas/sistema-oseo.svg",
+		"escenaId": "sistema-oseo-superior",
+		"nombre": "Sistema Óseo Superior",
+		"ruta": "/escenas/oseo-superior.svg",
 		"version": 1
 	},
 	{
 		"modo": "cuerpoHumano",
-		"escenaId": "organos-internos",
-		"nombre": "Órganos Internos",
-		"ruta": "/escenas/organos-internos.svg",
+		"escenaId": "sistema-oseo-inferior",
+		"nombre": "Sistema Óseo Inferior",
+		"ruta": "/escenas/oseo-inferior.svg",
+		"version": 1
+	},
+	{
+		"modo": "cuerpoHumano",
+		"escenaId": "cabeza",
+		"nombre": "Cabeza Humana",
+		"ruta": "/escenas/cabeza.svg",
+		"version": 1
+	},
+	{
+		"modo": "cuerpoHumano",
+		"escenaId": "cinco-sentidos",
+		"nombre": "Cinco Sentidos",
+		"ruta": "/escenas/cinco-sentidos.svg",
+		"version": 1
+	},
+	{
+		"modo": "cuerpoHumano",
+		"escenaId": "mano",
+		"nombre": "Mano",
+		"ruta": "/escenas/mano.svg",
+		"version": 1
+	},
+	{
+		"modo": "cuerpoHumano",
+		"escenaId": "sistema-respiratorio",
+		"nombre": "Sistema Respiratorio",
+		"ruta": "/escenas/sistema-respiratorio.svg",
 		"version": 1
 	}
 ]

@@ -1,0 +1,31 @@
+{
+  "capituloId": "padre-almeida-cap4",
+  "historiaId": "padre-almeida",
+  "titulo": "El Padre Almeida - Capítulo 4",
+  "imagenPrincipal": "/historias/padre-almeida/padre-almeida-cap4.jpg",
+  "texto": "¡El Cristo bajó de la cruz! ¡Un milagro! Ocupó el lugar del Padre en el convento toda la noche. Cuando Almeida regresó en la mañana y lo vio, ¡no lo podía creer! Cayó de rodillas llorando: '¡Perdón, perdón!' Desde ese día cambió completamente. Nunca más escapó. Se volvió el mejor ayudante de todos.",
+  "pregunta": {
+    "texto": "¿Qué aprendió el Padre Almeida de esta experiencia?",
+    "opciones": [
+      {
+        "id": "opcion1",
+        "texto": "El valor del arrepentimiento y la fe",
+        "esCorrecta": true,
+        "feedback": "¡Correcto! Comprendió el amor y el perdón divino."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Que nunca debió ser fraile",
+        "esCorrecta": false,
+        "feedback": "Al contrario, encontró su verdadera vocación."
+      },
+      {
+        "id": "opcion3",
+        "texto": "A tener más cuidado al salir",
+        "esCorrecta": false,
+        "feedback": "No, aprendió algo mucho más profundo."
+      }
+    ]
+  },
+  "personajes": []
+}

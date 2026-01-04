@@ -1,0 +1,31 @@
+{
+  "capituloId": "cantuna-cap4",
+  "historiaId": "cantuna",
+  "titulo": "Cantuña y el Diablo - Capítulo 4",
+  "imagenPrincipal": "/historias/cantuna/cantuna-cap4.jpg",
+  "texto": "¡El diablo estaba furioso! 'Me ganaste con tu inteligencia', gruñó enojado. ¡Y desapareció en una nube de humo! Cantuña saltaba feliz. ¡Se salvó usando su cerebro! Toda la gente de Quito salió a ver. '¡Wooow! ¡Se construyó en una noche!' ¡Qué maravilla!",
+  "pregunta": {
+    "texto": "¿Qué demostró Cantuña con su plan?",
+    "opciones": [
+      {
+        "id": "opcion1",
+        "texto": "Que la inteligencia vence al mal",
+        "esCorrecta": true,
+        "feedback": "¡Correcto! La astucia puede salvarte del peligro."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Que se puede engañar sin consecuencias",
+        "esCorrecta": false,
+        "feedback": "No, usó su ingenio para el bien."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Que el diablo no es inteligente",
+        "esCorrecta": false,
+        "feedback": "La lección es más profunda."
+      }
+    ]
+  },
+  "personajes": []
+}

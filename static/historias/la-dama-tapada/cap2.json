@@ -1,0 +1,31 @@
+{
+  "capituloId": "dama-tapada-cap2",
+  "historiaId": "la-dama-tapada",
+  "titulo": "La Dama Tapada - Capítulo 2",
+  "imagenPrincipal": "/historias/la-dama-tapada/dama-tapada-cap2.jpg",
+  "texto": "Un joven valiente dijo: '¡Yo descubriré el misterio!' La siguió por calles oscuras. ¡Más oscuras! ¡Aún más oscuras! Su corazón latía: ¡pum, pum, pum! Respiró profundo y gritó: '¡Señora, muéstreme su cara!' La dama se detuvo. Todo quedó en silencio. ¡Qué miedo! Ella se volteó muy despacio...",
+  "pregunta": {
+    "texto": "¿Qué crees que hizo la Dama Tapada cuando el caballero le habló?",
+    "opciones": [
+      {
+        "id": "opcion1",
+        "texto": "Se volteó y se descubrió el rostro",
+        "esCorrecta": true,
+        "feedback": "¡Sí! Y lo que vio lo aterró para siempre."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Salió corriendo asustada",
+        "esCorrecta": false,
+        "feedback": "No, ella no era quien debía temer."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Siguió caminando sin responder",
+        "esCorrecta": false,
+        "feedback": "No, esta vez sí respondió a su petición."
+      }
+    ]
+  },
+  "personajes": []
+}

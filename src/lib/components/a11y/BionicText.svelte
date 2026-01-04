@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { applyBionic, applyBionicBySyllable } from '$lib/logic/bionic';
+	import { applyBionic, applyBionicBySyllable } from '$lib/juegos/modos/historias/bionic';
 
 	export let text: string = '';
 	export let mode: 'character' | 'syllable' = 'character';
@@ -29,7 +29,7 @@
 
 	.bionic-text :global(.bionic-word) {
 		font-weight: 700;
-		color: var(--bionic-highlight-color, #0b6efd);
+		color: var(--bionic-highlight-color, #003366);
 	}
 
 	.bionic-text :global(.bionic-rest) {

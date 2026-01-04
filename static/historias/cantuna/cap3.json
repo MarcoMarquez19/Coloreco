@@ -1,0 +1,31 @@
+{
+  "capituloId": "cantuna-cap3",
+  "historiaId": "cantuna",
+  "titulo": "Cantuña y el Diablo - Capítulo 3",
+  "imagenPrincipal": "/historias/cantuna/cantuna-cap3.jpg",
+  "texto": "¡Momento perfecto! Cuando todos dormían, Cantuña escondió una piedra. ¡Quiquiriquí! Cantó el gallo. ¡Salió el sol! El diablo llegó corriendo: '¡Dame lo prometido!' Pero entonces... ¡SORPRESA! El diablo contó: 'Una, dos, tres... ¡¡Falta una piedra!!' El trato decía: 'Todo debe estar terminado'.",
+  "pregunta": {
+    "texto": "¿Qué pasó cuando el diablo descubrió que faltaba una piedra?",
+    "opciones": [
+      {
+        "id": "opcion1",
+        "texto": "Se fue furioso sin llevarse el alma",
+        "esCorrecta": true,
+        "feedback": "¡Sí! El pacto se rompió y Cantuña se salvó."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Colocó rápidamente la piedra",
+        "esCorrecta": false,
+        "feedback": "Ya era de día, su tiempo había acabado."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Se llevó el alma de todas formas",
+        "esCorrecta": false,
+        "feedback": "No, el pacto era muy específico."
+      }
+    ]
+  },
+  "personajes": []
+}

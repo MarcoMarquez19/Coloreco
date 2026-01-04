@@ -1,0 +1,31 @@
+{
+  "capituloId": "dama-tapada-cap3",
+  "historiaId": "la-dama-tapada",
+  "titulo": "La Dama Tapada - Capítulo 3",
+  "imagenPrincipal": "/historias/la-dama-tapada/dama-tapada-cap3.jpg",
+  "texto": "¡La dama se quitó el velo! ¡AAAHHH! ¡No tenía cara bonita! ¡Era una calavera! Sus ojos eran huecos vacíos. Su boca, una sonrisa terrorífica. '¡AHHHH!' El joven corrió más rápido que nunca. Desde ese día, nadie volvió a seguir a la Dama Tapada. ¡Todos aprendieron la lección!",
+  "pregunta": {
+    "texto": "¿Qué lección nos enseña la leyenda de la Dama Tapada?",
+    "opciones": [
+      {
+        "id": "opcion1",
+        "texto": "No juzgar por las apariencias",
+        "esCorrecta": true,
+        "feedback": "¡Exacto! Las apariencias pueden engañar."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Nunca salir de noche",
+        "esCorrecta": false,
+        "feedback": "Es más profundo que eso."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Tener miedo a las mujeres",
+        "esCorrecta": false,
+        "feedback": "No, el mensaje es diferente."
+      }
+    ]
+  },
+  "personajes": []
+}

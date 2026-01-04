@@ -22,7 +22,7 @@
 
     function manejarLogros() {
         console.log('Abriendo logros');
-        // TODO: Implementar visualización de logros
+        goto('/logros');
     }
 
     function manejarAjustes() {

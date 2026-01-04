@@ -1,0 +1,31 @@
+{
+  "capituloId": "cantuna-cap1",
+  "historiaId": "cantuna",
+  "titulo": "Cantuña y el Diablo - Capítulo 1",
+  "imagenPrincipal": "/historias/cantuna/cantuna-cap1.jpg",
+  "texto": "¡Conoce a Cantuña, el constructor más listo de Quito! Le dijeron: 'Tienes seis meses para terminar la iglesia'. ¡Pero era imposible! Trabajaba día y noche con su equipo. ¡Faltaban muchas piedras! Si no terminaba, ¡algo terrible pasaría! Una noche muy oscura, tuvo una idea loca.",
+  "pregunta": {
+    "texto": "¿Qué crees que hizo Cantuña con su idea loca?",
+    "opciones": [
+      {
+        "id": "opcion1",
+        "texto": "Hizo un pacto con el diablo",
+        "esCorrecta": true,
+        "feedback": "¡Correcto! Hizo un trato muy arriesgado para salvar su vida."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Contrató a más trabajadores",
+        "esCorrecta": false,
+        "feedback": "No tenía recursos para eso."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Abandonó el proyecto",
+        "esCorrecta": false,
+        "feedback": "No, él era más valiente que eso."
+      }
+    ]
+  },
+  "personajes": []
+}
