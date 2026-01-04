@@ -476,7 +476,7 @@
 						{#if $audioStore.musicEnabled}
 							<div class="control-volumen">
 								<label for="slider-music-volume" class="control-label">
-									Volumen de Música
+									<span>Volumen de Música</span>
 									<span class="control-valor">{($audioStore.musicVolume * 100).toFixed(0)}%</span>
 								</label>
 								<input
@@ -524,7 +524,7 @@
 						{#if $audioStore.soundEnabled}
 							<div class="control-volumen">
 								<label for="slider-sound-volume" class="control-label">
-									Volumen de Efectos
+									<span>Volumen de Efectos</span>
 									<span class="control-valor">{($audioStore.soundVolume * 100).toFixed(0)}%</span>
 								</label>
 								<input

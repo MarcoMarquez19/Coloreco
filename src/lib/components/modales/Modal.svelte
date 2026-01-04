@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { configuraciones } from '$lib/stores/settings';
 
 	/**
 	 * Props del Modal
@@ -85,25 +86,105 @@
 
 	// Efecto para manejar el estado del modal
 	$effect(() => {
+		let blockedElements: Array<{element: HTMLElement, originalTabIndex: string | null}> = [];
+		
 		if (abierto) {
 			// Prevenir scroll del body cuando el modal está abierto
 			document.body.style.overflow = 'hidden';
 			
-			// Enfocar el primer elemento interactivo
+			// Bloquear todos los elementos tabulables excepto el modal y controles permitidos
+			const allowedIds = ['narration-controls-container', 'floating-back-button', 'floating-settings-button', 'floating-instructions-button'];
+			const tabbableElements = document.querySelectorAll<HTMLElement>(
+				'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+			);
+			
+			tabbableElements.forEach((element) => {
+				// No bloquear si el elemento está dentro del modal
+				if (contenedorModalRef?.contains(element)) {
+					return;
+				}
+				
+				// No bloquear si el elemento está en un contenedor permitido
+				const isInAllowedContainer = allowedIds.some(id => {
+					const container = document.getElementById(id);
+					return container?.contains(element);
+				});
+				
+				if (!isInAllowedContainer) {
+					const originalTabIndex = element.getAttribute('tabindex');
+					blockedElements.push({ element, originalTabIndex });
+					element.setAttribute('tabindex', '-1');
+					element.setAttribute('data-modal-blocked', 'true');
+				}
+			});
+			
+			// Marcar contenido de fondo para lectores de pantalla
+			const mainContent = document.querySelector('main');
+			if (mainContent) {
+				mainContent.setAttribute('aria-hidden', 'true');
+			}
+			
+			// Disparar evento personalizado para que el layout procese el modal
 			setTimeout(() => {
-				const primerElemento = contenedorModalRef?.querySelector(
-					'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-				) as HTMLElement;
-				primerElemento?.focus();
-			}, 100);
+				const event = new CustomEvent('modal-mounted');
+				window.dispatchEvent(event);
+				
+				// Enfocar el primer elemento interactivo
+				setTimeout(() => {
+					const primerElemento = contenedorModalRef?.querySelector(
+						'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+					) as HTMLElement;
+					primerElemento?.focus();
+				}, 100);
+				
+				// Si la narración está activada, iniciar lectura automática del modal
+				if ($configuraciones.narrationEnabled) {
+					setTimeout(() => {
+						const readModalEvent = new CustomEvent('read-modal');
+						window.dispatchEvent(readModalEvent);
+					}, 200);
+				}
+			}, 50);
 		} else {
 			// Restaurar scroll del body
 			document.body.style.overflow = '';
+			
+			// Restaurar tabindex de elementos bloqueados
+			blockedElements.forEach(({ element, originalTabIndex }) => {
+				if (originalTabIndex !== null) {
+					element.setAttribute('tabindex', originalTabIndex);
+				} else {
+					element.removeAttribute('tabindex');
+				}
+				element.removeAttribute('data-modal-blocked');
+			});
+			blockedElements = [];
+			
+			// Restaurar aria-hidden
+			const mainContent = document.querySelector('main');
+			if (mainContent) {
+				mainContent.removeAttribute('aria-hidden');
+			}
 		}
 
 		// Cleanup
 		return () => {
 			document.body.style.overflow = '';
+			
+			// Restaurar tabindex de elementos bloqueados
+			blockedElements.forEach(({ element, originalTabIndex }) => {
+				if (originalTabIndex !== null) {
+					element.setAttribute('tabindex', originalTabIndex);
+				} else {
+					element.removeAttribute('tabindex');
+				}
+				element.removeAttribute('data-modal-blocked');
+			});
+			
+			const mainContent = document.querySelector('main');
+			if (mainContent) {
+				mainContent.removeAttribute('aria-hidden');
+			}
 		};
 	});
 </script>

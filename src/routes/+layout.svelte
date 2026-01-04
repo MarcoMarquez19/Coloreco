@@ -5,6 +5,7 @@
 	import { interpolateMatrix } from '$lib/constants/colorMatrices';
 	import EfectoLupa from '$lib/components/a11y/EfectoLupa.svelte';
 	import NarrationControl from '$lib/components/a11y/NarrationControl.svelte';
+	import { findPictogramSync, preloadPictograms } from '$lib/juegos/modos/historias/pictograms';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
@@ -12,8 +13,10 @@
 	import { obtenerSesionActual } from '$lib/db/artistas.service';
 	import { inicializarCatalogoLogros } from '$lib/db/logros.service';
 	import '../lib/styles/themes.css';
+	import DyslexiaModes from '$lib/styles/DyslexiaModes.svelte';
 	import IconoVolver from '$lib/components/iconos/IconoVolver.svelte';
 	import IconoAccesibilidad from '$lib/components/iconos/Accesibilidad.svelte';
+	import IconoInstrucciones from '$lib/components/iconos/IconoInstrucciones.svelte';
 	import FondoManchas from '$lib/components/fondos/FondoManchas.svelte';
 	import FondoLogrosGeneral from '$lib/components/fondos/FondoLogrosGeneral.svelte';
 	import FondoCuerpoHumano from '$lib/components/fondos/FondoCuerpoHumano.svelte';
@@ -23,6 +26,10 @@
 
 	// Props para recibir el contenido de las páginas hijas
 	let { children } = $props();
+
+	// Control de procesamiento de accesibilidad
+	let isProcessing = false;
+	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 	// 1. Matriz de color reactiva
 	let matrixValues = $derived(interpolateMatrix($configuraciones.colorBlindness, $configuraciones.intensity));
@@ -50,6 +57,12 @@
 	let estaEnConfiguracion = $derived($page.url.pathname === '/ajustes');
 	let estaEnInicio = $derived($page.url.pathname === '/');
 	let estaEnEstudio = $derived($page.url.pathname.startsWith('/estudio'));
+	
+	// Detectar si necesita botón de instrucciones (solo en seleccionar-historia y progreso)
+	let necesitaBotonInstrucciones = $derived(
+		$page.url.pathname === '/juegos/historias/seleccionar-historia' ||
+		$page.url.pathname.includes('/progreso')
+	);
 
 	//DETECTAR SI SE NECESITA EL FONDO DE MANCHAS
 	let necesitaFondoManchas = $derived($page.url.pathname === '/' 
@@ -82,6 +95,10 @@
 			goto('/');
 		}
 	}
+	function abrirInstrucciones() {
+		// Disparar evento personalizado para que la página lo maneje
+		window.dispatchEvent(new CustomEvent('abrir-instrucciones'));
+	}
 	function manejarTecla(event: KeyboardEvent) {
 		// No capturar ESC si hay un modal abierto
 		if (event.key === 'Escape') {
@@ -94,6 +111,10 @@
 		if ((event.key === 'a' || event.key === 'A') && event.ctrlKey) {
 			event.preventDefault();
 			abrirConfiguracion();
+		}
+		if ((event.key === 'i' || event.key === 'I') && event.ctrlKey && necesitaBotonInstrucciones) {
+			event.preventDefault();
+			abrirInstrucciones();
 		}
 	}
 
@@ -130,6 +151,9 @@
 	onMount(async () => {
 		if (!browser) return;
 		try {
+			// Precargar diccionario de pictogramas
+			await preloadPictograms();
+			
 			// Inicializar catálogo de logros al cargar la aplicación
 			await inicializarCatalogoLogros();
 			
@@ -153,7 +177,7 @@
 		
 		const handleModalMounted = () => {
 			setTimeout(() => {
-				if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+				if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
 					applyAccessibilityModes();
 				}
 			}, 100);
@@ -163,7 +187,7 @@
 			const detail = (e as CustomEvent)?.detail || {};
 			// Pequeña espera para que Svelte remonte el DOM
 			setTimeout(() => {
-				if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+				if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
 					applyAccessibilityModes();
 				}
 			}, 80);
@@ -171,7 +195,7 @@
 			// Programar una segunda reaplicación tras la animación si se especifica, o usar un fallback
 			const animationDuration = typeof detail.animationDuration === 'number' ? detail.animationDuration : 500;
 			setTimeout(() => {
-				if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+				if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
 					applyAccessibilityModes();
 				}
 			}, animationDuration + 60);
@@ -224,6 +248,10 @@
 
 	// Mapa para observers que limpian data-original-html si el DOM cambia
 	const originalObservers = new WeakMap<Element, MutationObserver>();
+
+	// Cache de patrones de rimas para mantener colores consistentes
+	let cachedRhymePatterns: any[] = [];
+	let cachedMainContent = '';
 
 /**
  * Calcula cuántos caracteres resaltar según la longitud de la palabra
@@ -284,26 +312,79 @@ function getBionicColorForBackground(element: Element): string {
 	// Si luminancia > 0.5 (fondo claro), usar azul oscuro; sino azul claro
 	return luminance > 0.5 ? '#003366' : '#90CAF9';
 }
+
+// Funciones auxiliares para procesamiento de colores en rimas
+function hexToRgbSimple(hex: string): [number, number, number] | null {
+	const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	return result ? [
+		parseInt(result[1], 16),
+		parseInt(result[2], 16),
+		parseInt(result[3], 16)
+	] : null;
+}
+
+function darkenColorSimple(hex: string, amount: number): string {
+	const rgb = hexToRgbSimple(hex);
+	if (!rgb) return hex;
+	
+	const [r, g, b] = rgb.map(v => Math.max(0, Math.floor(v * (1 - amount))));
+	return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
 	$effect(() => {
 		// Escuchar cambios en la ruta
 		const currentPath = $page.url.pathname;
 		
 		// Reaplicar modos después de que el DOM se actualice
 		setTimeout(() => {
-			if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+			if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
 				applyAccessibilityModes();
 			}
 		}, 200);
 	});
 
+	// Escuchar cambios en los modos de accesibilidad con debounce
+	$effect(() => {
+		// Observar cambios en bionicMode, rhymeMode y pictogramMode
+		const bionicActive = $configuraciones.bionicMode;
+		const rhymeActive = $configuraciones.rhymeMode;
+		const pictogramActive = $configuraciones.pictogramMode;
+		
+		// Limpiar timeout anterior si existe
+		if (debounceTimer) {
+			clearTimeout(debounceTimer);
+		}
+		
+		// Aplicar con debounce de 150ms para evitar múltiples llamadas rápidas
+		debounceTimer = setTimeout(() => {
+			if (bionicActive || rhymeActive || pictogramActive) {
+				applyAccessibilityModes();
+			} else {
+				// Si todos están desactivados, restaurar el texto original
+				restoreOriginalText();
+			}
+		}, 150);
+	});
+
 	// Función para aplicar todos los modos activos de forma combinada
 	async function applyAccessibilityModes() {
-		// Procesar tanto el main como los modales montados (los modales se mueven al <body>)
-		const modalRoots = Array.from(document.querySelectorAll('.modal')) as Element[];
-		if (!mainEl && modalRoots.length === 0) return;
+		// Evitar procesamiento concurrente
+		if (isProcessing) {
+			return;
+		}
+		
+		isProcessing = true;
+		
+		try {
+			// Procesar tanto el main como los modales montados (los modales se mueven al <body>)
+			const modalRoots = Array.from(document.querySelectorAll('.modal')) as Element[];
+			if (!mainEl && modalRoots.length === 0) {
+				isProcessing = false;
+				return;
+			}
 
-		// Restaurar primero en todo el documento
-		restoreOriginalText();
+			// Restaurar primero en todo el documento
+			restoreOriginalText();
 
 		// Preparar raíces a procesar (main primero, luego modales)
 		const roots: Element[] = [];
@@ -322,15 +403,93 @@ function getBionicColorForBackground(element: Element): string {
 		}
 
 		// Selector de elementos a procesar dentro de cada raíz
-		const selector = 'h1, h2, h3, h4, h5, h6, .seccion-titulo, p, button:not(.control-button):not(.boton-volver):not(.boton-configuracion):not(.switch-toggle), label:not(.switch-knob), .switch-label, span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-highlight):not(.switch-knob):not(.control-valor):not(.icono), small, div.control-ayuda, .control-label span';
+		const selector = 'h1, h2, h3, h4, h5, h6, .seccion-titulo, p, button:not(.control-button):not(.boton-volver):not(.boton-configuracion):not(.boton-instrucciones):not(.switch-toggle):not(.pictogram-word), label:not(.switch-knob), .switch-label, span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-highlight):not(.pictogram-wrapper):not(.pictogram-icon):not(.pictogram-popover):not(.switch-knob):not(.control-valor):not(.icono), small, div.control-ayuda, .control-label span';
+
+		// Si el modo rima está activo, primero recolectar TODO el texto visible de la página PRINCIPAL (sin modales)
+		let globalRhymePatterns: any[] = [];
+		if ($configuraciones.rhymeMode && detectRhymes) {
+			// Solo considerar el mainEl para el cálculo de patrones base
+			let mainContent = '';
+			if (mainEl) {
+				const elements = mainEl.querySelectorAll(selector);
+				elements.forEach((element) => {
+					// Solo incluir elementos visibles
+					const computedStyle = window.getComputedStyle(element as Element);
+					if (computedStyle.display !== 'none' && computedStyle.visibility !== 'hidden') {
+						const text = element.textContent?.trim();
+						if (text) {
+							mainContent += ' ' + text;
+						}
+					}
+				});
+			}
+			
+			// Solo recalcular si el contenido principal cambió
+			if (mainContent !== cachedMainContent) {
+				cachedMainContent = mainContent;
+				cachedRhymePatterns = detectRhymes(mainContent);
+			}
+			
+			// Usar los patrones cacheados
+			globalRhymePatterns = cachedRhymePatterns;
+		}
 
 		roots.forEach((root) => {
 			const elements = root.querySelectorAll(selector);
 
 			elements.forEach((element) => {
 
-				// Evitar procesar elementos ya procesados
-				if (element.querySelector('.bionic-highlight') || element.querySelector('.rhyme-highlight')) return;
+				// Verificar qué modos están activos y qué highlights ya existen
+				const hasBionic = !!element.querySelector('.bionic-highlight');
+				const hasRhyme = !!element.querySelector('.rhyme-highlight');
+				const hasPictogram = !!element.querySelector('.pictogram-wrapper');
+				
+				// Si el modo pictográfico está activo y ya tiene pictogramas, saltar
+				if ($configuraciones.pictogramMode && hasPictogram) return;
+				
+				// Si solo modos biónico/rima están activos y ya los tiene, saltar
+				if (!$configuraciones.pictogramMode && ($configuraciones.bionicMode || $configuraciones.rhymeMode)) {
+					const bionicOk = $configuraciones.bionicMode ? hasBionic : !hasBionic;
+					const rhymeOk = $configuraciones.rhymeMode ? hasRhyme : !hasRhyme;
+					if (bionicOk && rhymeOk) return;
+				}
+				
+				// Si ningún modo está activo y no tiene highlights, saltar
+				if (!$configuraciones.bionicMode && !$configuraciones.rhymeMode && !$configuraciones.pictogramMode && !hasBionic && !hasRhyme && !hasPictogram) return;
+				
+				// Si llegamos aquí, el elemento no coincide con el estado deseado
+				// Primero, asegurarnos de que tenemos el HTML original guardado
+				if (!element.hasAttribute('data-original-html')) {
+					// Si el elemento actualmente tiene highlights, necesitamos limpiarlo primero
+					// antes de guardarlo como original
+					if (hasBionic || hasRhyme || hasPictogram) {
+						// Crear una copia temporal para limpiar
+						const tempEl = element.cloneNode(true) as HTMLElement;
+						const highlights = tempEl.querySelectorAll('.bionic-highlight, .bionic-rest, .rhyme-highlight, .pictogram-wrapper');
+						highlights.forEach(h => {
+							// Preservar el contenido interno, solo quitar el wrapper
+							const parent = h.parentNode;
+							if (parent) {
+								while (h.firstChild) {
+									parent.insertBefore(h.firstChild, h);
+								}
+								parent.removeChild(h);
+							}
+						});
+						element.setAttribute('data-original-html', tempEl.innerHTML);
+					} else {
+						// No hay highlights, guardar directamente
+						element.setAttribute('data-original-html', (element as HTMLElement).innerHTML);
+					}
+				}
+				
+				// Limpiar cualquier highlight existente antes de reprocesar
+				if (hasBionic || hasRhyme || hasPictogram) {
+					const originalHtml = element.getAttribute('data-original-html');
+					if (originalHtml) {
+						(element as HTMLElement).innerHTML = originalHtml;
+					}
+				}
 				
 let text = element.textContent?.trim();
 			if (!text) return;
@@ -339,7 +498,7 @@ let text = element.textContent?.trim();
 			// (evita borrar imágenes u otros nodos no-texto). En su lugar, solo eliminamos
 			// spans de resaltado previos para evitar contenido obsoleto.
 			if ((element as Element).closest('.carrusel-contenedor')) {
-				const highlights = element.querySelectorAll('.bionic-highlight, .bionic-rest, .rhyme-highlight');
+				const highlights = element.querySelectorAll('.bionic-highlight, .bionic-rest, .rhyme-highlight, .pictogram-wrapper');
 				if (highlights.length) {
 					highlights.forEach(h => {
 						const txt = h.textContent || '';
@@ -350,38 +509,36 @@ let text = element.textContent?.trim();
 				if (!text) return;
 			}
 				
-// Guardar HTML original para poder restaurarlo exactamente (solo si no existe ya)
-			if (!element.hasAttribute('data-original-html')) {
-				element.setAttribute('data-original-html', (element as HTMLElement).innerHTML);
-				// Attach a MutationObserver shortly after so we don't catch our own changes
-				setTimeout(() => {
-					if (originalObservers.has(element)) return;
-					try {
-						const obs = new MutationObserver(() => {
-							// Si the element is updated by another process (e.g. Svelte re-render),
-							// remove the stored original HTML so we don't restore stale content.
-							element.removeAttribute('data-original-html');
-							const o = originalObservers.get(element);
-							if (o) { o.disconnect(); }
-							originalObservers.delete(element);
-						});
-						obs.observe(element, { childList: true, subtree: true, characterData: true });
-						originalObservers.set(element, obs);
-					} catch (e) {
-						// ignore observer failures
-					}
-				}, 80);
-			}
+				// Configurar MutationObserver si no existe ya
+				if (!originalObservers.has(element)) {
+					setTimeout(() => {
+						if (originalObservers.has(element)) return;
+						try {
+							const obs = new MutationObserver(() => {
+								// Si el elemento es actualizado por otro proceso (ej. re-render de Svelte),
+								// remover el HTML original guardado para no restaurar contenido obsoleto
+								element.removeAttribute('data-original-html');
+								const o = originalObservers.get(element);
+								if (o) { o.disconnect(); }
+								originalObservers.delete(element);
+							});
+							obs.observe(element, { childList: true, subtree: true, characterData: true });
+							originalObservers.set(element, obs);
+						} catch (e) {
+							// ignorar fallos del observer
+						}
+					}, 80);
+				}
 				
 				let processedHTML = text;
 				
 				// Aplicar modo rima primero si está activo
-				if ($configuraciones.rhymeMode && detectRhymes && applyRhymeHighlight) {
-					const patterns = detectRhymes(text);
+				if ($configuraciones.rhymeMode && applyRhymeHighlight) {
+					// Usar los patrones globales calculados previamente para toda la página
 					const backgroundColor = $configuraciones.modoNoche 
 						? ($configuraciones.modoInverso ? '#ffffff' : '#121212')
 						: '#ffffff';
-					processedHTML = applyRhymeHighlight(text, patterns, backgroundColor);
+					processedHTML = applyRhymeHighlight(text, globalRhymePatterns, backgroundColor);
 				}
 				
 				// Aplicar modo biónico después si está activo
@@ -496,33 +653,383 @@ let text = element.textContent?.trim();
 						parent = parent.parentElement;
 					}
 					
-					if ($configuraciones.rhymeMode && detectRhymes && applyRhymeHighlight) {
-						const patterns = detectRhymes(txt);
-						const backgroundColor = $configuraciones.modoNoche ? ($configuraciones.modoInverso ? '#ffffff' : '#121212') : '#ffffff';
-						const html = applyRhymeHighlight(txt, patterns, backgroundColor);
-						const tmp = document.createElement('div'); tmp.innerHTML = html;
-						if ($configuraciones.bionicMode) {
-							const walk = (n: Node) => {
-								if (n.nodeType === Node.TEXT_NODE) {
-									const frag = createBionicFragment(n.textContent || '', element); n.parentNode?.replaceChild(frag, n);
-								} else if (n.nodeType === Node.ELEMENT_NODE && (n as Element).classList.contains('rhyme-highlight')) {
-									Array.from(n.childNodes).forEach(walk);
-								} else if (n.childNodes && n.childNodes.length) { Array.from(n.childNodes).forEach(walk); }
-							};
-							Array.from(tmp.childNodes).forEach(walk);
+					// Detectar si el texto original tiene negrita (strong, b, o font-weight bold/bolder)
+					const hasOriginalBold = (() => {
+						let p = node.parentElement;
+						while (p && p !== element) {
+							const tagName = p.tagName.toLowerCase();
+							if (tagName === 'strong' || tagName === 'b') return true;
+							const computedStyle = window.getComputedStyle(p);
+							const fontWeight = computedStyle.fontWeight;
+							if (fontWeight === 'bold' || fontWeight === 'bolder' || parseInt(fontWeight) >= 700) return true;
+							p = p.parentElement;
 						}
-						const frag = document.createDocumentFragment(); Array.from(tmp.childNodes).forEach(c => frag.appendChild(c.cloneNode(true)));
-						node.parentNode?.replaceChild(frag, node);
+						return false;
+					})();
+					
+					// Obtener el font-weight computado del elemento original para preservarlo
+					const originalFontWeight = (() => {
+						const computed = window.getComputedStyle(element);
+						return computed.fontWeight;
+					})();
+					
+				// NUEVO ENFOQUE: Procesar palabra por palabra aplicando TODOS los modos simultáneamente
+				// Los tres modos pueden coexistir
+				const words = txt.split(/(\s+|[.,;:!?¿¡()"""'])/);
+				const frag = document.createDocumentFragment();
+				const bionicColor = getBionicColorForBackground(element);
+				
+				words.forEach(word => {
+					// Si es espacio o puntuación, añadir tal cual
+					if (/^\s+$/.test(word) || /^[.,;:!?¿¡()"""']$/.test(word)) {
+						frag.appendChild(document.createTextNode(word));
 						return;
 					}
-					if ($configuraciones.bionicMode) { const f = createBionicFragment(txt, element); node.parentNode?.replaceChild(f, node); return; }
-					return;
+					
+					if (word.length === 0) {
+						frag.appendChild(document.createTextNode(word));
+						return;
+					}
+					
+					// Limpiar la palabra de puntuación para buscar el pictograma
+					const cleanWord = word.replace(/[.,;:!?¿¡()"""']/g, '');
+					const pictogram = $configuraciones.pictogramMode ? findPictogramSync(cleanWord) : null;
+					
+					// Si hay pictograma, envolver la palabra
+					if (pictogram) {
+						// Crear wrapper para el pictograma con popover
+						const wrapper = document.createElement('span');
+						wrapper.className = 'pictogram-wrapper';
+						wrapper.setAttribute('aria-hidden', 'true');
+						
+						const button = document.createElement('button');
+						button.className = 'pictogram-word';
+						button.type = 'button';
+						button.setAttribute('tabindex', '-1');
+						button.setAttribute('data-pictogram-icon', pictogram.icon);
+						button.setAttribute('data-pictogram-category', pictogram.category);
+						
+						// APLICAR MODOS BIÓNICO/RIMA DENTRO DEL BOTÓN DEL PICTOGRAMA
+						if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+							// Calcular posiciones de biónico
+							let bionicLength = 0;
+							if ($configuraciones.bionicMode) {
+								bionicLength = getHighlightLengthForWord(word.length, 0.5);
+							}
+							
+							// Calcular posiciones de rima
+							let rhymeStartIndex = -1;
+							let rhymeColor = '';
+							let rhymeBgColor = '';
+							
+							if ($configuraciones.rhymeMode && detectRhymes && applyRhymeHighlight) {
+								const patterns = globalRhymePatterns;
+								const pattern = patterns.find(p => p.word === cleanWord.toLowerCase());
+								
+								if (pattern && pattern.hasRhyme && pattern.ending) {
+									const ending = pattern.ending.toLowerCase();
+									const wordLower = cleanWord.toLowerCase();
+									rhymeStartIndex = wordLower.lastIndexOf(ending);
+									
+									if (rhymeStartIndex === -1 || rhymeStartIndex + ending.length !== wordLower.length) {
+										rhymeStartIndex = wordLower.length - ending.length;
+									}
+									
+									if (rhymeStartIndex >= 0 && rhymeStartIndex < word.length) {
+										const rgb = hexToRgbSimple(pattern.color);
+										const lum = rgb ? (0.2126 * rgb[0]/255 + 0.7152 * rgb[1]/255 + 0.0722 * rgb[2]/255) : 0.5;
+										
+										if ($configuraciones.modoNoche) {
+											rhymeColor = pattern.color;
+											rhymeBgColor = rgb ? `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.45)` : 'rgba(255,255,255,0.45)';
+										} else {
+											rhymeColor = lum > 0.4 ? darkenColorSimple(pattern.color, 0.4) : pattern.color;
+											rhymeBgColor = rgb ? `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.20)` : 'rgba(0,0,0,0.20)';
+										}
+									} else {
+										rhymeStartIndex = -1;
+									}
+								}
+							}
+							
+							// Aplicar estilos combinados a la palabra dentro del botón
+							let currentSegment = '';
+							let currentStyle = { isBionic: false, isRhyme: false };
+							
+							const flushSegment = () => {
+								if (currentSegment.length === 0) return;
+								
+								const span = document.createElement('span');
+								
+								if (currentStyle.isRhyme) {
+									span.style.backgroundColor = rhymeBgColor;
+									span.style.borderBottom = `2px solid ${rhymeColor}`;
+									span.style.padding = '0';
+									span.style.borderRadius = '2px';
+									
+									if ($configuraciones.bionicMode && currentStyle.isBionic) {
+										// Cuando ambos modos están activos, rima no debe tener negrita
+										span.style.fontWeight = '400';
+										span.style.color = bionicColor;
+										span.className = 'bionic-highlight rhyme-highlight';
+									} else if ($configuraciones.bionicMode) {
+										// Modo biónico activo pero esta parte no es biónica
+										span.style.fontWeight = '400';
+										span.className = 'rhyme-highlight';
+									} else {
+										// Solo rima activa - preservar font-weight original completamente
+										span.style.fontWeight = originalFontWeight;
+										span.className = 'rhyme-highlight';
+									}
+								} else if (currentStyle.isBionic) {
+									span.style.fontWeight = '700';
+									span.style.color = bionicColor;
+									span.className = 'bionic-highlight';
+								} else {
+									span.className = 'bionic-rest';
+									// Si modo biónico está activo, usar font-weight normal para contraste
+									// Si solo modo rima, preservar originalFontWeight
+									if ($configuraciones.bionicMode) {
+										span.style.fontWeight = '400';
+									} else {
+										span.style.fontWeight = originalFontWeight;
+									}
+								}
+								
+								span.textContent = currentSegment;
+								button.appendChild(span);
+								currentSegment = '';
+							};
+							
+							for (let i = 0; i < word.length; i++) {
+								const char = word[i];
+								const isBionic = $configuraciones.bionicMode && i < bionicLength;
+								const isRhyme = rhymeStartIndex >= 0 && i >= rhymeStartIndex;
+								
+								if (currentSegment.length > 0 && 
+									(currentStyle.isBionic !== isBionic || currentStyle.isRhyme !== isRhyme)) {
+									flushSegment();
+								}
+								
+								currentSegment += char;
+								currentStyle = { isBionic, isRhyme };
+							}
+							
+							flushSegment();
+						} else {
+							// Sin modos biónico/rima, preservar font-weight original
+							const span = document.createElement('span');
+							span.style.fontWeight = originalFontWeight;
+							span.textContent = word;
+							button.appendChild(span);
+						}
+						
+						const popover = document.createElement('div');
+						popover.className = 'pictogram-popover';
+						popover.setAttribute('role', 'tooltip');
+						popover.setAttribute('aria-hidden', 'true');
+						
+						const iconSpan = document.createElement('span');
+						iconSpan.className = 'pictogram-icon';
+						iconSpan.textContent = pictogram.icon;
+						
+						popover.appendChild(iconSpan);
+						wrapper.appendChild(button);
+						wrapper.appendChild(popover);
+						
+						// Agregar texto oculto visualmente pero accesible para lectores de pantalla
+						const srOnly = document.createElement('span');
+						srOnly.className = 'sr-only';
+						srOnly.textContent = word;
+						srOnly.style.cssText = 'position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;';
+						wrapper.appendChild(srOnly);
+						
+						frag.appendChild(wrapper);
+						
+						// Función para determinar y actualizar dirección del popover
+						const updatePopoverDirection = () => {
+							const buttonRect = button.getBoundingClientRect();
+							const viewportHeight = window.innerHeight;
+							const popoverHeight = 100; // Aumentado para mayor margen
+							const spaceAbove = buttonRect.top;
+							const spaceBelow = viewportHeight - buttonRect.bottom;
+							
+							// Si hay más espacio abajo que arriba Y no hay suficiente espacio arriba
+							if (spaceAbove < popoverHeight + 40 && spaceBelow > spaceAbove) {
+								popover.classList.add('popover-below');
+							} else {
+								popover.classList.remove('popover-below');
+							}
+						};
+						
+						// Determinar dirección inicial
+						setTimeout(updatePopoverDirection, 0);
+						
+						// Actualizar dirección al hacer scroll
+						let scrollContainer = button.closest('.app-main');
+						const handleScroll = () => updatePopoverDirection();
+						if (!scrollContainer) {
+							window.addEventListener('scroll', handleScroll, { passive: true });
+						} else {
+							scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+						}
+						
+						// Eventos para mostrar/ocultar popover
+						button.addEventListener('mouseenter', () => {
+							updatePopoverDirection();
+							popover.classList.add('visible');
+						});
+						button.addEventListener('mouseleave', () => {
+							popover.classList.remove('visible');
+						});
+						button.addEventListener('focus', () => {
+							updatePopoverDirection();
+							popover.classList.add('visible');
+							popover.setAttribute('aria-hidden', 'false');
+						});
+						button.addEventListener('blur', () => {
+							popover.classList.remove('visible');
+							popover.setAttribute('aria-hidden', 'true');
+						});
+					}
+					// NO HAY PICTOGRAMA: Aplicar solo biónico/rima
+					else if ($configuraciones.bionicMode || $configuraciones.rhymeMode) {
+						if (detectRhymes && applyRhymeHighlight) {
+							// Usar los patrones globales de rima (ya detectados para toda la página)
+							const patterns = globalRhymePatterns;
+							const cleanWordForRhyme = word.toLowerCase().replace(/[.,;:!?¿¡()"""']/g, '');
+							const pattern = patterns.find(p => p.word === cleanWordForRhyme);
+							
+							// Calcular posiciones de biónico
+							let bionicLength = 0;
+							if ($configuraciones.bionicMode) {
+								bionicLength = getHighlightLengthForWord(word.length, 0.5);
+							}
+							
+							// Calcular posiciones de rima
+							let rhymeStartIndex = -1;
+							let rhymeColor = '';
+							let rhymeBgColor = '';
+							
+							if ($configuraciones.rhymeMode && pattern && pattern.hasRhyme && pattern.ending) {
+								const ending = pattern.ending.toLowerCase();
+								const wordLower = cleanWordForRhyme;
+								rhymeStartIndex = wordLower.lastIndexOf(ending);
+								
+								if (rhymeStartIndex === -1 || rhymeStartIndex + ending.length !== wordLower.length) {
+									rhymeStartIndex = wordLower.length - ending.length;
+								}
+								
+								if (rhymeStartIndex >= 0 && rhymeStartIndex < word.length) {
+									const rgb = hexToRgbSimple(pattern.color);
+									const lum = rgb ? (0.2126 * rgb[0]/255 + 0.7152 * rgb[1]/255 + 0.0722 * rgb[2]/255) : 0.5;
+									
+									// Ajustar colores según el modo
+									if ($configuraciones.modoNoche) {
+										// En modo noche, usar opacidad mayor y aclarar el color del borde
+										rhymeColor = pattern.color; // Color original más brillante
+										rhymeBgColor = rgb ? `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.45)` : 'rgba(255,255,255,0.45)';
+									} else {
+										// En modo claro, oscurecer el borde y usar opacidad baja
+										rhymeColor = lum > 0.4 ? darkenColorSimple(pattern.color, 0.4) : pattern.color;
+										rhymeBgColor = rgb ? `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.20)` : 'rgba(0,0,0,0.20)';
+									}
+								} else {
+									rhymeStartIndex = -1;
+								}
+							}
+							
+							// Dividir la palabra en segmentos según estilos para evitar separación de letras
+							let currentSegment = '';
+							let currentStyle = { isBionic: false, isRhyme: false };
+							
+							const flushSegment = () => {
+								if (currentSegment.length === 0) return;
+								
+								const span = document.createElement('span');
+								
+								// Prioridad: Si es rima, aplicar estilos de rima
+								if (currentStyle.isRhyme) {
+									// Rima: fondo/subrayado
+									span.style.backgroundColor = rhymeBgColor;
+									span.style.borderBottom = `2px solid ${rhymeColor}`;
+									span.style.padding = '0';
+									span.style.borderRadius = '2px';
+									
+									// Si ambos modos están activos
+									if ($configuraciones.bionicMode && currentStyle.isBionic) {
+										// Cuando ambos modos están activos, rima no debe tener negrita
+										span.style.fontWeight = '400';
+										span.style.color = bionicColor;
+										span.className = 'bionic-highlight rhyme-highlight';
+									} else if ($configuraciones.bionicMode) {
+										// Modo biónico activo pero esta parte no es biónica
+										span.style.fontWeight = '400';
+										span.className = 'rhyme-highlight';
+									} else {
+										// Solo rima activa - preservar font-weight original completamente
+										span.style.fontWeight = originalFontWeight;
+										span.className = 'rhyme-highlight';
+									}
+								} else if (currentStyle.isBionic) {
+									// Solo biónico: negrita
+									span.style.fontWeight = '700';
+									span.style.color = bionicColor;
+									span.className = 'bionic-highlight';
+								} else {
+									// Ninguno: texto normal
+									span.className = 'bionic-rest';
+									// Si modo biónico está activo, usar font-weight normal para contraste
+									// Si solo modo rima, preservar originalFontWeight
+									if ($configuraciones.bionicMode) {
+										span.style.fontWeight = '400';
+									} else {
+										span.style.fontWeight = originalFontWeight;
+									}
+								}
+								
+								
+								span.textContent = currentSegment;
+								frag.appendChild(span);
+								currentSegment = '';
+							};
+							
+							for (let i = 0; i < word.length; i++) {
+								const char = word[i];
+								const isBionic = $configuraciones.bionicMode && i < bionicLength;
+								const isRhyme = rhymeStartIndex >= 0 && i >= rhymeStartIndex;
+								
+								// Si el estilo cambió, crear un nuevo segmento
+								if (currentSegment.length > 0 && 
+									(currentStyle.isBionic !== isBionic || currentStyle.isRhyme !== isRhyme)) {
+									flushSegment();
+								}
+								
+								currentSegment += char;
+								currentStyle = { isBionic, isRhyme };
+							}
+							
+							// Añadir el último segmento
+							flushSegment();
+						}
+					}
+					// Sin ningún modo activo
+					else {
+						// Solo preservar font-weight si no hay modos activos
+						// (esta rama solo se ejecuta si NO hay modo biónico ni rima)
+						frag.appendChild(document.createTextNode(word));
+					}
+				});
+				
+				node.parentNode?.replaceChild(frag, node);
+				return;
 				} else if (node.nodeType === Node.ELEMENT_NODE) {
 					// Ignorar elementos SVG y sus hijos
 					if ((node as Element).tagName === 'svg' || (node as Element).closest('svg')) return;
 					// Ignorar elementos con clase .icono y sus hijos
 					if ((node as Element).classList.contains('icono')) return;
-					if ((node as Element).classList.contains('bionic-highlight') || (node as Element).classList.contains('rhyme-highlight')) return;
+					// Ignorar elementos ya procesados
+					if ((node as Element).classList.contains('bionic-highlight') || (node as Element).classList.contains('rhyme-highlight') || (node as Element).classList.contains('pictogram-wrapper') || (node as Element).classList.contains('pictogram-word')) return;
 					Array.from(node.childNodes).forEach(processNode);
 				}
 			};
@@ -530,6 +1037,10 @@ let text = element.textContent?.trim();
 			Array.from(element.childNodes).forEach(processNode);
 		});
 		});
+		} finally {
+			// Siempre liberar la bandera de procesamiento
+			isProcessing = false;
+		}
 	}
 
 	// Función para restaurar texto original
@@ -541,7 +1052,7 @@ let text = element.textContent?.trim();
 			if (originalHtml === null) return;
 			const el = element as HTMLElement;
 			// Si el elemento contiene highlights, restauramos al original guardado
-			const hasHighlight = !!el.querySelector('.bionic-highlight, .rhyme-highlight');
+			const hasHighlight = !!el.querySelector('.bionic-highlight, .rhyme-highlight, .pictogram-wrapper');
 			if (hasHighlight) {
 				el.innerHTML = originalHtml;
 				element.removeAttribute('data-original-html');
@@ -591,6 +1102,9 @@ let text = element.textContent?.trim();
 
 <!-- Escuchamos el evento de teclado en toda la ventana -->
 <svelte:window onkeydown={manejarTecla} />
+
+<!-- Estilos globales para modos de dislexia -->
+<DyslexiaModes />
 
 <svelte:head>
 	<title>Coloreco - Tu estudio de pinturas e historias</title>
@@ -651,13 +1165,36 @@ let text = element.textContent?.trim();
 	{/if}
 
 	<!-- Control de narración -->
-	<NarrationControl />
+	<div id="narration-controls-container">
+		<NarrationControl />
+	</div>
+
+	<!-- Botón de instrucciones (solo en páginas de juegos de historias) -->
+	{#if necesitaBotonInstrucciones}
+		<div id="floating-instructions-button" class="contenedor-flotante-i-instrucciones" style={filterStyle}>
+			<button 
+				class="boton-instrucciones pattern-yellow" 
+				aria-label="Ver instrucciones"
+				aria-keyshortcuts="Control + I" 
+				title="Instrucciones (Control + I)" 
+				type="button"
+				onclick={abrirInstrucciones}
+				use:clickSound
+			>
+				<span class="solo-lectores">Ver instrucciones</span>
+				<IconoInstrucciones />
+			</button>
+
+			<!-- Texto visual indicativo -->
+			<span class="texto-tecla">Ctrl + I</span>
+		</div>
+	{/if}
 
 	<!-- Botón de volver fijo en la esquina inferior izquierda (oculto en página inicial) -->
 	{#if !estaEnInicio && !estaEnEstudio}
-		<div class="contenedor-flotante-i" style={filterStyle}>
+		<div id="floating-back-button" class="contenedor-flotante-i" style={filterStyle}>
 			<button 
-				class="boton-volver pattern-yellow" 
+				class="boton-volver pattern-yellow" 
 				aria-label="Volver a la página anterior"
 				aria-keyshortcuts="Escape" 
 				title="Volver (Esc)" 
@@ -671,11 +1208,10 @@ let text = element.textContent?.trim();
 			<span class="texto-tecla">ESC</span>
 		</div>
 	{/if}
-	
 	<!-- Botón de ajustes fijo en la esquina inferior derecha (oculto en /ajustes) -->
 
 	{#if !estaEnConfiguracion && !estaEnEstudio}
-		<div class="contenedor-flotante-d" style={filterStyle}>
+		<div id="floating-settings-button" class="contenedor-flotante-d" style={filterStyle}>
 			<button 
 				class="boton-configuracion pattern-yellow" 
 				aria-label="Abrir los ajustes"
@@ -744,7 +1280,8 @@ let text = element.textContent?.trim();
 
 	/* Contenedores flotantes: Ahora aceptan filtros y mantienen su posición */
 	.contenedor-flotante-i,
-	.contenedor-flotante-d {
+	.contenedor-flotante-d,
+	.contenedor-flotante-i-instrucciones {
 		position: fixed;
 		bottom: var(--spacing-base, 1rem);
 		display: flex;
@@ -757,6 +1294,11 @@ let text = element.textContent?.trim();
 
 	.contenedor-flotante-i { left: calc(var(--spacing-base, 1rem) * 2.5); }
 	.contenedor-flotante-d { right: calc(var(--spacing-base, 1rem) * 2.5); }
+	.contenedor-flotante-i-instrucciones { 
+		left: calc(var(--spacing-base, 1rem) * 2.5);
+		top: var(--spacing-base, 1rem);
+		bottom: auto;
+	}
 
 	.texto-tecla {
 		font-size: calc(4vh * var(--btn-scale, 1));
@@ -781,7 +1323,7 @@ let text = element.textContent?.trim();
 		margin: -1px;
 	}
 	/*Botón volver esquina inferior izquierda y botón ajustes esquina inferior derecha*/
-	.boton-volver, .boton-configuracion{
+	.boton-volver, .boton-configuracion, .boton-instrucciones {
 		position: relative;
 		width: calc(8vw * var(--btn-scale, 1));
 		height: calc(15vh * var(--btn-scale, 1));
@@ -796,14 +1338,14 @@ let text = element.textContent?.trim();
 		transition: transform 120ms ease, box-shadow 120ms ease;
 		z-index: 100;
 	}
-	.boton-volver:hover, .boton-configuracion:hover {
+	.boton-volver:hover, .boton-configuracion:hover, .boton-instrucciones:hover {
 		transform: translateY(-2px);
 		background: var(--fondo-botones-hover, #d1a700);
 	}
-	.boton-volver:active, .boton-configuracion:active {
+	.boton-volver:active, .boton-configuracion:active, .boton-instrucciones:active {
 		transform: translateY(0);
 	}
-	.boton-volver:focus, .boton-configuracion:focus{
+	.boton-volver:focus, .boton-configuracion:focus, .boton-instrucciones:focus{
 		outline: var(--borde-botones, 4px solid #000000);
 		background: var(--fondo-botones-hover, #d1a700);
 		outline-offset: 7px;

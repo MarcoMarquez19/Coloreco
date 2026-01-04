@@ -1,0 +1,717 @@
+[
+	{
+		"word": "indígena",
+		"icon": "👨",
+		"category": "persona"
+	},
+	{
+		"word": "atrio",
+		"icon": "⛪",
+		"category": "lugar"
+	},
+	{
+		"word": "iglesia",
+		"icon": "⛪",
+		"category": "lugar"
+	},
+	{
+		"word": "desesperado",
+		"icon": "😰",
+		"category": "emocion"
+	},
+	{
+		"word": "impensable",
+		"icon": "💭",
+		"category": "concepto"
+	},
+	{
+		"word": "pacto",
+		"icon": "🤝",
+		"category": "concepto"
+	},
+	{
+		"word": "diablo",
+		"icon": "😈",
+		"category": "persona"
+	},
+	{
+		"word": "alma",
+		"icon": "👻",
+		"category": "concepto"
+	},
+	{
+		"word": "demonio",
+		"icon": "👿",
+		"category": "persona"
+	},
+	{
+		"word": "demonios",
+		"icon": "👿",
+		"category": "persona"
+	},
+	{
+		"word": "astuto",
+		"icon": "🦊",
+		"category": "cualidad"
+	},
+	{
+		"word": "astucia",
+		"icon": "🦊",
+		"category": "cualidad"
+	},
+	{
+		"word": "infernal",
+		"icon": "🔥",
+		"category": "cualidad"
+	},
+	{
+		"word": "estipulaba",
+		"icon": "📜",
+		"category": "accion"
+	},
+	{
+		"word": "colonial",
+		"icon": "🏛️",
+		"category": "cualidad"
+	},
+	{
+		"word": "misteriosa",
+		"icon": "❓",
+		"category": "cualidad"
+	},
+	{
+		"word": "misterio",
+		"icon": "❓",
+		"category": "concepto"
+	},
+	{
+		"word": "velo",
+		"icon": "👰",
+		"category": "objeto"
+	},
+	{
+		"word": "elegante",
+		"icon": "💃",
+		"category": "cualidad"
+	},
+	{
+		"word": "fascinados",
+		"icon": "😍",
+		"category": "emocion"
+	},
+	{
+		"word": "caballero",
+		"icon": "🤵",
+		"category": "persona"
+	},
+	{
+		"word": "atrevido",
+		"icon": "💪",
+		"category": "cualidad"
+	},
+	{
+		"word": "calavera",
+		"icon": "💀",
+		"category": "objeto"
+	},
+	{
+		"word": "cuencas",
+		"icon": "👁️",
+		"category": "objeto"
+	},
+	{
+		"word": "mueca",
+		"icon": "😬",
+		"category": "accion"
+	},
+	{
+		"word": "despavorido",
+		"icon": "😱",
+		"category": "emocion"
+	},
+	{
+		"word": "apariencias",
+		"icon": "🎭",
+		"category": "concepto"
+	},
+	{
+		"word": "fraile",
+		"icon": "🧑‍⚖️",
+		"category": "persona"
+	},
+	{
+		"word": "convento",
+		"icon": "⛪",
+		"category": "lugar"
+	},
+	{
+		"word": "votos",
+		"icon": "🙏",
+		"category": "concepto"
+	},
+	{
+		"word": "claustro",
+		"icon": "🏛️",
+		"category": "lugar"
+	},
+	{
+		"word": "crucifijo",
+		"icon": "✝️",
+		"category": "objeto"
+	},
+	{
+		"word": "agonía",
+		"icon": "😖",
+		"category": "emocion"
+	},
+	{
+		"word": "paralizado",
+		"icon": "🧊",
+		"category": "emocion"
+	},
+	{
+		"word": "advertencia",
+		"icon": "⚠️",
+		"category": "concepto"
+	},
+	{
+		"word": "milagro",
+		"icon": "✨",
+		"category": "concepto"
+	},
+	{
+		"word": "arrepentido",
+		"icon": "😔",
+		"category": "emocion"
+	},
+	{
+		"word": "arrepentimiento",
+		"icon": "😔",
+		"category": "emocion"
+	},
+	{
+		"word": "divino",
+		"icon": "🙏",
+		"category": "cualidad"
+	},
+	{
+		"word": "vocación",
+		"icon": "✨",
+		"category": "concepto"
+	},
+	{
+		"word": "amanecer",
+		"icon": "🌅",
+		"category": "concepto"
+	},
+	{
+		"word": "rodillas",
+		"icon": "🙇",
+		"category": "accion"
+	},
+	{
+		"word": "debilidad",
+		"icon": "💔",
+		"category": "concepto"
+	},
+	{
+		"word": "nocturna",
+		"icon": "🌙",
+		"category": "cualidad"
+	},
+	{
+		"word": "escapar",
+		"icon": "🏃",
+		"category": "accion"
+	},
+	{
+		"word": "fiesta",
+		"icon": "🎉",
+		"category": "concepto"
+	},
+	{
+		"word": "gallo",
+		"icon": "🐓",
+		"category": "animal"
+	},
+	{
+		"word": "piedra",
+		"icon": "🪨",
+		"category": "objeto"
+	},
+	{
+		"word": "piedras",
+		"icon": "🪨",
+		"category": "objeto"
+	},
+	{
+		"word": "terminar",
+		"icon": "🏁",
+		"category": "accion"
+	},
+	{
+		"word": "obra",
+		"icon": "🏗️",
+		"category": "concepto"
+	},
+	{
+		"word": "construir",
+		"icon": "🏗️",
+		"category": "accion"
+	},
+	{
+		"word": "trato",
+		"icon": "🤝",
+		"category": "concepto"
+	},
+	{
+		"word": "engañado",
+		"icon": "🎭",
+		"category": "emocion"
+	},
+	{
+		"word": "rostro",
+		"icon": "😊",
+		"category": "objeto"
+	},
+	{
+		"word": "leyenda",
+		"icon": "📖",
+		"category": "concepto"
+	},
+	{
+		"word": "símbolo",
+		"icon": "🔣",
+		"category": "concepto"
+	},
+	{
+		"word": "legado",
+		"icon": "📜",
+		"category": "concepto"
+	},
+	{
+		"word": "cultural",
+		"icon": "🎭",
+		"category": "cualidad"
+	},
+	{
+		"word": "valores",
+		"icon": "💎",
+		"category": "concepto"
+	},
+	{
+		"word": "inteligencia",
+		"icon": "🧠",
+		"category": "concepto"
+	},
+	{
+		"word": "fe",
+		"icon": "🙏",
+		"category": "concepto"
+	},
+	{
+		"word": "probar",
+		"icon": "🔍",
+		"category": "accion"
+	},
+	{
+		"word": "creativas",
+		"icon": "💡",
+		"category": "cualidad"
+	},
+	{
+		"word": "creativo",
+		"icon": "💡",
+		"category": "cualidad"
+	},
+	{
+		"word": "rincón",
+		"icon": "📚",
+		"category": "lugar"
+	},
+	{
+		"word": "bienvenido",
+		"icon": "👋",
+		"category": "emocion"
+	},
+	{
+		"word": "plantillas",
+		"icon": "📋",
+		"category": "objeto"
+	},
+	{
+		"word": "plantilla",
+		"icon": "📋",
+		"category": "objeto"
+	},
+	{
+		"word": "rango",
+		"icon": "🏅",
+		"category": "concepto"
+	},
+	{
+		"word": "general",
+		"icon": "🌐",
+		"category": "concepto"
+	},
+	{
+		"word": "categoría",
+		"icon": "📂",
+		"category": "concepto"
+	},
+	{
+		"word": "obtenidos",
+		"icon": "✅",
+		"category": "accion"
+	},
+	{
+		"word": "obtener",
+		"icon": "🎯",
+		"category": "accion"
+	},
+	{
+		"word": "lámpara",
+		"icon": "💡",
+		"category": "objeto"
+	},
+	{
+		"word": "decorativa",
+		"icon": "✨",
+		"category": "cualidad"
+	},
+	{
+		"word": "decorativo",
+		"icon": "✨",
+		"category": "cualidad"
+	},
+	{
+		"word": "carrusel",
+		"icon": "🎠",
+		"category": "concepto"
+	},
+	{
+		"word": "navegación",
+		"icon": "🧭",
+		"category": "concepto"
+	},
+	{
+		"word": "navegar",
+		"icon": "🧭",
+		"category": "accion"
+	},
+	{
+		"word": "anterior",
+		"icon": "⬅️",
+		"category": "concepto"
+	},
+	{
+		"word": "siguiente",
+		"icon": "➡️",
+		"category": "concepto"
+	},
+	{
+		"word": "eliminar",
+		"icon": "🗑️",
+		"category": "accion"
+	},
+	{
+		"word": "confirmación",
+		"icon": "✓",
+		"category": "concepto"
+	},
+	{
+		"word": "confirmar",
+		"icon": "✓",
+		"category": "accion"
+	},
+	{
+		"word": "exitoso",
+		"icon": "🎉",
+		"category": "cualidad"
+	},
+	{
+		"word": "daltonismo",
+		"icon": "👁️",
+		"category": "concepto"
+	},
+	{
+		"word": "filtro",
+		"icon": "🔧",
+		"category": "concepto"
+	},
+	{
+		"word": "intensidad",
+		"icon": "📊",
+		"category": "concepto"
+	},
+	{
+		"word": "identificación",
+		"icon": "🔍",
+		"category": "concepto"
+	},
+	{
+		"word": "identificar",
+		"icon": "🔍",
+		"category": "accion"
+	},
+	{
+		"word": "patrones",
+		"icon": "🔲",
+		"category": "concepto"
+	},
+	{
+		"word": "patrón",
+		"icon": "🔲",
+		"category": "concepto"
+	},
+	{
+		"word": "único",
+		"icon": "⭐",
+		"category": "cualidad"
+	},
+	{
+		"word": "única",
+		"icon": "⭐",
+		"category": "cualidad"
+	},
+	{
+		"word": "facilitar",
+		"icon": "🤝",
+		"category": "accion"
+	},
+	{
+		"word": "restaurar",
+		"icon": "♻️",
+		"category": "accion"
+	},
+	{
+		"word": "valores",
+		"icon": "💎",
+		"category": "concepto"
+	},
+	{
+		"word": "defecto",
+		"icon": "⚙️",
+		"category": "concepto"
+	},
+	{
+		"word": "constructor",
+		"icon": "👷",
+		"category": "persona"
+	},
+	{
+		"word": "equipo",
+		"icon": "👥",
+		"category": "concepto"
+	},
+	{
+		"word": "terrible",
+		"icon": "😱",
+		"category": "cualidad"
+	},
+	{
+		"word": "arriesgado",
+		"icon": "⚠️",
+		"category": "cualidad"
+	},
+	{
+		"word": "rápido",
+		"icon": "⚡",
+		"category": "cualidad"
+	},
+	{
+		"word": "increíble",
+		"icon": "🤩",
+		"category": "cualidad"
+	},
+	{
+		"word": "secreto",
+		"icon": "🤫",
+		"category": "concepto"
+	},
+	{
+		"word": "inteligente",
+		"icon": "🧠",
+		"category": "cualidad"
+	},
+	{
+		"word": "perfecto",
+		"icon": "👌",
+		"category": "cualidad"
+	},
+	{
+		"word": "sorpresa",
+		"icon": "🎁",
+		"category": "concepto"
+	},
+	{
+		"word": "furioso",
+		"icon": "😡",
+		"category": "emocion"
+	},
+	{
+		"word": "cerebro",
+		"icon": "🧠",
+		"category": "objeto"
+	},
+	{
+		"word": "maravilla",
+		"icon": "✨",
+		"category": "concepto"
+	},
+	{
+		"word": "tesoro",
+		"icon": "💰",
+		"category": "objeto"
+	},
+	{
+		"word": "escondido",
+		"icon": "🙈",
+		"category": "cualidad"
+	},
+	{
+		"word": "poderoso",
+		"icon": "💪",
+		"category": "cualidad"
+	},
+	{
+		"word": "aventura",
+		"icon": "🗺️",
+		"category": "concepto"
+	},
+	{
+		"word": "solitarias",
+		"icon": "🚶",
+		"category": "cualidad"
+	},
+	{
+		"word": "curiosos",
+		"icon": "🤔",
+		"category": "cualidad"
+	},
+	{
+		"word": "valiente",
+		"icon": "🦁",
+		"category": "cualidad"
+	},
+	{
+		"word": "suspenso",
+		"icon": "😮",
+		"category": "concepto"
+	},
+	{
+		"word": "latía",
+		"icon": "💓",
+		"category": "accion"
+	},
+	{
+		"word": "silencio",
+		"icon": "🤐",
+		"category": "concepto"
+	},
+	{
+		"word": "despacio",
+		"icon": "🐌",
+		"category": "cualidad"
+	},
+	{
+		"word": "impactante",
+		"icon": "💥",
+		"category": "cualidad"
+	},
+	{
+		"word": "huecos",
+		"icon": "⭕",
+		"category": "cualidad"
+	},
+	{
+		"word": "vacíos",
+		"icon": "⭕",
+		"category": "cualidad"
+	},
+	{
+		"word": "terrorífica",
+		"icon": "👻",
+		"category": "cualidad"
+	},
+	{
+		"word": "lección",
+		"icon": "📚",
+		"category": "concepto"
+	},
+	{
+		"word": "simple",
+		"icon": "😊",
+		"category": "cualidad"
+	},
+	{
+		"word": "divertido",
+		"icon": "😄",
+		"category": "cualidad"
+	},
+	{
+		"word": "profundo",
+		"icon": "🌊",
+		"category": "cualidad"
+	},
+	{
+		"word": "importante",
+		"icon": "⭐",
+		"category": "cualidad"
+	},
+	{
+		"word": "estatua",
+		"icon": "🗿",
+		"category": "objeto"
+	},
+	{
+		"word": "conflicto",
+		"icon": "⚔️",
+		"category": "concepto"
+	},
+	{
+		"word": "interno",
+		"icon": "💭",
+		"category": "cualidad"
+	},
+	{
+		"word": "diferente",
+		"icon": "🎨",
+		"category": "cualidad"
+	},
+	{
+		"word": "anticipación",
+		"icon": "⏰",
+		"category": "concepto"
+	},
+	{
+		"word": "transformación",
+		"icon": "🦋",
+		"category": "concepto"
+	},
+	{
+		"word": "positiva",
+		"icon": "👍",
+		"category": "cualidad"
+	},
+	{
+		"word": "completamente",
+		"icon": "💯",
+		"category": "cualidad"
+	},
+	{
+		"word": "ayudante",
+		"icon": "🤝",
+		"category": "persona"
+	},
+	{
+		"word": "llorando",
+		"icon": "😢",
+		"category": "accion"
+	},
+	{
+		"word": "perdón",
+		"icon": "🙏",
+		"category": "concepto"
+	}
+]
