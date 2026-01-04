@@ -38,12 +38,14 @@
 		accionGuardar: {};
 		accionTerminar: {};
 		accionMover: {};
+		cambiarZoom: { nivel: number };
 	}>();
 
 	// Estado de la barra de herramientas
 	let herramientaActual = $state<string>(herramientaInicial);
 	let colorActual = $state<string>(colorInicial);
 	let grosorActual = $state<number>(grosorInicial);
+	let nivelZoomActual = $state<number>(1); // 1 = sin zoom, 1.5 = zoom medio, 2.5 = zoom alto
 
 	// Estado para stickers
 	let categoriaActual = $state<Categoria>(CATEGORIAS_STICKERS[0]);
@@ -228,7 +230,16 @@
 	 * Ejecuta acción de mover
 	 */
 	function ejecutarMover() {
+		herramientaActual = 'mover';
 		dispatch('accionMover', {});
+	}
+
+	/**
+	 * Cambia el nivel de zoom
+	 */
+	function seleccionarZoom(nivel: number) {
+		nivelZoomActual = nivel;
+		dispatch('cambiarZoom', { nivel });
 	}
 
 	/**
@@ -248,8 +259,7 @@
 					class="boton-accion"
 					onclick={ejecutarMover}
 					aria-label="Mover vista del lienzo"
-					title="Mover (próximamente)"
-					disabled
+					title="Mover"
 				>
 					<span class="icono">↔️</span>
 					<span class="texto">Mover</span>
@@ -323,7 +333,49 @@
 
 	<!-- Sección 3: Opciones Específicas de Herramienta -->
 	<section class="seccion-opciones" aria-label="Opciones de la herramienta seleccionada">
-		{#if herramientaActual === 'pincel'}
+		{#if herramientaActual === 'mover'}
+			<!-- Opciones de Mover: Niveles de Zoom -->
+			<div class="grupo-opciones">
+				<div class="opcion-zoom">
+					<label class="etiqueta-opcion" for="zoom-selector">Nivel de Zoom</label>
+					<div class="botones-zoom">
+						<button
+							type="button"
+							class="boton-zoom"
+							class:seleccionado={nivelZoomActual === 1}
+							onclick={() => seleccionarZoom(1)}
+							aria-label="Zoom normal (x1)"
+							title="Zoom normal"
+						>
+							<span class="icono-zoom">🔍</span>
+							<span class="texto-zoom">x1</span>
+						</button>
+						<button
+							type="button"
+							class="boton-zoom"
+							class:seleccionado={nivelZoomActual === 1.5}
+							onclick={() => seleccionarZoom(1.5)}
+							aria-label="Zoom medio (x1.5)"
+							title="Zoom medio"
+						>
+							<span class="icono-zoom">🔍</span>
+							<span class="texto-zoom">x1.5</span>
+						</button>
+						<button
+							type="button"
+							class="boton-zoom"
+							class:seleccionado={nivelZoomActual === 2.5}
+							onclick={() => seleccionarZoom(2.5)}
+							aria-label="Zoom alto (x2.5)"
+							title="Zoom alto"
+						>
+							<span class="icono-zoom">🔍</span>
+							<span class="texto-zoom">x2.5</span>
+						</button>
+					</div>
+				</div>
+			</div>
+		{:else if herramientaActual === 'pincel'}
 			<!-- Opciones del Pincel: Color y Grosor -->
 			<div class="grupo-opciones">
 				<div class="opcion-color">
@@ -746,7 +798,7 @@
 	}
 
 	.boton-grosor:hover {
-		background: var(--fondo-botones-hover, #000000);
+		background: var(--fondo-botones-hover, #7a7a7a);
 		transform: translateY(-2px);
 	}
 
@@ -980,7 +1032,7 @@
 	}
 
 	.tab-categoria:hover {
-		background: var(--fondo-botones-hover, #000000);
+		background: var(--fondo-botones-hover, #8e8e8e);
 		transform: translateY(-1px);
 	}
 
@@ -1036,7 +1088,7 @@
 	}
 
 	.tab-subcategoria:hover {
-		background: var(--fondo-botones-hover, #000000);
+		background: var(--fondo-botones-hover, #8e8e8e);
 		transform: translateY(-1px);
 	}
 
@@ -1090,7 +1142,7 @@
 	}
 
 	.boton-sticker:hover {
-		background: var(--fondo-botones-hover, #000000);
+		background: var(--fondo-botones-hover, #8b8b8b);
 		transform: translateY(-1px);
 	}
 
@@ -1122,4 +1174,59 @@
 		hyphens: auto;
 		flex-shrink: 0;
 	}
+
+	/* ====== Estilos para Zoom ====== */
+	
+	.opcion-zoom {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		align-items: center;
+		font-size: calc(var(--font-size-base, 1rem) * 1.2);
+	}
+
+	.botones-zoom {
+		display: flex;
+		gap: 0.5rem;
+		align-items: center;
+	}
+
+	.boton-zoom {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0.5rem;
+		border: 2px solid var(--icono-color-borde, #ccc);
+		border-radius: 8px;
+		background: var(--bg, #fff);
+		cursor: pointer;
+		transition: all 0.2s ease;
+		min-width: 60px;
+		font-size: calc(var(--font-size-base, 1rem) * 0.9);
+		color: var(--color-texto, #333);
+	}
+
+	.boton-zoom:hover {
+		background: var(--fondo-botones-hover, #e0e0e0);
+		transform: translateY(-1px);
+	}
+
+	.boton-zoom.seleccionado {
+		border-color: var(--color-primario, #000000);
+		border-width: 3px;
+		background: var(--fondo-botones, #ffca00);
+		color: var(--icono-color-relleno, #000);
+	}
+
+	.boton-zoom:focus {
+		outline: 2px solid var(--fondo-botones-hover, #000);
+		outline-offset: 2px;
+	}
+
+	.icono-zoom {
+		font-size: 1.5rem;
+		line-height: 1;
+	}
+
 </style>

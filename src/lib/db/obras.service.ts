@@ -129,6 +129,48 @@ export async function obtenerObras(artistaId: number): Promise<ObraCompleta[]> {
 }
 
 /**
+ * Recupera una obra específica por su ID
+ * Incluye metadatos e imagen
+ * 
+ * @param obraId - UUID de la obra
+ * @returns Obra completa con su imagen o null si no existe
+ */
+export async function obtenerObraPorId(obraId: string): Promise<ObraCompleta | null> {
+	const db = getDB();
+	if (!db) {
+		throw new Error('Base de datos no disponible');
+	}
+	
+	// Obtener metadatos
+	const obra = await db.obras.get(obraId);
+	if (!obra) {
+		console.log(`[ObrasService] Obra no encontrada: ${obraId}`);
+		return null;
+	}
+	
+	// Cargar blob asociado
+	const obraBlob = await db.obrasBlobs.get(obra.id);
+	
+	// Convertir blob a URL para mostrar en <img>
+	let urlImagen: string | undefined;
+	if (obraBlob?.blob) {
+		const blob = obraBlob.blob instanceof Blob 
+			? obraBlob.blob 
+			: new Blob([obraBlob.blob], { type: obra.mime });
+		urlImagen = URL.createObjectURL(blob);
+	}
+	
+	const obraCompleta: ObraCompleta = {
+		...obra,
+		imagen: obraBlob?.blob,
+		urlImagen
+	};
+	
+	console.log(`[ObrasService] Obra recuperada: ${obraId} - "${obra.titulo}"`);
+	return obraCompleta;
+}
+
+/**
  * Elimina una obra de la base de datos
  * Borra tanto metadatos como blob asociado
  * 

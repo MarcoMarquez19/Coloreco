@@ -72,7 +72,7 @@ export class ColorecoDB extends Dexie {
 			obras: 'id, artistaId, modo, fechaCreacion, titulo',
 			obrasBlobs: 'idObra',
 			// Nuevos stores
-			logrosDefinicion: 'id, codigo',
+			logrosDefinicion: 'id, codigo, escenaId',
 			logrosArtista: 'id, artistaId, logroId'
 		}).upgrade(async (trans) => {
 			// Migración v1 → v2: inicializar catálogo de logros si está vacío
@@ -93,7 +93,7 @@ export class ColorecoDB extends Dexie {
 			ajustes: 'id, artistaId',
 			obras: 'id, artistaId, modo, fechaCreacion, titulo',
 			obrasBlobs: 'idObra',
-			logrosDefinicion: 'id, codigo',
+			logrosDefinicion: 'id, codigo, escenaId',
 			logrosArtista: 'id, artistaId, logroId',
 			// Nuevos stores
 			progreso: 'id, artistaId, modo',
@@ -116,7 +116,7 @@ export class ColorecoDB extends Dexie {
 			ajustes: 'id, artistaId',
 			obras: 'id, artistaId, modo, fechaCreacion, titulo',
 			obrasBlobs: 'idObra',
-			logrosDefinicion: 'id, codigo',
+			logrosDefinicion: 'id, codigo, escenaId',
 			logrosArtista: 'id, artistaId, logroId',
 			progreso: 'id, artistaId, modo',
 			miniaturasBlobs: 'idObra',
@@ -140,7 +140,7 @@ export class ColorecoDB extends Dexie {
 			ajustes: 'id, artistaId',
 			obras: 'id, artistaId, modo, fechaCreacion, titulo',
 			obrasBlobs: 'idObra',
-			logrosDefinicion: 'id, codigo',
+			logrosDefinicion: 'id, codigo, escenaId',
 			logrosArtista: 'id, artistaId, logroId',
 			progreso: 'id, artistaId, modo',
 			miniaturasBlobs: 'idObra',
@@ -165,7 +165,7 @@ export class ColorecoDB extends Dexie {
 			ajustes: 'id, artistaId',
 			obras: 'id, artistaId, modo, fechaCreacion, titulo',
 			obrasBlobs: 'idObra',
-			logrosDefinicion: 'id, codigo',
+			logrosDefinicion: 'id, codigo, escenaId',
 			// Índice compuesto para optimizar consultas de logros desbloqueados
 			logrosArtista: 'id, artistaId, logroId, [artistaId+desbloqueado]',
 			progreso: 'id, artistaId, modo',
@@ -187,7 +187,7 @@ export class ColorecoDB extends Dexie {
 			ajustes: 'id, artistaId',
 			obras: 'id, artistaId, modo, fechaCreacion, titulo',
 			obrasBlobs: 'idObra',
-			logrosDefinicion: 'id, codigo',
+			logrosDefinicion: 'id, codigo, escenaId',
 			logrosArtista: 'id, artistaId, logroId, [artistaId+desbloqueado]',
 			progreso: 'id, artistaId, modo',
 			miniaturasBlobs: 'idObra',

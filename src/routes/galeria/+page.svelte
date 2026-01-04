@@ -148,14 +148,14 @@
 	}
 
 	/**
-	 * Redirige a la vista de edición (placeholder por ahora)
+	 * Redirige a la vista de edición con la obra seleccionada
 	 */
 	function editarObra(): void {
 		if (!obraActual) return;
 		
 		console.log('[Galería] Editar obra:', obraActual.id);
-		// TODO: Implementar navegación a la vista de edición
-		alert(`Función de edición próximamente.\nObra: ${obraActual.titulo}`);
+		// Navegar a la página de edición con el ID de la obra como query param
+		goto(`/galeria/editar/Edicion-obra?obraId=${obraActual.id}`);
 	}
 
 	/**

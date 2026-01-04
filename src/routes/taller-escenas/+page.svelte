@@ -4,13 +4,14 @@
 	import { goto } from '$app/navigation';
 	import { escenasStore, escenasFiltradas, cargando, error } from '$lib/stores/escenas';
 	import type { EscenaCatalogo } from '$lib/db/schemas';
+	import Instrucciones from '$lib/components/modales/Instrucciones.svelte';
 
 	let escenasIniciales: Omit<EscenaCatalogo, 'id'>[] = [];
 	let busqueda = '';
 	let indiceActual = $state<number>(0);
+	let mostrarInstrucciones = $state<boolean>(false);
 
 	onMount(async () => {
-
 
 		// Cargar escenas iniciales desde JSON estático
 		try {
@@ -30,8 +31,15 @@
 
 	onMount(() => {
 		document.body.style.overflow = 'hidden';
+		
+		// Escuchar evento de abrir instrucciones desde el layout
+		const handleAbrirInstrucciones = () => {
+			mostrarInstrucciones = true;
+		};
+		window.addEventListener('abrir-instrucciones', handleAbrirInstrucciones);
 		return () => {
 			document.body.style.overflow = ''; // Restaurar al desmontar
+			window.removeEventListener('abrir-instrucciones', handleAbrirInstrucciones);
 		};
 	});
 
@@ -93,7 +101,7 @@
 		const maxHeight = 1080;
 		const rawScale = window.innerHeight / maxHeight;
 		// limitar entre 0.6 y 1 para evitar escalados excesivos
-		const scale = Math.max(0.6, Math.min(1, rawScale));
+		const scale = Math.max(0.75, Math.min(1, rawScale));
 		contenedorSeleccionarEscenaRef.style.transform = `scale(${scale})`;
 		contenedorSeleccionarEscenaRef.style.transformOrigin = 'top center';
 	}
@@ -210,6 +218,11 @@
 		Ver descripción
 	</button>
 </div>
+
+<!-- Modal de Instrucciones -->
+{#if mostrarInstrucciones}
+	<Instrucciones on:close={() => mostrarInstrucciones = false} />
+{/if}
 
 <style>
     .seleccionar-escenas-contenedor {

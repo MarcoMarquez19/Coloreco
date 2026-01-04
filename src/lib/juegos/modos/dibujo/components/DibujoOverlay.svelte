@@ -12,19 +12,32 @@
 	interface Props {
 		/** Ruta al SVG de accesibilidad de la escena */
 		rutaSvgAccesibilidad?: string;
+		/** Nivel de zoom aplicado */
+		nivelZoom?: number;
+		/** Offset horizontal de pan */
+		offsetX?: number;
+		/** Offset vertical de pan */
+		offsetY?: number;
 	}
 
-	let { rutaSvgAccesibilidad }: Props = $props();
+	let { 
+		rutaSvgAccesibilidad,
+		nivelZoom = 1,
+		offsetX = 0,
+		offsetY = 0
+	}: Props = $props();
 
 	// Dispatcher para comunicar eventos de accesibilidad
 	const dispatch = createEventDispatcher<{
 		seleccionar: { zona: string };
 		zonaEnfocada: { zona: string; label: string };
+		modoNavegacionCambiado: { activo: boolean };
 	}>();
 
 	// Estado del overlay - siempre visible
 	let contenedorOverlay: HTMLDivElement | null = $state(null);
 	let contenedorSvg: HTMLDivElement | null = $state(null);
+	let contenedorTransformable: HTMLDivElement | null = $state(null);
 	let svgCargado = $state<boolean>(false);
 	let modoNavegacionActivo = $state<boolean>(false);
 	let altoContrasteActivo = $state<boolean>(false);
@@ -43,6 +56,8 @@
 				primerElemento.focus();
 			}
 		}
+		// Emitir evento de cambio
+		dispatch('modoNavegacionCambiado', { activo: true });
 		console.log('[DibujoOverlay] Modo de navegación activado');
 	}
 
@@ -56,6 +71,8 @@
 		if (document.activeElement && contenedorSvg?.contains(document.activeElement)) {
 			(document.activeElement as HTMLElement).blur();
 		}
+		// Emitir evento de cambio
+		dispatch('modoNavegacionCambiado', { activo: false });
 		console.log('[DibujoOverlay] Modo de navegación desactivado');
 	}
 
@@ -206,6 +223,12 @@
 			}
 		}
 
+		// Si no hay elemento enfocado o no está en la lista, ir al primero
+		if (indice === -1) {
+			(elementos[0] as HTMLElement).focus();
+			return;
+		}
+
 		// Calcular el siguiente índice (circular)
 		const siguienteIndice = (indice + 1) % elementos.length;
 		(elementos[siguienteIndice] as HTMLElement).focus();
@@ -229,6 +252,12 @@
 			}
 		}
 
+		// Si no hay elemento enfocado o no está en la lista, ir al último
+		if (indice === -1) {
+			(elementos[elementos.length - 1] as HTMLElement).focus();
+			return;
+		}
+
 		// Calcular el índice anterior (circular)
 		const indiceAnterior = indice === 0 ? elementos.length - 1 : indice - 1;
 		(elementos[indiceAnterior] as HTMLElement).focus();
@@ -236,32 +265,17 @@
 
 	/**
 	 * Maneja el evento de teclado en una zona
+	 * NOTA: Shift+A y Shift+D se manejan en manejarTecladoGlobal para evitar conflictos
 	 */
 	function manejarTecladoEnZona(evento: Event) {
 		const keyEvent = evento as KeyboardEvent;
 		const elemento = evento.target as SVGElement;
 
-		// Escape: desactivar modo navegación
+		// Shift + X: desactivar modo navegación
 		if (keyEvent.shiftKey && (keyEvent.key === 'X' || keyEvent.key === 'x')) {
 			keyEvent.preventDefault();
 			desactivarAltoContraste();
 			desactivarNavegacion();
-			return;
-		}
-
-		// Shift + D: navegar al siguiente elemento
-		if (keyEvent.shiftKey && (keyEvent.key === 'D' || keyEvent.key === 'd')) {
-			keyEvent.preventDefault();
-			desactivarAltoContraste();
-			navegarSiguiente();
-			return;
-		}
-
-		// Shift + A: navegar al elemento anterior
-		if (keyEvent.shiftKey && (keyEvent.key === 'A' || keyEvent.key === 'a')) {
-			keyEvent.preventDefault();
-			desactivarAltoContraste();
-			navegarAnterior();
 			return;
 		}
 
@@ -405,6 +419,7 @@
 			} 
 			// Si ya estamos en modo navegación, ir al siguiente
 			else if (modoNavegacionActivo) {
+				desactivarAltoContraste();
 				navegarSiguiente();
 			}
 		}
@@ -419,6 +434,7 @@
 			}
 			// Si ya estamos en modo navegación, ir al anterior
 			else if (modoNavegacionActivo) {
+				desactivarAltoContraste();
 				navegarAnterior();
 			}
 		}
@@ -429,6 +445,16 @@
 		if (rutaSvgAccesibilidad && contenedorSvg) {
 			cargarSvgAccesible();
 		}
+	});
+
+	// Efecto reactivo: aplicar zoom y offset al overlay (igual que en DibujoCanvas)
+	$effect(() => {
+		if (!contenedorTransformable) return;
+		
+		const transform = `scale(${nivelZoom}) translate(${offsetX}px, ${offsetY}px)`;
+		contenedorTransformable.style.transform = transform;
+		contenedorTransformable.style.transformOrigin = 'center center';
+		contenedorTransformable.style.transition = 'transform 0.3s ease';
 	});
 
 	// Efecto reactivo: ajustar tamaño cuando cambia el contenedor o se redimensiona la ventana
@@ -469,30 +495,20 @@
 		{/if}
 	</div>
 
-	<!-- Contenedor para el SVG dinámico -->
+	<!-- Contenedor transformable (recibe zoom y pan como DibujoCanvas) -->
 	<div 
-		class="contenedor-svg-accesible"
-		bind:this={contenedorSvg}
-		aria-label="Mapa interactivo de la escena"
+		class="contenedor-overlay-transform"
+		bind:this={contenedorTransformable}
 	>
-		<!-- El SVG se inyectará aquí dinámicamente -->
-	</div>
-
-	<!-- Panel de información - solo visible cuando hay zona enfocada -->
-	{#if zonaActualmenteFocusada && modoNavegacionActivo}
-		<div class="panel-informacion" role="status" aria-live="polite">
-			<div class="zona-info">
-				<span class="icono-zona">📍</span>
-				<span class="texto-zona">{zonaActualmenteFocusada}</span>
-			</div>
-			<ul class="instruccion-rapida">
-				<li><kbd>Shift+D</kbd> siguiente</li>
-				<li><kbd>Shift+A</kbd> anterior</li>
-				<li><kbd>Enter</kbd> seleccionar</li>
-				<li><kbd>Ctrl+X</kbd> salir</li>
-			</ul>
+		<!-- Contenedor para el SVG dinámico -->
+		<div 
+			class="contenedor-svg-accesible"
+			bind:this={contenedorSvg}
+			aria-label="Mapa interactivo de la escena"
+		>
+			<!-- El SVG se inyectará aquí dinámicamente -->
 		</div>
-	{/if}
+	</div>
 
 </div>
 
@@ -524,6 +540,15 @@
 	/* Cuando la navegación está activa, fondo sutil */
 	.overlay-accesibilidad.navegacion-activa {
 		background: rgba(0, 100, 255, 0.02);
+	}
+
+	/* Contenedor transformable (recibe zoom y pan) */
+	.contenedor-overlay-transform {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		transform-origin: center center;
+		pointer-events: none;
 	}
 
 	/* Contenedor del SVG accesible */
@@ -590,53 +615,5 @@
 		50% { 
 			fill-opacity: 0.25;
 		}
-	}
-
-	/* Panel de información compacto */
-	.panel-informacion {
-		position: absolute;
-		top: 1rem;
-		left: 1rem;
-		background: transparent;
-		color: rgb(0, 0, 0);
-		border-radius: 8px;
-		padding: 0.75rem 1rem;
-		border: 2px solid #000;
-		pointer-events: auto;
-		z-index: 101;
-		max-width: 300px;
-		pointer-events: none;
-	}
-
-	.zona-info {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		margin-bottom: 0.5rem;
-	}
-
-	.icono-zona {
-		font-size: 1.2rem;
-		line-height: 1;
-	}
-
-	.texto-zona {
-		font-weight: 600;
-		font-size: 0.95rem;
-		flex: 1;
-	}
-
-	.instruccion-rapida {
-		font-size: 0.8rem;
-		opacity: 0.9;
-		display: block;
-		list-style: none;
-		padding: 0;
-		margin: 0;
-	}
-
-	.instruccion-rapida li {
-		margin: 0;
-		padding: 0;
 	}
 </style>

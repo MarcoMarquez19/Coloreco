@@ -8,7 +8,7 @@
 import { writable, derived, get } from 'svelte/store';
 import { browser } from '$app/environment';
 import * as logrosService from '$lib/db/logros.service';
-import { LOGROS_HISTORIAS, LOGROS_CUERPO_HUMANO } from '$lib/db/schemas';
+import { LOGROS_HISTORIAS, LOGROS_CUERPO_HUMANO, LOGROS_DIBUJO } from '$lib/db/schemas';
 import type { LogroDefinicion, LogroArtista } from '$lib/db/schemas';
 
 // ============================================================================
@@ -540,5 +540,256 @@ export async function procesarLogrosEscenaCompletada(
 		}
 	} catch (error) {
 		console.error('[LogrosStore] Error procesando logros de escena completada:', error);
+	}
+}
+
+// ============================================================================
+// LOGROS DE DIBUJO
+// ============================================================================
+
+/**
+ * Configuración de logros de dibujo: mapeo de código a criterios de verificación
+ */
+interface CriterioLogroDibujo {
+	codigo: string;
+	tipo: 'categoria' | 'subcategoria' | 'porcentaje_pintado';
+	valor: string; // nombre de categoría, subcategoría, o umbral de porcentaje
+	cantidad: number;
+}
+
+const CRITERIOS_LOGROS_DIBUJO: Record<string, CriterioLogroDibujo> = {
+	[LOGROS_DIBUJO.NATURALEZA_EN_ESCENA_CABAÑA]: {
+		codigo: LOGROS_DIBUJO.NATURALEZA_EN_ESCENA_CABAÑA,
+		tipo: 'categoria',
+		valor: 'natural',
+		cantidad: 3
+	},
+	[LOGROS_DIBUJO.BOSQUE_FRONDOSO_CABAÑA]: {
+		codigo: LOGROS_DIBUJO.BOSQUE_FRONDOSO_CABAÑA,
+		tipo: 'subcategoria',
+		valor: 'flora',
+		cantidad: 8
+	},
+	[LOGROS_DIBUJO.NATURALEZA_EN_ESCENA_ARCOIRIS]: {
+		codigo: LOGROS_DIBUJO.NATURALEZA_EN_ESCENA_ARCOIRIS,
+		tipo: 'subcategoria',
+		valor: 'fauna',
+		cantidad: 5
+	},
+	[LOGROS_DIBUJO.GUARDIAN_DEL_CIELO_ARCOIRIS]: {
+		codigo: LOGROS_DIBUJO.GUARDIAN_DEL_CIELO_ARCOIRIS,
+		tipo: 'subcategoria',
+		valor: 'geografia',
+		cantidad: 5
+	},
+	[LOGROS_DIBUJO.ARTIFICIALIDAD_EN_ESCENA_ESTANQUE]: {
+		codigo: LOGROS_DIBUJO.ARTIFICIALIDAD_EN_ESCENA_ESTANQUE,
+		tipo: 'categoria',
+		valor: 'artificial',
+		cantidad: 2
+	},
+	[LOGROS_DIBUJO.VIDA_ACUATICA_ESTANQUE]: {
+		codigo: LOGROS_DIBUJO.VIDA_ACUATICA_ESTANQUE,
+		tipo: 'subcategoria',
+		valor: 'fauna',
+		cantidad: 6
+	},
+	[LOGROS_DIBUJO.ARTIFICIALIDAD_EN_ESCENA_CIUDAD]: {
+		codigo: LOGROS_DIBUJO.ARTIFICIALIDAD_EN_ESCENA_CIUDAD,
+		tipo: 'subcategoria',
+		valor: 'arquitectura',
+		cantidad: 4
+	},
+	[LOGROS_DIBUJO.TRAFICO_URBANO_CIUDAD]: {
+		codigo: LOGROS_DIBUJO.TRAFICO_URBANO_CIUDAD,
+		tipo: 'subcategoria',
+		valor: 'transporte',
+		cantidad: 2
+	},
+	[LOGROS_DIBUJO.ARTIFICIALIDAD_EN_ESCENA_SENDERO]: {
+		codigo: LOGROS_DIBUJO.ARTIFICIALIDAD_EN_ESCENA_SENDERO,
+		tipo: 'subcategoria',
+		valor: 'cotidianos',
+		cantidad: 4
+	},
+	[LOGROS_DIBUJO.SENDERO_VERDE]: {
+		codigo: LOGROS_DIBUJO.SENDERO_VERDE,
+		tipo: 'subcategoria',
+		valor: 'flora',
+		cantidad: 8
+	},
+	[LOGROS_DIBUJO.ARTISTA_CABAÑA]: {
+		codigo: LOGROS_DIBUJO.ARTISTA_CABAÑA,
+		tipo: 'porcentaje_pintado',
+		valor: '50',
+		cantidad: 50
+	},
+	[LOGROS_DIBUJO.ARTISTA_ARCOIRIS]: {
+		codigo: LOGROS_DIBUJO.ARTISTA_ARCOIRIS,
+		tipo: 'porcentaje_pintado',
+		valor: '50',
+		cantidad: 50
+	},
+	[LOGROS_DIBUJO.ARTISTA_ESTANQUE]: {
+		codigo: LOGROS_DIBUJO.ARTISTA_ESTANQUE,
+		tipo: 'porcentaje_pintado',
+		valor: '50',
+		cantidad: 50
+	},
+	[LOGROS_DIBUJO.ARTISTA_CIUDAD]: {
+		codigo: LOGROS_DIBUJO.ARTISTA_CIUDAD,
+		tipo: 'porcentaje_pintado',
+		valor: '50',
+		cantidad: 50
+	},
+	[LOGROS_DIBUJO.ARTISTA_SENDERO]: {
+		codigo: LOGROS_DIBUJO.ARTISTA_SENDERO,
+		tipo: 'porcentaje_pintado',
+		valor: '50',
+		cantidad: 50
+	}
+};
+
+/**
+ * Función genérica para verificar y otorgar logros de dibujo basados en stickers
+ * 
+ * @param artistaId - ID del artista
+ * @param codigoLogro - Código del logro a verificar
+ * @param progresoActual - Cantidad actual de stickers colocados que cumplen el criterio
+ * @param escenaId - ID de la escena actual
+ */
+async function verificarLogroDibujoGenerico(
+	artistaId: number,
+	codigoLogro: string,
+	progresoActual: number,
+	escenaId: string
+): Promise<void> {
+	if (!browser) return;
+
+	// Obtener la definición del logro para verificar el escenaId requerido
+	const logro = await logrosService.obtenerLogroPorCodigo(codigoLogro);
+	
+	// Validar que estamos en la escena correcta
+	if (!logro || logro.escenaId !== escenaId) {
+		console.debug(`[LogrosStore] Logro '${codigoLogro}' requiere escena '${logro?.escenaId}', actual: '${escenaId}'`);
+		return;
+	}
+
+	// Obtener criterio del logro
+	const criterio = CRITERIOS_LOGROS_DIBUJO[codigoLogro];
+	if (!criterio) {
+		console.error(`[LogrosStore] No hay criterio definido para logro: ${codigoLogro}`);
+		return;
+	}
+
+	// Actualizar progreso
+	await logrosService.actualizarProgresoLogro(
+		artistaId,
+		codigoLogro,
+		progresoActual
+	);
+
+	// Verificar si alcanzó la cantidad requerida
+	if (progresoActual >= criterio.cantidad) {
+		const yaDesbloqueado = await logrosService.tieneLogroDesbloqueado(
+			artistaId,
+			codigoLogro
+		);
+
+		if (!yaDesbloqueado) {
+			await desbloquearLogro(artistaId, codigoLogro);
+		}
+	}
+}
+
+/**
+ * Verifica si un sticker cumple con un criterio específico
+ */
+function stickerCumpleCriterio(
+	sticker: { categoria: string; subcategoria: string },
+	criterio: CriterioLogroDibujo
+): boolean {
+	if (criterio.tipo === 'categoria') {
+		return sticker.categoria === criterio.valor;
+	} else {
+		return sticker.subcategoria === criterio.valor;
+	}
+}
+
+/**
+ * Procesa el logro al colocar un sticker en el modo dibujo
+ * Verifica todos los logros posibles para la escena actual
+ * 
+ * @param artistaId - ID del artista
+ * @param sticker - Información del sticker colocado (categoria, subcategoria)
+ * @param contadoresPorCriterio - Map con contadores de stickers por tipo de criterio
+ * @param escenaId - ID de la escena actual donde se colocó el sticker
+ */
+export async function procesarLogroStickerColocado(
+	artistaId: number,
+	sticker: { categoria: string; subcategoria: string },
+	contadoresPorCriterio: Map<string, number>,
+	escenaId: string
+): Promise<void> {
+	if (!browser) return;
+
+	try {
+		// Verificar cada logro de dibujo
+		for (const [codigoLogro, criterio] of Object.entries(CRITERIOS_LOGROS_DIBUJO)) {
+			// Solo procesar si el sticker cumple el criterio de este logro
+			if (stickerCumpleCriterio(sticker, criterio)) {
+				// Obtener el contador específico para este criterio
+				const key = `${criterio.tipo}_${criterio.valor}`;
+				const contador = contadoresPorCriterio.get(key) || 0;
+				
+				// Verificar el logro con el contador actualizado
+				await verificarLogroDibujoGenerico(
+					artistaId,
+					codigoLogro,
+					contador,
+					escenaId
+				);
+			}
+		}
+	} catch (error) {
+		console.error('[LogrosStore] Error procesando logro de sticker colocado:', error);
+	}
+}
+/**
+ * Procesa los logros de pintura basados en el porcentaje del canvas pintado
+ * Se llama cuando el usuario guarda o termina su dibujo
+ * 
+ * @param artistaId - ID del artista
+ * @param porcentajePintado - Porcentaje del canvas que ha sido pintado (0-100)
+ * @param escenaId - ID de la escena actual
+ */
+export async function procesarLogroPorcentajePintado(
+	artistaId: number,
+	porcentajePintado: number,
+	escenaId: string
+): Promise<void> {
+	if (!browser) return;
+
+	try {
+		// Verificar cada logro de porcentaje pintado
+		for (const [codigoLogro, criterio] of Object.entries(CRITERIOS_LOGROS_DIBUJO)) {
+			// Solo procesar logros de tipo porcentaje_pintado
+			if (criterio.tipo === 'porcentaje_pintado') {
+				// Obtener la definición del logro para verificar el escenaId
+				const logro = await logrosService.obtenerLogroPorCodigo(codigoLogro);
+				
+				// Validar que estamos en la escena correcta
+				if (!logro || logro.escenaId !== escenaId) {
+					continue;
+				}
+
+				// Verificar si el porcentaje cumple el requisito
+				if (porcentajePintado >= criterio.cantidad) {
+					await desbloquearLogro(artistaId, codigoLogro);
+				}
+			}
+		}
+	} catch (error) {
+		console.error('[LogrosStore] Error procesando logro de porcentaje pintado:', error);
 	}
 }
