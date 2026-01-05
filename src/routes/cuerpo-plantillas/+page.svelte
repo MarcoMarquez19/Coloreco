@@ -5,6 +5,7 @@
 	import { escenasStore, escenasFiltradas, cargando, error } from '$lib/stores/escenas';
 	import type { EscenaCatalogo } from '$lib/db/schemas';
 	import Instrucciones from '$lib/components/modales/Instrucciones.svelte';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 	
 	let mostrarInstrucciones = $state<boolean>(false);
 	let escenasIniciales: Omit<EscenaCatalogo, 'id'>[] = [];
@@ -32,6 +33,7 @@
 
 	onMount(() => {
 		document.body.style.overflow = 'hidden';
+		audioStore.playMusic('modo-cuerpo');
 		
 		// Escuchar evento de abrir instrucciones desde el layout
 		const handleAbrirInstrucciones = () => {
@@ -64,6 +66,7 @@
 
 	function navegarAnterior() {
 		if ($escenasFiltradas.length === 0) return;
+		audioStore.playSound('click');
 		// calcular índice previo y aplicar clase de entrada desde la izquierda
 		const prevIndex = ($escenasFiltradas.length === 0) ? 0 : (indiceActual - 1 + $escenasFiltradas.length) % $escenasFiltradas.length;
 		animClass = 'slide-left';
@@ -76,6 +79,7 @@
 
 	function navegarSiguiente() {
 		if ($escenasFiltradas.length === 0) return;
+		audioStore.playSound('click');
 		// calcular siguiente índice y aplicar clase de entrada desde la derecha
 		const nextIndex = ($escenasFiltradas.length === 0) ? 0 : (indiceActual + 1) % $escenasFiltradas.length;
 		animClass = 'slide-right';
@@ -153,6 +157,7 @@
 			<button 
 				class="boton-flecha boton-izquierda pattern-yellow"
 				onclick={navegarAnterior}
+				use:clickSound
 				aria-label="Escena anterior"
 				title="Navegar a la escena anterior (← tecla izquierda)"
 			> 
@@ -192,6 +197,7 @@
 			<button 
 				class="boton-flecha boton-derecha pattern-yellow"
 				onclick={navegarSiguiente}
+				use:clickSound
 				aria-label="Escena siguiente"
 				title="Navegar a la escena siguiente (→ tecla derecha)"
 			> 
@@ -214,6 +220,7 @@
 		aria-label="Selecciona la escena a utilizar en el taller de dibujo" 
 		title="Usar la escena seleccionada"
 		onclick={verDescripcionEscena}
+		use:clickSound
 	>
 		Usar esta escena
 	</button>

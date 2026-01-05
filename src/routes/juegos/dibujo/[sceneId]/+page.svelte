@@ -21,6 +21,7 @@
 	import * as logrosStore from '$lib/stores/logros';
 	import LogroDesbloqueado from '$lib/components/modales/LogroDesbloqueado.svelte';
 	import type { LogroDefinicion } from '$lib/db/schemas';
+	import { audioStore } from '$lib/stores/audio';
 
 	// Referencias a los componentes
 	let canvasRef: DibujoCanvas;
@@ -149,6 +150,9 @@
 			// Llamar al método de guardado del canvas
 			await canvasRef.guardarDibujo();
 			
+			// Reproducir sonido de guardado exitoso
+			audioStore.playSound('save');
+			
 			// Procesar logro de porcentaje pintado si hay artista activo y escena
 			if (artistaId && escenaIdActual) {
 				await logrosStore.procesarLogroPorcentajePintado(
@@ -251,6 +255,13 @@
 		// Limpiar timeout anterior si existe
 		if (timeoutMensaje) {
 			clearTimeout(timeoutMensaje);
+		}
+
+		// Reproducir sonido correspondiente
+		if (tipo === 'success') {
+			audioStore.playSound('success');
+		} else {
+			audioStore.playSound('error');
 		}
 
 		// Mostrar mensaje

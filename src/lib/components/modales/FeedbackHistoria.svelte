@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import { configuraciones } from '$lib/stores/settings';
+  import { audioStore } from '$lib/stores/audio';
 
   interface Props {
     correct?: boolean;
@@ -15,6 +16,7 @@
   let backdropRef = $state<HTMLElement | null>(null);
 
   function handleClose() {
+    audioStore.playSound('click');
     dispatch('close');
   }
 

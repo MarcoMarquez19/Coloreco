@@ -6,6 +6,7 @@
     import { obtenerArtistaActivo } from '$lib/db/artistas.service';
     import { obtenerLogrosArtista, obtenerDefinicionesLogrosJSON } from '$lib/db/logros.service';
     import { estadisticasLogros, cargarLogrosArtista } from '$lib/stores/logros';
+    import { audioStore } from '$lib/stores/audio';
 
     // Props
     interface Props {
@@ -42,6 +43,7 @@
 
     function logroAnterior() {
         if (logrosDisplay.length === 0) return;
+        audioStore.playSound('click');
         const prevIndex = (logrosDisplay.length === 0) ? 0 : (logroActualIndex - 1 + logrosDisplay.length) % logrosDisplay.length;
         animClass = 'slide-left';
         if (animTimer) { clearTimeout(animTimer); animTimer = null; }
@@ -53,6 +55,7 @@
 
     function logroSiguiente() {
         if (logrosDisplay.length === 0) return;
+        audioStore.playSound('click');
         const nextIndex = (logrosDisplay.length === 0) ? 0 : (logroActualIndex + 1) % logrosDisplay.length;
         animClass = 'slide-right';
         if (animTimer) { clearTimeout(animTimer); animTimer = null; }
@@ -116,8 +119,10 @@
     // Navegación con teclado
     function manejarTecla(event: KeyboardEvent) {
         if (event.key === 'ArrowLeft') {
+            audioStore.playSound('click');
             logroAnterior();
         } else if (event.key === 'ArrowRight') {
+            audioStore.playSound('click');
             logroSiguiente();
         }
     }

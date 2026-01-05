@@ -9,6 +9,7 @@
 	import * as logicaHistorias from '$lib/stores/historias';
 	import * as logrosStore from '$lib/stores/logros';
 	import type { LogroDefinicion } from '$lib/db/schemas';
+	import { audioStore } from '$lib/stores/audio';
 
 	interface Opcion {
 		id: string;
@@ -52,7 +53,7 @@
 	let logroDesbloqueadoActual = $state<LogroDefinicion | null>(null);
 	let mostrarModalLogro = $state<boolean>(false);
 
-	onMount(async () => {
+	onMount(async () => {		
 		try {
 			// Obtener el artista actual
 			const artista = await obtenerArtistaActivo();
@@ -130,6 +131,14 @@
 		opcionCorrecta = opcionElegida.esCorrecta;
 		feedbackMostrado = opcionElegida.feedback;
 		pista = opcionElegida.feedback;
+		
+		// Reproducir sonido según la respuesta
+		if (opcionCorrecta) {
+			audioStore.playSound('success');
+		} else {
+			audioStore.playSound('error');
+		}
+		
 		mostrarModal = true;
 
 		// Procesar la respuesta en la BD

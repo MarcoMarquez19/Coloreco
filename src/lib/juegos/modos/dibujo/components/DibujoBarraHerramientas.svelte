@@ -9,6 +9,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { CATEGORIAS_STICKERS, TAMANOS_STICKER, type Sticker, type Categoria, type Subcategoria } from '../stickers.data';
+	import { clickSound } from '$lib/stores/audio';
 
 	// Props para configurar herramientas y acciones visibles
 	interface Props {
@@ -258,6 +259,7 @@
 				<button
 					class="boton-accion pattern-yellow"
 					onclick={ejecutarMover}
+					use:clickSound
 					aria-label="Mover vista del lienzo"
 					title="Mover"
 				>
@@ -270,6 +272,7 @@
 				<button
 					class="boton-accion pattern-yellow"
 					onclick={ejecutarDeshacer}
+					use:clickSound
 					aria-label="Deshacer última acción"
 					title="Deshacer"
 				>
@@ -282,6 +285,7 @@
 				<button
 					class="boton-accion pattern-yellow"
 					onclick={ejecutarGuardar}
+					use:clickSound
 					aria-label="Guardar dibujo actual"
 					title="Guardar (próximamente)"
 				>
@@ -294,6 +298,7 @@
 				<button
 					class="boton-accion boton-terminar pattern-yellow"
 					onclick={ejecutarTerminar}
+					use:clickSound
 					aria-label="Terminar sesión de dibujo"
 					title="Terminar (próximamente)"
 				>
@@ -316,6 +321,7 @@
 				class="boton-herramienta pattern-yellow"
 				class:activa={herramientaActual === herramienta.id}
 				onclick={() => seleccionarHerramienta(herramienta.id)}
+				use:clickSound
 				aria-label={herramienta.descripcion}
 				aria-pressed={herramientaActual === herramienta.id}
 				title={herramienta.nombre}
@@ -344,6 +350,7 @@
 							class="boton-zoom"
 							class:seleccionado={nivelZoomActual === 1}
 							onclick={() => seleccionarZoom(1)}
+							use:clickSound
 							aria-label="Zoom normal (x1)"
 							title="Zoom normal"
 						>
@@ -355,6 +362,7 @@
 							class="boton-zoom"
 							class:seleccionado={nivelZoomActual === 1.5}
 							onclick={() => seleccionarZoom(1.5)}
+							use:clickSound
 							aria-label="Zoom medio (x1.5)"
 							title="Zoom medio"
 						>
@@ -366,6 +374,7 @@
 							class="boton-zoom"
 							class:seleccionado={nivelZoomActual === 2.5}
 							onclick={() => seleccionarZoom(2.5)}
+							use:clickSound
 							aria-label="Zoom alto (x2.5)"
 							title="Zoom alto"
 						>
@@ -387,6 +396,7 @@
 								class:seleccionado={colorActual === color}
 								style="background-color: {color}"
 								onclick={() => seleccionarColor(color)}
+								use:clickSound
 								aria-label="Color {nombre}"
 								role="radio"
 								aria-checked={colorActual === color}
@@ -403,6 +413,7 @@
 							class="boton-grosor"
 							class:seleccionado={grosorActual === 5}
 							onclick={() => { grosorActual = 5; dispatch('cambiarGrosor', { grosor: 5 }); }}
+							use:clickSound
 							aria-label="Grosor pequeño"
 							role="radio"
 							aria-checked={grosorActual === 5}
@@ -415,6 +426,7 @@
 							class="boton-grosor"
 							class:seleccionado={grosorActual === 15}
 							onclick={() => { grosorActual = 15; dispatch('cambiarGrosor', { grosor: 15 }); }}
+							use:clickSound
 							aria-label="Grosor mediano"
 							role="radio"
 							aria-checked={grosorActual === 15}
@@ -427,6 +439,7 @@
 							class="boton-grosor"
 							class:seleccionado={grosorActual === 30}
 							onclick={() => { grosorActual = 30; dispatch('cambiarGrosor', { grosor: 30 }); }}
+							use:clickSound
 							aria-label="Grosor grande"
 							role="radio"
 							aria-checked={grosorActual === 30}
@@ -448,6 +461,7 @@
 							class="boton-grosor"
 							class:seleccionado={grosorActual === 15}
 							onclick={() => { grosorActual = 15; dispatch('cambiarGrosor', { grosor: 15 }); }}
+							use:clickSound
 							aria-label="Grosor pequeño"
 							role="radio"
 							aria-checked={grosorActual === 15}
@@ -460,6 +474,7 @@
 							class="boton-grosor"
 							class:seleccionado={grosorActual === 40}
 							onclick={() => { grosorActual = 40; dispatch('cambiarGrosor', { grosor: 40 }); }}
+							use:clickSound
 							aria-label="Grosor mediano"
 							role="radio"
 							aria-checked={grosorActual === 40}
@@ -472,6 +487,7 @@
 							class="boton-grosor"
 							class:seleccionado={grosorActual === 70}
 							onclick={() => { grosorActual = 70; dispatch('cambiarGrosor', { grosor: 70 }); }}
+							use:clickSound
 							aria-label="Grosor grande"
 							role="radio"
 							aria-checked={grosorActual === 70}
@@ -498,6 +514,7 @@
 							abrirPanelStickers();
 						}
 					}}
+					use:clickSound
 					aria-label="Abrir panel de stickers"
 					aria-expanded={mostrarPanelStickers}
 				>
@@ -515,6 +532,7 @@
 								class="boton-tamano"
 								class:seleccionado={tamanoStickerActual === tamano.escala}
 								onclick={() => seleccionarTamanoSticker(tamano.escala)}
+								use:clickSound
 								aria-label={tamano.descripcion}
 								role="radio"
 								aria-checked={tamanoStickerActual === tamano.escala}
@@ -536,6 +554,7 @@
 						<button
 							class="boton-cerrar-panel"
 							onclick={() => mostrarPanelStickers = false}
+							use:clickSound
 							aria-label="Cerrar panel de stickers"
 						>
 							✕
@@ -549,6 +568,7 @@
 								class="tab-categoria"
 								class:activa={categoriaActual.id === categoria.id}
 								onclick={() => seleccionarCategoria(categoria)}
+								use:clickSound
 								role="tab"
 								aria-selected={categoriaActual.id === categoria.id}
 								aria-label={categoria.nombre}
@@ -567,6 +587,7 @@
 								class="tab-subcategoria"
 								class:activa={subcategoriaActual.id === subcategoria.id}
 								onclick={() => subcategoriaActual = subcategoria}
+								use:clickSound
 								role="tab"
 								aria-selected={subcategoriaActual.id === subcategoria.id}
 								aria-label={subcategoria.nombre}
@@ -584,6 +605,7 @@
 								class="boton-sticker"
 								class:seleccionado={stickerSeleccionado?.id === sticker.id}
 								onclick={() => seleccionarStickerItem(sticker)}
+								use:clickSound
 								role="option"
 								aria-selected={stickerSeleccionado?.id === sticker.id}
 								aria-label={sticker.nombre}

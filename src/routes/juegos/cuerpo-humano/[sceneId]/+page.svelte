@@ -23,6 +23,7 @@
 	import type { LogroDefinicion } from '$lib/db/schemas';
 	import type { EscenaConfig } from '$lib/juegos/modos/cuerpo-humano/types/cuerpo-humano.types';
 	import { obtenerConfiguracionEscena } from '$lib/juegos/modos/cuerpo-humano/configuraciones-escenas';
+	import { audioStore } from '$lib/stores/audio';
 
 	// Referencias a los componentes
 	let canvasRef: DibujoCanvas;
@@ -69,7 +70,7 @@
 	let escenaConfig = $state<EscenaConfig | null>(null);
 
 	// Cargar la configuración de la escena
-	onMount(async () => {
+	onMount(async () => {		
 		const sceneId = $page.params.sceneId || 'default';
 		
 		// Cargar configuración desde el archivo de configuraciones
@@ -224,6 +225,9 @@
 			partesColocadas = new Set([...partesColocadas, parte.id]);
 			// Guardar parte con su zona para mostrar etiqueta
 			partesColocadasConZona = [...partesColocadasConZona, { parteId: parte.id, parteNombre: parte.nombre, zona }];
+			
+			// Reproducir sonido de éxito
+			audioStore.playSound('success');
 			mostrarMensajeFeedback('¡Correcto!', 'success');
 			
 			console.log('[CuerpoHumano] Parte colocada:', parte.nombre, 'Total:', partesColocadas.size);
@@ -262,6 +266,8 @@
 		} else {
 			// ❌ Incorrecto
 			erroresEnEscenaActual++;
+			// Reproducir sonido de error
+			audioStore.playSound('error');
 			mostrarMensajeFeedback('Intenta de nuevo', 'error');
 			
 			// Incrementar errores en DB
@@ -293,6 +299,9 @@
 		try {
 			// Llamar al método de guardado del canvas
 			await canvasRef.guardarDibujo();
+			
+			// Reproducir sonido de guardado exitoso
+			audioStore.playSound('save');
 			
 			// Mostrar modal de éxito
 			modalGuardadoExitoso = true;
@@ -435,6 +444,9 @@
 		if (timeoutMensaje) {
 			clearTimeout(timeoutMensaje);
 		}
+
+		// Nota: Los sonidos ya se reproducen en manejarColocarParte
+		// No los duplicamos aquí
 
 		// Mostrar mensaje
 		mensajeTexto = texto;

@@ -28,9 +28,9 @@ interface AudioState {
 
 /** Rutas a archivos de música de fondo por pantalla */
 export const MUSIC_TRACKS = {
-	menu: '/audio/music/menu.mp3',
-	estudio: '/audio/music/estudio.mp3',
-	galeria: '/audio/music/galeria.mp3',
+	modoDibujo: '/audio/music/modo_dibujo.mp3',
+	modoCuerpo: '/audio/music/modo_cuerpo.mp3',
+	modoHistorias: '/audio/music/modo_historias.mp3',
 	default: '/audio/music/background.mp3'
 } as const;
 
@@ -41,7 +41,10 @@ export const SOUND_EFFECTS = {
 	error: '/audio/effects/error.mp3',
 	hover: '/audio/effects/hover.mp3',
 	draw: '/audio/effects/draw.mp3',
-	save: '/audio/effects/save.mp3'
+	save: '/audio/effects/save.mp3',
+	warning: '/audio/effects/warning.mp3',
+	achievement: '/audio/effects/achievement.mp3',
+	finished: '/audio/effects/finished.mp3'
 } as const;
 
 // ============================================================================

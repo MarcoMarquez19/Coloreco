@@ -3,11 +3,13 @@
   import { configuraciones } from '$lib/stores/settings';
   import Teclado from '$lib/components/iconos/Teclado.svelte';
   import Mouse from '$lib/components/iconos/Mouse.svelte';
+  import { audioStore } from '$lib/stores/audio';
 
   const dispatch = createEventDispatcher();
   let modalRef = $state<HTMLElement | null>(null);
 
   function handleClose() {
+    audioStore.playSound('click');
     dispatch('close');
   }
 

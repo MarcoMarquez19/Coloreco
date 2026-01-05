@@ -6,6 +6,7 @@
 	import { obtenerArtistaActivo } from '$lib/db/artistas.service';
 	import * as logicaHistorias from '$lib/stores/historias';
 	import type { CapituloConProgreso } from '$lib/stores/historias';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 
 	let historiaId = $state<string>('');
 	let tituloHistoria = $state<string>('');

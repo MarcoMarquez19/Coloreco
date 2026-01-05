@@ -2,6 +2,7 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import { configuraciones } from '$lib/stores/settings';
   import type { LogroDefinicion } from '$lib/db/schemas';
+  import { audioStore } from '$lib/stores/audio';
 
   interface Props {
     logro?: LogroDefinicion | null;
@@ -14,6 +15,7 @@
   let backdropRef = $state<HTMLElement | null>(null);
 
   function handleClose() {
+    audioStore.playSound('click');
     dispatch('close');
   }
 
@@ -38,6 +40,9 @@
 
   // Aplicar modos de accesibilidad cuando se monta el modal
   onMount(() => {
+    // Reproducir sonido de logro desbloqueado
+    audioStore.playSound('achievement');
+    
     let blockedElements: Array<{element: HTMLElement, originalTabIndex: string | null}> = [];
     
     // Prevenir scroll del body cuando el modal está abierto

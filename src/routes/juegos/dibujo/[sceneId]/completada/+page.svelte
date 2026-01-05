@@ -8,6 +8,7 @@
 	import type { EscenaCatalogo } from '$lib/db/schemas';
 	import type { LogroConEstado } from '$lib/stores/logros';
 	import ConfetiImagen from '$lib/components/iconos/Confeti.png';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 
 	let escena: EscenaCatalogo | null = $state<EscenaCatalogo | null>(null);
 	let logros: LogroConEstado[] = $state<LogroConEstado[]>([]);
@@ -23,6 +24,8 @@
 	let miniaturaCanvas = $state<string | null>(null);
 
 	onMount(async () => {
+		audioStore.playSound('finished');
+		
 		try {
 			const sceneId = $page.params.sceneId || 'default';
 			
@@ -195,13 +198,13 @@
 				</p>
 				<!-- Botones de acción (abajo en todo el ancho) -->
 				<div class="botones-contenedor" data-magnificable>
-					<button class="boton-accion boton-menu pattern-yellow" onclick={volverAlMenu} data-magnificable data-readable>
+					<button class="boton-accion boton-menu pattern-yellow" onclick={volverAlMenu} use:clickSound data-magnificable data-readable>
 						Regresar al menú
 					</button>
-					<button class="boton-accion boton-galeria pattern-yellow" onclick={irAGaleria} data-magnificable data-readable>
+					<button class="boton-accion boton-galeria pattern-yellow" onclick={irAGaleria} use:clickSound data-magnificable data-readable>
 						Ir a la galería
 					</button>
-					<button class="boton-accion boton-logros pattern-yellow" onclick={verLogros} data-magnificable data-readable>
+					<button class="boton-accion boton-logros pattern-yellow" onclick={verLogros} use:clickSound data-magnificable data-readable>
 						Ver logros
 					</button>
 				</div>

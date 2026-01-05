@@ -8,6 +8,7 @@
 	import { obtenerConfiguracionEscena } from '$lib/juegos/modos/cuerpo-humano/configuraciones-escenas';
 	import type { EscenaConfig } from '$lib/juegos/modos/cuerpo-humano/types/cuerpo-humano.types';
 	import ConfetiImagen from '$lib/components/iconos/Confeti.png';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 
 	let escenaConfig = $state<EscenaConfig | null>(null);
 	let cargando = $state<boolean>(true);
@@ -36,6 +37,8 @@
 	};
 
 	onMount(async () => {
+		audioStore.playSound('finished');
+		
 		try {
 			const sceneId = $page.params.sceneId || 'default';
 			
@@ -316,13 +319,13 @@
 
 				<!-- Botones de acción -->
 				<div class="botones-contenedor" data-magnificable>
-					<button class="boton-accion boton-menu pattern-yellow" onclick={volverAlMenu} data-magnificable data-readable>
+					<button class="boton-accion boton-menu pattern-yellow" onclick={volverAlMenu} use:clickSound data-magnificable data-readable>
 						Regresar al menú
 					</button>
-					<button class="boton-accion boton-galeria pattern-yellow" onclick={irAGaleria} data-magnificable data-readable>
+					<button class="boton-accion boton-galeria pattern-yellow" onclick={irAGaleria} use:clickSound data-magnificable data-readable>
 						Ir a la galería
 					</button>
-					<button class="boton-accion boton-logros pattern-yellow" onclick={verLogros} data-magnificable data-readable>
+					<button class="boton-accion boton-logros pattern-yellow" onclick={verLogros} use:clickSound data-magnificable data-readable>
 						Ver logros
 					</button>
 				</div>

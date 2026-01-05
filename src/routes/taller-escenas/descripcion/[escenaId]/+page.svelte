@@ -8,6 +8,7 @@
 	import { obtenerSesionActual } from '$lib/db/artistas.service';
 	import type { EscenaCatalogo } from '$lib/db/schemas';
 	import type { LogroConEstado } from '$lib/stores/logros';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 
 	let escena: EscenaCatalogo | null = $state<EscenaCatalogo | null>(null);
 	let logros: LogroConEstado[] = $state<LogroConEstado[]>([]);
@@ -144,6 +145,7 @@
 			aria-label="Selecciona la escena a utilizar en el taller de dibujo" 
 			title="Ver Descripción de la escena seleccionada"
 			onclick={() => empezarDibujo(escena!.escenaId)}
+			use:clickSound
 		>
 			¡Vamos a crear!
 		</button>

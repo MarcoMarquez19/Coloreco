@@ -5,6 +5,7 @@
     import { goto } from '$app/navigation';
     import { onMount } from 'svelte';
     import {obtenerArtistas,cambiarArtista} from '$lib/db/artistas.service';
+    import { audioStore, clickSound } from '$lib/stores/audio';
 
     function irAlTallerDibujo() {
         goto('/taller-escenas');
@@ -71,6 +72,7 @@
 		aria-label="Entra al modo de juego de dibujo" 
 		title="Taller de escenas creativas"   
 		onclick={irAlTallerDibujo}
+		use:clickSound
 		>
         <img src={LibroDibujo} alt="Logo modo de juegos taller de dibujo - Cuaderno de dibujos">
 		Taller de escenas creativas
@@ -79,6 +81,7 @@
 		aria-label="Entra al modo de juego del cuerpo humano" 
 		title="El cuerpo y yo"
 		onclick={irAlModoPartesDelCuerpo}
+		use:clickSound
 		>
         <img src={CuerpoHumano} alt="Logo modo de juegos cuerpo humano - Imagen del cuerpo humano">
 		El cuerpo y yo
@@ -87,6 +90,7 @@
 		aria-label="Entra al modo de juego de historias" 
 		title="El rincón de las historias"
 		onclick={irAModoHistorias}
+		use:clickSound
 		>
         <img src={LibroHistorias} alt="Logo modo de juegos historias - Libro de historias">
 		El rincón de las historias

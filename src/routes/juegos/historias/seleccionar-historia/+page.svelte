@@ -7,6 +7,7 @@
 	import { obtenerArtistaActivo } from '$lib/db/artistas.service';
 	import * as logicaHistorias from '$lib/stores/historias';
 	import type { HistoriaConProgreso } from '$lib/stores/historias';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 
 	let historias = $state<HistoriaConProgreso[]>([]);
 	let cargando = $state<boolean>(true);
@@ -80,6 +81,7 @@
 
 	function navegarAnterior() {
 		if (historias.length === 0) return;
+		audioStore.playSound('click');
 		// aplicar clase de entrada desde la izquierda
 		animClass = 'slide-left';
 		if (animTimer) { clearTimeout(animTimer); animTimer = null; }
@@ -96,6 +98,7 @@
 
 	function navegarSiguiente() {
 		if (historias.length === 0) return;
+		audioStore.playSound('click');
 		// aplicar clase de entrada desde la derecha
 		animClass = 'slide-right';
 		if (animTimer) { clearTimeout(animTimer); animTimer = null; }
@@ -188,6 +191,7 @@
 			<button 
 				class="boton-flecha boton-izquierda pattern-yellow"
 				onclick={navegarAnterior}
+				use:clickSound
 				aria-label="Historia anterior"
 				title="Navegar a la historia anterior (← tecla izquierda)"
 				data-magnificable
@@ -222,6 +226,7 @@
 						aria-label={`Jugar la historia ${historiaActual.titulo}`}
 						title="Jugar la historia seleccionada"
 						onclick={verHistoria}
+						use:clickSound
 						data-magnificable
 						data-readable
 					>
@@ -236,6 +241,7 @@
 			<button 
 				class="boton-flecha boton-derecha pattern-yellow"
 				onclick={navegarSiguiente}
+				use:clickSound
 				aria-label="Historia siguiente"
 				title="Navegar a la historia siguiente (→ tecla derecha)"
 				data-magnificable

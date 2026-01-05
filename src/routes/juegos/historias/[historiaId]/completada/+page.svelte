@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import LibroHistorias from '$lib/components/iconos/LibroAbierto.png';
 	import ConfetiImagen from '$lib/components/iconos/Confeti.png';
+	import { audioStore } from '$lib/stores/audio';
 
 	interface Historia {
 		historiaId: string;
@@ -20,6 +21,8 @@
 	let tamañoImagen = '20rem';
 
 	onMount(async () => {
+		audioStore.playSound('finished');
+		
 		try {
 			const historiaId = $page.params.historiaId;
 			

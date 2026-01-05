@@ -75,6 +75,7 @@
 	 */
 	function irAnterior(): void {
 		if (puedeRetroceder) {
+			audioStore.playSound('click');
 			indiceActual--;
 		}
 	}
@@ -84,6 +85,7 @@
 	 */
 	function irSiguiente(): void {
 		if (puedeAvanzar) {
+			audioStore.playSound('click');
 			indiceActual++;
 		}
 	}
@@ -93,6 +95,7 @@
 	 */
 	function abrirModalEliminar(): void {
 		if (!obraActual) return;
+		audioStore.playSound('warning');
 		modalEliminarAbierto = true;
 	}
 
@@ -124,6 +127,7 @@
 				}
 
 				// Mostrar modal de éxito
+				audioStore.playSound('success');
 				modalEliminadoExitoso = true;
 			} else {
 				alert('Error al eliminar la obra. Inténtalo nuevamente.');
@@ -442,6 +446,7 @@
 			class="modal-boton modal-boton-cancelar"
 			onclick={() => modalEliminarAbierto = false}
 			type="button"
+			use:clickSound
 		>
 			Cancelar
 		</button>
@@ -478,6 +483,7 @@
 			class="modal-boton modal-boton-aceptar"
 			onclick={() => modalEliminadoExitoso = false}
 			type="button"
+			use:clickSound
 			style="background: #4caf50;"
 		>
 			Aceptar

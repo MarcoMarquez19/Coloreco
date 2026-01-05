@@ -40,6 +40,7 @@
     // Maneja la tecla Q globalmente para cerrar el modal
     function handleGlobalKeydown(event: KeyboardEvent) {
         if (event.key === 'q' || event.key === 'Q') {
+            audioStore.playSound('click');
             dispatch('close');
         }
     }
