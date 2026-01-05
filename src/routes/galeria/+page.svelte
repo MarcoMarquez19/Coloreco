@@ -135,16 +135,47 @@
 	}
 
 	/**
-	 * Descarga la obra actual al dispositivo
+	 * Descarga la obra actual al dispositivo como JPG con fondo blanco
 	 */
 	function descargarObra(): void {
 		if (!obraActual || !obraActual.urlImagen) return;
 		
-		// Crear enlace temporal para descarga
-		const enlace = document.createElement('a');
-		enlace.href = obraActual.urlImagen;
-		enlace.download = `${obraActual.titulo.replace(/\s+/g, '_')}.png`;
-		enlace.click();
+		// Crear imagen temporal para cargar la obra
+		const img = new Image();
+		img.crossOrigin = 'anonymous';
+		
+		img.onload = () => {
+			// Crear canvas para conversión
+			const canvas = document.createElement('canvas');
+			canvas.width = img.width;
+			canvas.height = img.height;
+			const ctx = canvas.getContext('2d');
+			
+			if (!ctx) return;
+			
+			// Rellenar con fondo blanco
+			ctx.fillStyle = '#FFFFFF';
+			ctx.fillRect(0, 0, canvas.width, canvas.height);
+			
+			// Dibujar la imagen encima
+			ctx.drawImage(img, 0, 0);
+			
+			// Convertir a JPG y descargar
+			canvas.toBlob((blob) => {
+				if (!blob) return;
+				
+				const url = URL.createObjectURL(blob);
+				const enlace = document.createElement('a');
+				enlace.href = url;
+				enlace.download = `${obraActual.titulo.replace(/\s+/g, '_')}.jpg`;
+				enlace.click();
+				
+				// Liberar URL temporal
+				setTimeout(() => URL.revokeObjectURL(url), 100);
+			}, 'image/jpeg', 0.95);
+		};
+		
+		img.src = obraActual.urlImagen;
 	}
 
 	/**
