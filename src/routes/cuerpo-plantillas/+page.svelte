@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { escenasStore, escenasFiltradas, cargando, error } from '$lib/stores/escenas';
 	import type { EscenaCatalogo } from '$lib/db/schemas';
-	import Instrucciones from '$lib/components/modales/Instrucciones.svelte';
+	import InstruccionesCuerpo from '$lib/components/modales/InstruccionesCuerpo.svelte';
 	import { audioStore, clickSound } from '$lib/stores/audio';
 	
 	let mostrarInstrucciones = $state<boolean>(false);
@@ -33,7 +33,6 @@
 
 	onMount(() => {
 		document.body.style.overflow = 'hidden';
-		audioStore.playMusic('modo-cuerpo');
 		
 		// Escuchar evento de abrir instrucciones desde el layout
 		const handleAbrirInstrucciones = () => {
@@ -228,7 +227,7 @@
 
 <!-- Modal de Instrucciones -->
 {#if mostrarInstrucciones}
-	<Instrucciones on:close={() => mostrarInstrucciones = false} />
+	<InstruccionesCuerpo on:close={() => mostrarInstrucciones = false} />
 {/if}
 
 
