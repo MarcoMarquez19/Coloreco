@@ -101,7 +101,7 @@
         </div>
     </div>
 
-        <button class="boton-logro"
+        <button class="boton-logro pattern-yellow"
             aria-label="Ver logros del taller de escenas creativas" 
             title="Logros Taller"   
             onclick={irALogrosTaller}
@@ -109,7 +109,7 @@
             <img src={LibroDibujo} alt="Logo logros taller de dibujo - Cuaderno de dibujos">
             Logros Taller
         </button>
-        <button class="boton-logro"
+        <button class="boton-logro pattern-yellow"
             aria-label="Ver logros del cuerpo y yo" 
             title="Logros Cuerpo"
             onclick={irALogrosCuerpo}
@@ -117,7 +117,7 @@
             <img src={CuerpoHumano} alt="Logo logros cuerpo humano - Imagen del cuerpo humano">
             Logros Cuerpo
         </button>
-        <button class="boton-logro"
+        <button class="boton-logro pattern-yellow"
             aria-label="Ver logros del rincón de historias" 
             title="Logros Historias"
             onclick={irALogrosHistorias}

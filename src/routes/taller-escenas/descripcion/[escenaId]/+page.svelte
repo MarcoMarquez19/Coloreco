@@ -140,7 +140,7 @@
 			<p>{error}</p>
 		</section>
 	{:else if escena}
-	    <button class="boton-crear"
+	    <button class="boton-crear pattern-yellow"
 			aria-label="Selecciona la escena a utilizar en el taller de dibujo" 
 			title="Ver Descripción de la escena seleccionada"
 			onclick={() => empezarDibujo(escena!.escenaId)}
@@ -165,7 +165,7 @@
 			</div>
 
 			<div class="col-derecha" aria-label="Paneles de información de la escena">
-				<section class="panel panel-descripcion" aria-label="Descripción de la escena" tabindex="-1">
+<section class="panel panel-descripcion pattern-black" aria-label="Descripción de la escena" tabindex="-1">
 					<p class="texto-descripcion">
                         {#if escena.descripcion}
                             {escena.descripcion}
@@ -177,7 +177,7 @@
 
                 <h2 tabindex="-1">Retos de la escena</h2>
 
-				<section class="panel panel-retos" aria-label="Retos y logros" tabindex="-1">
+			<section class="panel panel-retos pattern-black" aria-label="Retos y logros" tabindex="-1">
 					{#if logros.length > 0}
 						<div class="logros-lista">
 							{#each logros as logro (logro.definicion.id)}

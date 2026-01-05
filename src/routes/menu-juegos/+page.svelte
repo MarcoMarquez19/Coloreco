@@ -67,7 +67,7 @@
 <div class="seleccionar-juegos-contenedor" bind:this={contenedorMenuJuegosRef} aria-label="Contenedor para seleccionar el juego de preferencia del artista" data-magnificable>
     <h1>¿Qué quieres probar?</h1>
 
-    <button class="boton-juego"
+    <button class="boton-juego pattern-yellow"
 		aria-label="Entra al modo de juego de dibujo" 
 		title="Taller de escenas creativas"   
 		onclick={irAlTallerDibujo}
@@ -75,7 +75,7 @@
         <img src={LibroDibujo} alt="Logo modo de juegos taller de dibujo - Cuaderno de dibujos">
 		Taller de escenas creativas
 	</button>
-    <button class="boton-juego"
+    <button class="boton-juego pattern-yellow"
 		aria-label="Entra al modo de juego del cuerpo humano" 
 		title="El cuerpo y yo"
 		onclick={irAlModoPartesDelCuerpo}
@@ -83,7 +83,7 @@
         <img src={CuerpoHumano} alt="Logo modo de juegos cuerpo humano - Imagen del cuerpo humano">
 		El cuerpo y yo
 	</button>
-    <button class="boton-juego"
+    <button class="boton-juego pattern-yellow"
 		aria-label="Entra al modo de juego de historias" 
 		title="El rincón de las historias"
 		onclick={irAModoHistorias}

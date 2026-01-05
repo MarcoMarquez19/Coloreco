@@ -57,18 +57,18 @@
 	let panelTop = $state<number>(0);
 	let panelLeft = $state<number>(0);
 
-	// Colores predefinidos
+	// Colores predefinidos con sus patrones correspondientes
 	const coloresPredefinidos = [
-	'#222121ff', // Negro
-	'#f53c3cff', // Rojo
-	'#45d145ff', // Verde
-	'#0000FF', // Azul
-	'#e7e74fff', // Amarillo
-	'#fa64faff', // Magenta
-	'#89ebebff', // Cian
-	'#e2b35dff', // Naranja
-	'#9c359cff', // Púrpura
-	'#FFC0CB'  // Rosa
+		{ color: '#222121ff', patron: 'pattern-black', nombre: 'Negro' },
+		{ color: '#f53c3cff', patron: 'pattern-red', nombre: 'Rojo' },
+		{ color: '#45d145ff', patron: 'pattern-green', nombre: 'Verde' },
+		{ color: '#0000FF', patron: 'pattern-blue', nombre: 'Azul' },
+		{ color: '#e7e74fff', patron: 'pattern-yellow', nombre: 'Amarillo' },
+		{ color: '#fa64faff', patron: 'pattern-magenta', nombre: 'Magenta' },
+		{ color: '#89ebebff', patron: 'pattern-cyan', nombre: 'Cian' },
+		{ color: '#e2b35dff', patron: 'pattern-orange', nombre: 'Naranja' },
+		{ color: '#9c359cff', patron: 'pattern-purple', nombre: 'Púrpura' },
+		{ color: '#FFC0CB', patron: 'pattern-pink', nombre: 'Rosa' }
 	];
 
 	// Todas las herramientas disponibles
@@ -256,7 +256,7 @@
 		<section class="seccion-acciones" aria-label="Acciones generales">
 			{#if mostrarAccion('mover')}
 				<button
-					class="boton-accion"
+					class="boton-accion pattern-yellow"
 					onclick={ejecutarMover}
 					aria-label="Mover vista del lienzo"
 					title="Mover"
@@ -268,7 +268,7 @@
 
 			{#if mostrarAccion('deshacer')}
 				<button
-					class="boton-accion"
+					class="boton-accion pattern-yellow"
 					onclick={ejecutarDeshacer}
 					aria-label="Deshacer última acción"
 					title="Deshacer"
@@ -280,7 +280,7 @@
 
 			{#if mostrarAccion('guardar')}
 				<button
-					class="boton-accion"
+					class="boton-accion pattern-yellow"
 					onclick={ejecutarGuardar}
 					aria-label="Guardar dibujo actual"
 					title="Guardar (próximamente)"
@@ -292,7 +292,7 @@
 
 			{#if mostrarAccion('terminar')}
 				<button
-					class="boton-accion boton-terminar"
+					class="boton-accion boton-terminar pattern-yellow"
 					onclick={ejecutarTerminar}
 					aria-label="Terminar sesión de dibujo"
 					title="Terminar (próximamente)"
@@ -313,7 +313,7 @@
 	<section class="seccion-herramientas" aria-label="Herramientas de dibujo">
 		{#each herramientasDisponibles as herramienta}
 			<button
-				class="boton-herramienta"
+				class="boton-herramienta pattern-yellow"
 				class:activa={herramientaActual === herramienta.id}
 				onclick={() => seleccionarHerramienta(herramienta.id)}
 				aria-label={herramienta.descripcion}
@@ -381,17 +381,16 @@
 				<div class="opcion-color">
 					<label for="selector-color" class="etiqueta-opcion">Color:</label>
 					<div class="paleta-colores" role="radiogroup" aria-label="Selector de color">
-						{#each coloresPredefinidos as color}
+						{#each coloresPredefinidos as { color, patron, nombre }}
 							<button
-								class="color-muestra"
+								class="color-muestra {patron}"
 								class:seleccionado={colorActual === color}
 								style="background-color: {color}"
 								onclick={() => seleccionarColor(color)}
-								aria-label="Color {color}"
-
+								aria-label="Color {nombre}"
 								role="radio"
 								aria-checked={colorActual === color}
-								title="Seleccionar color {color}"
+								title="Seleccionar color {nombre}"
 							></button>
 						{/each}
 					</div>

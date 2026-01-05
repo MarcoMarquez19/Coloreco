@@ -181,7 +181,7 @@
 		</div>
 
 		<!-- Contenido principal -->
-		<div class="marco-externo" data-magnificable>
+		<div class="marco-externo pattern-black" data-magnificable>
 			<div class="mensaje-contenedor" data-magnificable>
 				<!-- Título principal -->
 				<h1 data-magnificable data-readable>
@@ -195,13 +195,13 @@
 				</p>
 				<!-- Botones de acción (abajo en todo el ancho) -->
 				<div class="botones-contenedor" data-magnificable>
-					<button class="boton-accion boton-menu" onclick={volverAlMenu} data-magnificable data-readable>
+					<button class="boton-accion boton-menu pattern-yellow" onclick={volverAlMenu} data-magnificable data-readable>
 						Regresar al menú
 					</button>
-					<button class="boton-accion boton-galeria" onclick={irAGaleria} data-magnificable data-readable>
+					<button class="boton-accion boton-galeria pattern-yellow" onclick={irAGaleria} data-magnificable data-readable>
 						Ir a la galería
 					</button>
-					<button class="boton-accion boton-logros" onclick={verLogros} data-magnificable data-readable>
+					<button class="boton-accion boton-logros pattern-yellow" onclick={verLogros} data-magnificable data-readable>
 						Ver logros
 					</button>
 				</div>
@@ -214,7 +214,7 @@
 								<img 
 									src={miniaturaCanvas} 
 									alt="Miniatura de tu obra" 
-									class="miniatura-canvas"
+								class="miniatura-canvas pattern-black"
 									data-magnificable
 								/>
 								<p class="label-miniatura" data-readable>Tu obra</p>
@@ -233,12 +233,12 @@
                         <!-- Mensaje especial si completó todos los retos -->
 						{#if retosCompletados === totalRetos && totalRetos > 0}
 							<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-							<p class="mensaje-perfecto" data-magnificable data-readable tabindex="0">
+							<p class="mensaje-perfecto pattern-yellow" data-magnificable data-readable tabindex="0">
 								🏆 ¡Completaste todos los retos de esta escena!
 							</p>
 						{/if}
 						<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-						<div class="estadisticas" data-magnificable data-readable tabindex="0">
+						<div class="estadisticas pattern-black" data-magnificable data-readable tabindex="0">
 							<div class="stat-item" data-readable>
 								<div class="stat-numero" style="color: #2eaf6a;" data-readable>{retosCompletados}</div>
 								<div class="stat-label" data-readable>Retos completados</div>

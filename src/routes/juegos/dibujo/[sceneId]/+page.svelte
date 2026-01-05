@@ -647,7 +647,7 @@
 
 			<!-- Panel de información de navegación - posicionado absolutamente -->
 			{#if labelZonaEnfocada && modoNavegacionActivo && mostrarPanelNavegacion}
-				<div class="panel-informacion-navegacion" role="status" aria-live="polite">
+				<div class="panel-informacion-navegacion pattern-black" role="status" aria-live="polite">
 					<div class="zona-info">
 						<span class="icono-zona">📍</span>
 						<span class="texto-zona">{labelZonaEnfocada}</span>
@@ -666,7 +666,7 @@
 		<section class="seccion-lienzo" aria-label="Lienzo de dibujo">
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div 
-				class="contenedor-lienzo"
+				class="contenedor-lienzo pattern-black"
 				bind:this={contenedorLienzoRef}
 				onmousedown={iniciarDrag}
 				onmousemove={procesarDrag}
@@ -734,7 +734,7 @@
 
 		{#snippet acciones()}
 			<button
-				class="boton-modal boton-secundario"
+				class="boton-modal boton-secundario pattern-black"
 				onclick={cancelarGuardarObra}
 				disabled={guardandoObra}
 				type="button"
@@ -742,7 +742,7 @@
 				Cancelar
 			</button>
 			<button
-				class="boton-modal boton-primario"
+				class="boton-modal boton-primario pattern-green"
 				onclick={confirmarGuardarObra}
 				disabled={guardandoObra}
 				type="button"
@@ -774,7 +774,7 @@
 
 		{#snippet acciones()}
 			<button
-				class="boton-modal boton-primario"
+				class="boton-modal boton-primario pattern-green"
 				onclick={cerrarModalExito}
 				type="button"
 			>
@@ -801,14 +801,14 @@
 
 		{#snippet acciones()}
 			<button
-				class="boton-modal boton-secundario"
+				class="boton-modal boton-secundario pattern-black"
 				onclick={noGuardarYTerminar}
 				type="button"
 			>
 				No guardar
 			</button>
 			<button
-				class="boton-modal boton-primario"
+				class="boton-modal boton-primario pattern-green"
 				onclick={confirmarGuardarAntesDeTerminar}
 				type="button"
 			>

@@ -7,7 +7,7 @@
 </script>
 
 <div class="contenedor-fondo" style={style}>
-	<div class="mancha noroeste pattern-yellow">
+	<div class="mancha noroeste pattern-orange">
 		<Mancha clase="mancha noroeste"/>
 	</div>
 
@@ -64,7 +64,7 @@
 	:global(.mancha.pattern-magenta),
 	:global(.mancha.pattern-green),
 	:global(.mancha.pattern-blue),
-	:global(.mancha.pattern-yellow) {
+	:global(.mancha.pattern-orange) {
 		position: absolute !important;
 	}
 
@@ -75,7 +75,7 @@
 	:global(.mancha.pattern-magenta::after),
 	:global(.mancha.pattern-green::after),
 	:global(.mancha.pattern-blue::after),
-	:global(.mancha.pattern-yellow::after) {
+	:global(.mancha.pattern-orange::after) {
 		border-radius: 50%; /* Hace que la textura sea redonda */
 		transform: scale(0.9); /* La encoge un poco para asegurar que quede dentro */
 		opacity: 0.6; /* Hacemos la textura un poco más sutil en el fondo */

@@ -18,6 +18,7 @@
   <g id="layer1" transform="translate(115.60282,-320.98393)">
     <path
       id="path10"
+      class="pattern-orange"
       d="M -114.01255,811.92382 92.340509,667.33715 694.90452,667.30774 865.06881,811.92382 Z"
       fill="#BF724C"
       fill-opacity="1"

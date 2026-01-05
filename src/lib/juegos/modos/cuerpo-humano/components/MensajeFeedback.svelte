@@ -14,7 +14,7 @@
 </script>
 
 {#if visible}
-	<div class="mensaje-feedback" class:success={tipo === 'success'} class:error={tipo === 'error'}>
+	<div class="mensaje-feedback" class:success={tipo === 'success'} class:error={tipo === 'error'} class:pattern-green={tipo === 'success'} class:pattern-red={tipo === 'error'}>
 		<div class="contenido-mensaje">
 			<span class="icono-mensaje" aria-hidden="true">
 				{#if tipo === 'success'}

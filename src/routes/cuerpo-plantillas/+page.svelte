@@ -151,7 +151,7 @@
 		<div class="carrusel-contenedor">
 			<!-- Botón flecha izquierda -->
 			<button 
-				class="boton-flecha boton-izquierda"
+				class="boton-flecha boton-izquierda pattern-yellow"
 				onclick={navegarAnterior}
 				aria-label="Escena anterior"
 				title="Navegar a la escena anterior (← tecla izquierda)"
@@ -190,7 +190,7 @@
 
 			<!-- Botón flecha derecha -->
 			<button 
-				class="boton-flecha boton-derecha"
+				class="boton-flecha boton-derecha pattern-yellow"
 				onclick={navegarSiguiente}
 				aria-label="Escena siguiente"
 				title="Navegar a la escena siguiente (→ tecla derecha)"
@@ -210,7 +210,7 @@
 		</div>
 	{/if}
 
-    <button class="boton-selección"
+    <button class="boton-selección pattern-yellow"
 		aria-label="Selecciona la escena a utilizar en el taller de dibujo" 
 		title="Usar la escena seleccionada"
 		onclick={verDescripcionEscena}

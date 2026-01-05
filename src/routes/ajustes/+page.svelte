@@ -326,8 +326,7 @@
 							aria-checked={$configuraciones.bionicMode}
 							aria-describedby="toggle-bionic-desc"
 							class="switch-toggle"
-							class:active={$configuraciones.bionicMode}
-							onclick={() => configuraciones.toggleBionicMode()}
+							class:active={$configuraciones.bionicMode}						class:pattern-blue={$configuraciones.bionicMode}							onclick={() => configuraciones.toggleBionicMode()}
 							aria-label={$configuraciones.bionicMode ? 'Desactivar modo biónico' : 'Activar modo biónico'}
 						>
 							<span class="switch-knob"></span>
@@ -347,8 +346,7 @@
 							aria-checked={$configuraciones.rhymeMode}
 							aria-describedby="toggle-rhyme-desc"
 							class="switch-toggle"
-							class:active={$configuraciones.rhymeMode}
-							onclick={() => configuraciones.toggleRhymeMode()}
+							class:active={$configuraciones.rhymeMode}						class:pattern-blue={$configuraciones.rhymeMode}							onclick={() => configuraciones.toggleRhymeMode()}
 							aria-label={$configuraciones.rhymeMode ? 'Desactivar modo rima' : 'Activar modo rima'}
 						>
 							<span class="switch-knob"></span>
@@ -368,8 +366,7 @@
 							aria-checked={$configuraciones.pictogramMode}
 							aria-describedby="toggle-pictogram-desc"
 							class="switch-toggle"
-							class:active={$configuraciones.pictogramMode}
-							onclick={() => configuraciones.togglePictogramMode()}
+							class:active={$configuraciones.pictogramMode}						class:pattern-blue={$configuraciones.pictogramMode}							onclick={() => configuraciones.togglePictogramMode()}
 							aria-label={$configuraciones.pictogramMode ? 'Desactivar modo pictográfico' : 'Activar modo pictográfico'}
 						>
 							<span class="switch-knob"></span>
@@ -394,8 +391,7 @@
 							aria-checked={$configuraciones.narrationEnabled}
 							aria-describedby="toggle-narration-desc"
 							class="switch-toggle"
-							class:active={$configuraciones.narrationEnabled}
-							onclick={() => configuraciones.toggleNarration()}
+							class:active={$configuraciones.narrationEnabled}						class:pattern-blue={$configuraciones.narrationEnabled}							onclick={() => configuraciones.toggleNarration()}
 							aria-label={$configuraciones.narrationEnabled ? 'Desactivar narración' : 'Activar narración'}
 						>
 							<span class="switch-knob"></span>
@@ -462,7 +458,7 @@
 								aria-describedby="toggle-music-desc"
 								class="switch-toggle"
 								class:active={$audioStore.musicEnabled}
-								class:pattern-green={$audioStore.musicEnabled}
+							class:pattern-blue={$audioStore.musicEnabled}
 								onclick={() => audioStore.toggleMusic()}
 								aria-label={$audioStore.musicEnabled ? 'Desactivar música de fondo' : 'Activar música de fondo'}
 							>
@@ -510,7 +506,7 @@
 								aria-describedby="toggle-sound-desc"
 								class="switch-toggle"
 								class:active={$audioStore.soundEnabled}
-								class:pattern-yellow={$audioStore.soundEnabled}
+							class:pattern-blue={$audioStore.soundEnabled}
 								onclick={() => audioStore.toggleSound()}
 								aria-label={$audioStore.soundEnabled ? 'Desactivar efectos de sonido' : 'Activar efectos de sonido'}
 							>

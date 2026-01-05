@@ -601,7 +601,7 @@
 
 		{#snippet acciones()}
 			<button
-				class="boton-modal boton-secundario"
+				class="boton-modal boton-secundario pattern-black"
 				onclick={cancelarGuardarObra}
 				disabled={guardandoObra}
 				type="button"
@@ -609,7 +609,7 @@
 				Cancelar
 			</button>
 			<button
-				class="boton-modal boton-primario"
+				class="boton-modal boton-primario pattern-green"
 				onclick={confirmarGuardarObra}
 				disabled={guardandoObra}
 				type="button"
@@ -641,14 +641,14 @@
 
 		{#snippet acciones()}
 			<button
-				class="boton-modal boton-secundario"
+				class="boton-modal boton-secundario pattern-black"
 				onclick={noGuardarYTerminar}
 				type="button"
 			>
 				No guardar
 			</button>
 			<button
-				class="boton-modal boton-primario"
+				class="boton-modal boton-primario pattern-green"
 				onclick={confirmarGuardarAntesDeTerminar}
 				type="button"
 			>
@@ -675,7 +675,7 @@
 
 		{#snippet acciones()}
 			<button
-				class="boton-modal boton-primario"
+				class="boton-modal boton-primario pattern-green"
 				onclick={cerrarModalExito}
 				type="button"
 			>

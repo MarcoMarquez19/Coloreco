@@ -260,10 +260,10 @@
 		<div class="contenido-principal" data-magnificable>
 			<!-- Panel izquierdo: Historia -->
 			<div class="panel-historia" data-magnificable>
-				<div class="cuadro-historia" data-magnificable>
+				<div class="cuadro-historia pattern-black" data-magnificable>
 					<h1 data-magnificable data-readable>{capitulo.titulo}</h1>
 					<div class="contenido-historia" data-magnificable>
-						<div class="imagen-principal-contenedor" data-magnificable tabindex="0" role="img" aria-label={`Imagen de ${capitulo.titulo}`}> 
+						<div class="imagen-principal-contenedor pattern-black" data-magnificable tabindex="0" role="img" aria-label={`Imagen de ${capitulo.titulo}`}> 
 							<img src={capitulo.imagenPrincipal} alt={capitulo.titulo} class="imagen-principal" data-magnificable />
 						</div>
 						<div class="texto-historia" tabindex="0" data-magnificable>
@@ -274,7 +274,7 @@
 					<div class="personajes-contenedor" data-magnificable>
 						{#each capitulo.personajes as personaje}
 							<div class="personaje-item" data-magnificable>
-								<img src={personaje.imagen} alt={personaje.nombre} data-magnificable />
+							<img src={personaje.imagen} alt={personaje.nombre} class="pattern-black" data-magnificable />
 								<span data-magnificable data-readable>{personaje.nombre}</span>
 								</div>
 							{/each}
@@ -284,7 +284,7 @@
 			</div>
 			<!-- Panel derecho: Pregunta y opciones -->
 			<div class="panel-pregunta" data-magnificable>
-				<div class="cuadro-pregunta" data-magnificable>
+				<div class="cuadro-pregunta pattern-black" data-magnificable>
 					<h2 class="pregunta-titulo" data-magnificable data-readable tabindex="0">{capitulo.pregunta.texto}</h2>
 					<p class="etiqueta-opciones" data-magnificable data-readable>Opciones</p>
 					<div class="opciones-lista" data-magnificable>
@@ -294,8 +294,9 @@
 								class:seleccionada={index === opcionSeleccionadaIndex && !respuestaEnviada}
 						class:correcta={respuestaEnviada && opcionCorrecta && opcion.esCorrecta}
 						class:incorrecta={respuestaEnviada && !opcionCorrecta && index === opcionSeleccionadaIndex}
-								class:deshabilitada={respuestaEnviada}
-								onclick={() => { if (!respuestaEnviada) { opcionSeleccionadaIndex = index; enviarRespuesta(); } }}
+								class:deshabilitada={respuestaEnviada}							class:pattern-black={!respuestaEnviada || !(respuestaEnviada && opcionCorrecta && opcion.esCorrecta) && !(respuestaEnviada && !opcionCorrecta && index === opcionSeleccionadaIndex)}
+							class:pattern-green={respuestaEnviada && opcionCorrecta && opcion.esCorrecta}
+							class:pattern-red={respuestaEnviada && !opcionCorrecta && index === opcionSeleccionadaIndex}								onclick={() => { if (!respuestaEnviada) { opcionSeleccionadaIndex = index; enviarRespuesta(); } }}
 								onfocus={() => { if (!respuestaEnviada) opcionSeleccionadaIndex = index; }}
 								disabled={respuestaEnviada}
 								aria-label={`Opción: ${opcion.texto}`}

@@ -227,7 +227,7 @@
 		</div>
 
 		<!-- Contenido principal -->
-		<div class="marco-externo" data-magnificable>
+		<div class="marco-externo pattern-black" data-magnificable>
 			<div class="mensaje-contenedor" data-magnificable>
 				<!-- Título principal -->
 				<h1 data-magnificable data-readable>
@@ -246,7 +246,7 @@
 
 				<!-- Estadísticas de partes -->
 				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-				<div class="estadisticas" data-magnificable data-readable tabindex="0">
+				<div class="estadisticas pattern-black" data-magnificable data-readable tabindex="0">
 					<div class="stat-item" data-readable>
 						<div class="stat-numero" style="color: #2eaf6a;" data-readable>{partesCorrectas}</div>
 						<div class="stat-label" data-readable>Partes correctas</div>
@@ -261,7 +261,7 @@
 				<!-- Mensaje especial si es perfecto -->
 				{#if tienePerfecto}
 					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-					<p class="mensaje-perfecto" data-magnificable data-readable tabindex="0">
+					<p class="mensaje-perfecto pattern-yellow" data-magnificable data-readable tabindex="0">
 						🏆 ¡Colocaste todas las partes correctamente sin errores!
 					</p>
 				{/if}
@@ -299,7 +299,7 @@
 									</span>
 								{/if}
 							</div>
-							<div class="barra-progreso" role="progressbar" aria-valuenow="{Math.round(porcentajeProgreso)}" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso hacia el siguiente rango">
+							<div class="barra-progreso pattern-black" role="progressbar" aria-valuenow="{Math.round(porcentajeProgreso)}" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso hacia el siguiente rango">
 								<div 
 									class="barra-relleno" 
 									style="width: {porcentajeProgreso}%; background: {obtenerColorRango(rangoActual)};"
@@ -316,13 +316,13 @@
 
 				<!-- Botones de acción -->
 				<div class="botones-contenedor" data-magnificable>
-					<button class="boton-accion boton-menu" onclick={volverAlMenu} data-magnificable data-readable>
+					<button class="boton-accion boton-menu pattern-yellow" onclick={volverAlMenu} data-magnificable data-readable>
 						Regresar al menú
 					</button>
-					<button class="boton-accion boton-galeria" onclick={irAGaleria} data-magnificable data-readable>
+					<button class="boton-accion boton-galeria pattern-yellow" onclick={irAGaleria} data-magnificable data-readable>
 						Ir a la galería
 					</button>
-					<button class="boton-accion boton-logros" onclick={verLogros} data-magnificable data-readable>
+					<button class="boton-accion boton-logros pattern-yellow" onclick={verLogros} data-magnificable data-readable>
 						Ver logros
 					</button>
 				</div>

@@ -215,7 +215,7 @@
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
     <p class="logro-descripcion" data-readable tabindex="0">{logro?.descripcion}</p>
     
-    <button class="action-btn" onclick={handleClose} data-readable> 
+    <button class="action-btn pattern-yellow" onclick={handleClose} data-readable> 
       ¡Continuar!
     </button>
   </div>

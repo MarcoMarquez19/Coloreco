@@ -62,7 +62,7 @@
 	}
 </script>
 
-<aside class="panel-partes" aria-label="Partes del cuerpo">
+<aside class="panel-partes pattern-black" aria-label="Partes del cuerpo">
 	<h2 class="titulo-panel">Partes</h2>
 	
 	<div class="lista-partes" role="list">
@@ -71,6 +71,7 @@
 				class="parte-item"
 				class:arrastrando={parteArrastrandose === parte.id}
 				class:colocada={partesColocadas.has(parte.id)}
+				class:pattern-green={partesColocadas.has(parte.id)}
 				draggable={!partesColocadas.has(parte.id)}
 				ondragstart={(e) => iniciarArrastre(parte, e)}
 				ondragend={finalizarArrastre}

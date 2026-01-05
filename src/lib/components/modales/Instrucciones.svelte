@@ -172,7 +172,7 @@
 
 <div class="modal-backdrop" bind:this={backdropRef} onclick={handleBackdropClick} role="presentation">
   <div 
-    class="modal" 
+    class="modal pattern-black" 
     bind:this={modalRef}
     onclick={handleModalClick}
     onkeydown={handleGlobalKeydown}
