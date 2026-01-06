@@ -307,7 +307,7 @@
   
   .action-btn {
     background: #2eaf6a;
-    color: #fff;
+    color: #000;
     border: none;
     border-radius: 8px;
     padding: calc(var(--spacing-base, 1rem) * 0.7) calc(var(--spacing-base, 1rem) * 2.5);

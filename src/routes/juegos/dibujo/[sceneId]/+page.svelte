@@ -738,7 +738,7 @@
 			<p style="font-size: 1.2rem; margin-bottom: 1rem; font-weight: 600; color: var(--color-texto, #333);">
 				¿Deseas guardar tu obra en la galería?
 			</p>
-			<p style="color: var(--color-texto-secundario, #666); font-size: 1rem; line-height: 1.5;">
+			<p style="color: var(--color-texto, #666); font-size: 1rem; line-height: 1.5;">
 				Tu dibujo se guardará y podrás verlo más tarde en la galería de obras.
 			</p>
 		</div>
@@ -775,10 +775,10 @@
 	>
 		<div style="padding: 1.5rem 0; text-align: center;">
 			<div style="font-size: 4rem; margin-bottom: 1rem;">🎨</div>
-			<p style="font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 600;">
+			<p style="font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 600; color: var(--color-texto, #333);">
 				¡Tu obra ha sido guardada exitosamente!
 			</p>
-			<p style="color: var(--color-texto-secundario, #666); font-size: 0.9rem;">
+			<p style="color: var(--color-texto, #666); font-size: 0.9rem;">
 				Puedes verla en la galería cuando quieras.
 			</p>
 		</div>
@@ -802,10 +802,10 @@
 	>
 		<div style="padding: calc(var(--spacing-base, 1rem) * 1.5) 0; text-align: center;">
 			<div style="font-size: calc(var(--font-size-base, 1rem) * 4); margin-bottom: calc(var(--spacing-base, 1rem) * 1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">💾</div>
-			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.2); margin-bottom: calc(var(--spacing-base, 1rem) * 1); font-weight: 600; color: var(--fg, #333);">
+			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.2); margin-bottom: calc(var(--spacing-base, 1rem) * 1); font-weight: 600; color: var(--color-texto, #333);">
 				¿Deseas guardar tu obra antes de terminar?
 			</p>
-			<p style="color: var(--text-secondary, #666); font-size: calc(var(--font-size-base, 1rem) * 1); line-height: 1.5;">
+			<p style="color: var(--color-texto, #666); font-size: calc(var(--font-size-base, 1rem) * 1); line-height: 1.5;">
 				Tu dibujo se guardará en la galería y podrás verlo más tarde.
 			</p>
 		</div>
@@ -990,7 +990,7 @@
 
 	:global(.boton-modal.boton-primario) {
 		background: var(--color-primario, #4CAF50);
-		color: white;
+		color: black;
 		border-color: var(--color-primario, #4CAF50);
 	}
 

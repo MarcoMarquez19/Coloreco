@@ -647,7 +647,7 @@
 
 	.control-valor {
 		font-weight: 700;
-		color: #0b6efd;
+		color: var(--color-texto, #333);
 		font-size: calc(var(--font-size-base, 1rem) * 1.1);
 	}
 

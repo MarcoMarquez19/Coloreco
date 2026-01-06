@@ -604,12 +604,12 @@
 
     .badge.desbloqueado {
         background: #4caf50;
-        color: white;
+        color: #000;
     }
 
     .badge.bloqueado {
         background: #9e9e9e;
-        color: white;
+        color: #000;
     }
 
     .tarjeta-logro:not(.desbloqueado) {

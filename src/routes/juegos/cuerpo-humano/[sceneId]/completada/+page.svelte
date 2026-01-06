@@ -251,7 +251,7 @@
 				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 				<div class="estadisticas pattern-black" data-magnificable data-readable tabindex="0">
 					<div class="stat-item" data-readable>
-						<div class="stat-numero" style="color: #2eaf6a;" data-readable>{partesCorrectas}</div>
+						<div class="stat-numero" data-readable>{partesCorrectas}</div>
 						<div class="stat-label" data-readable>Partes correctas</div>
 					</div>
 					<div class="stat-divider" aria-hidden="true">/</div>
@@ -359,7 +359,7 @@
 		margin-top: calc(var(--spacing-base, 1rem) * 0.5);
 		padding: 0;
 		font-weight: 700;
-		color: var(--fg, #333);
+		color: var(--color-texto, #333);
 	}
 
 	h2 {
@@ -367,7 +367,7 @@
 		margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0;
 		padding: 0;
 		font-weight: 600;
-		color: var(--fg, #333);
+		color: var(--color-texto, #333);
 	}
 
 	.marco-externo {
@@ -420,11 +420,11 @@
 	.plantilla-nombre {
 		font-size: calc(var(--font-size-base, 1rem) * 1.3);
 		margin: 0;
-		color: var(--text-secondary, #555);
+		color: var(--color-texto, #333);
 	}
 
 	.plantilla-nombre strong {
-		color: var(--fg, #333);
+		color: var(--color-texto, #333);
 		font-weight: 700;
 	}
 
@@ -450,20 +450,20 @@
 	.stat-numero {
 		font-size: calc(var(--font-size-base, 1rem) * 3);
 		font-weight: 700;
-		color: var(--fg, #333);
+		color: var(--color-texto, #333);
 		line-height: 1;
 	}
 
 	.stat-label {
 		font-size: calc(var(--font-size-base, 1rem) * 1);
-		color: var(--text-secondary, #666);
+		color: var(--color-texto, #333);
 		font-weight: 600;
 	}
 
 	.stat-divider {
 		font-size: calc(var(--font-size-base, 1rem) * 3);
 		font-weight: 300;
-		color: var(--text-secondary, #999);
+		color: var(--color-texto, #333);
 	}
 
 	.mensaje-perfecto {
@@ -509,11 +509,11 @@
 	}
 
 	.rango-nombre {
-		color: var(--fg, #333);
+		color: var(--color-texto, #333);
 	}
 
 	.sin-rango {
-		color: var(--text-secondary, #666);
+		color: var(--color-texto, #333);
 		font-style: italic;
 		margin-bottom: calc(var(--spacing-base, 1rem) * 1);
 	}
@@ -529,12 +529,12 @@
 		align-items: center;
 		margin-bottom: calc(var(--spacing-base, 1rem) * 0.75);
 		font-size: calc(var(--font-size-base, 1rem) * 1);
-		color: var(--fg, #555);
+		color: var(--color-texto, #333);
 		font-weight: 600;
 	}
 
 	.siguiente-rango {
-		color: var(--text-secondary, #666);
+		color: var(--color-texto, #333);
 		font-size: calc(var(--font-size-base, 1rem) * 0.95);
 	}
 
@@ -620,7 +620,7 @@
 	}
 
 	.cargando {
-		color: var(--text-secondary, #666);
+		color: var(--color-texto, #333);
 		font-style: italic;
 	}
 

@@ -261,7 +261,7 @@
 
 	.capitulos-info {
 		font-size: calc(var(--font-size-base, 1rem) * 1.2);
-		color: var(--color-texto-secundario, #666);
+		color: var(--color-texto, #333);
 		margin: 0;
 	}
 
