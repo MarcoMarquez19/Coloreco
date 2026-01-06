@@ -8,6 +8,7 @@
     import { configuraciones } from '$lib/stores/settings';
     import { obtenerArtistaActivo } from '$lib/db/artistas.service';
     import { calcularRangoArtista } from '$lib/db/logros.service';
+    import { audioStore, clickSound } from '$lib/stores/audio';
 
     // Props para controlar el trofeo dinámicamente
     let rangoTrofeo = $state<'oro' | 'plata' | 'bronce' | null>(null);
@@ -67,6 +68,7 @@
 
     onMount(() => {
         document.body.style.overflow = 'hidden';
+        audioStore.playMusic('default');
         cargarRango();
         return () => {
             document.body.style.overflow = ''; // Restaurar al desmontar
@@ -101,26 +103,29 @@
         </div>
     </div>
 
-        <button class="boton-logro"
+        <button class="boton-logro pattern-yellow"
             aria-label="Ver logros del taller de escenas creativas" 
             title="Logros Taller"   
             onclick={irALogrosTaller}
+            use:clickSound
             >
             <img src={LibroDibujo} alt="Logo logros taller de dibujo - Cuaderno de dibujos">
             Logros Taller
         </button>
-        <button class="boton-logro"
+        <button class="boton-logro pattern-yellow"
             aria-label="Ver logros del cuerpo y yo" 
             title="Logros Cuerpo"
             onclick={irALogrosCuerpo}
+            use:clickSound
             >
             <img src={CuerpoHumano} alt="Logo logros cuerpo humano - Imagen del cuerpo humano">
             Logros Cuerpo
         </button>
-        <button class="boton-logro"
+        <button class="boton-logro pattern-yellow"
             aria-label="Ver logros del rincón de historias" 
             title="Logros Historias"
             onclick={irALogrosHistorias}
+            use:clickSound
             >
             <img src={LibroHistorias} alt="Logo logros historias - Libro de historias">
             Logros Historias

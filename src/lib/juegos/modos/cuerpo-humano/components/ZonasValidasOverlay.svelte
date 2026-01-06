@@ -66,7 +66,7 @@
 		<!-- Zonas válidas resaltadas -->
 		{#each zonas as zona (zona.id)}
 			<div
-				class="zona-valida"
+				class="zona-valida pattern-blue"
 				class:hover={zonaHover === zona.id}
 				style:left="{zona.x}%"
 				style:top="{zona.y}%"
@@ -83,7 +83,7 @@
 		{/each}
 
 		<!-- Texto instructivo -->
-		<div class="texto-instruccion">
+		<div class="texto-instruccion pattern-black">
 			<p>Suelta la parte en la zona correcta</p>
 		</div>
 	</div>

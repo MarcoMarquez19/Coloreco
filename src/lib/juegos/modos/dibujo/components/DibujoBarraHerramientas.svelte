@@ -9,6 +9,7 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
 	import { CATEGORIAS_STICKERS, TAMANOS_STICKER, type Sticker, type Categoria, type Subcategoria } from '../stickers.data';
+	import { clickSound } from '$lib/stores/audio';
 
 	// Props para configurar herramientas y acciones visibles
 	interface Props {
@@ -57,18 +58,18 @@
 	let panelTop = $state<number>(0);
 	let panelLeft = $state<number>(0);
 
-	// Colores predefinidos
+	// Colores predefinidos con sus patrones correspondientes
 	const coloresPredefinidos = [
-	'#222121ff', // Negro
-	'#f53c3cff', // Rojo
-	'#45d145ff', // Verde
-	'#0000FF', // Azul
-	'#e7e74fff', // Amarillo
-	'#fa64faff', // Magenta
-	'#89ebebff', // Cian
-	'#e2b35dff', // Naranja
-	'#9c359cff', // Púrpura
-	'#FFC0CB'  // Rosa
+		{ color: '#222121ff', patron: 'pattern-black', nombre: 'Negro' },
+		{ color: '#f53c3cff', patron: 'pattern-red', nombre: 'Rojo' },
+		{ color: '#45d145ff', patron: 'pattern-green', nombre: 'Verde' },
+		{ color: '#0000FF', patron: 'pattern-blue', nombre: 'Azul' },
+		{ color: '#e7e74fff', patron: 'pattern-yellow', nombre: 'Amarillo' },
+		{ color: '#fa64faff', patron: 'pattern-magenta', nombre: 'Magenta' },
+		{ color: '#89ebebff', patron: 'pattern-cyan', nombre: 'Cian' },
+		{ color: '#e2b35dff', patron: 'pattern-orange', nombre: 'Naranja' },
+		{ color: '#9c359cff', patron: 'pattern-purple', nombre: 'Púrpura' },
+		{ color: '#FFC0CB', patron: 'pattern-pink', nombre: 'Rosa' }
 	];
 
 	// Todas las herramientas disponibles
@@ -256,8 +257,9 @@
 		<section class="seccion-acciones" aria-label="Acciones generales">
 			{#if mostrarAccion('mover')}
 				<button
-					class="boton-accion"
+					class="boton-accion pattern-yellow"
 					onclick={ejecutarMover}
+					use:clickSound
 					aria-label="Mover vista del lienzo"
 					title="Mover"
 				>
@@ -268,8 +270,9 @@
 
 			{#if mostrarAccion('deshacer')}
 				<button
-					class="boton-accion"
+					class="boton-accion pattern-yellow"
 					onclick={ejecutarDeshacer}
+					use:clickSound
 					aria-label="Deshacer última acción"
 					title="Deshacer"
 				>
@@ -280,8 +283,9 @@
 
 			{#if mostrarAccion('guardar')}
 				<button
-					class="boton-accion"
+					class="boton-accion pattern-yellow"
 					onclick={ejecutarGuardar}
+					use:clickSound
 					aria-label="Guardar dibujo actual"
 					title="Guardar (próximamente)"
 				>
@@ -292,8 +296,9 @@
 
 			{#if mostrarAccion('terminar')}
 				<button
-					class="boton-accion boton-terminar"
+					class="boton-accion boton-terminar pattern-yellow"
 					onclick={ejecutarTerminar}
+					use:clickSound
 					aria-label="Terminar sesión de dibujo"
 					title="Terminar (próximamente)"
 				>
@@ -313,9 +318,10 @@
 	<section class="seccion-herramientas" aria-label="Herramientas de dibujo">
 		{#each herramientasDisponibles as herramienta}
 			<button
-				class="boton-herramienta"
+				class="boton-herramienta pattern-yellow"
 				class:activa={herramientaActual === herramienta.id}
 				onclick={() => seleccionarHerramienta(herramienta.id)}
+				use:clickSound
 				aria-label={herramienta.descripcion}
 				aria-pressed={herramientaActual === herramienta.id}
 				title={herramienta.nombre}
@@ -344,6 +350,7 @@
 							class="boton-zoom"
 							class:seleccionado={nivelZoomActual === 1}
 							onclick={() => seleccionarZoom(1)}
+							use:clickSound
 							aria-label="Zoom normal (x1)"
 							title="Zoom normal"
 						>
@@ -355,6 +362,7 @@
 							class="boton-zoom"
 							class:seleccionado={nivelZoomActual === 1.5}
 							onclick={() => seleccionarZoom(1.5)}
+							use:clickSound
 							aria-label="Zoom medio (x1.5)"
 							title="Zoom medio"
 						>
@@ -366,6 +374,7 @@
 							class="boton-zoom"
 							class:seleccionado={nivelZoomActual === 2.5}
 							onclick={() => seleccionarZoom(2.5)}
+							use:clickSound
 							aria-label="Zoom alto (x2.5)"
 							title="Zoom alto"
 						>
@@ -381,17 +390,17 @@
 				<div class="opcion-color">
 					<label for="selector-color" class="etiqueta-opcion">Color:</label>
 					<div class="paleta-colores" role="radiogroup" aria-label="Selector de color">
-						{#each coloresPredefinidos as color}
+						{#each coloresPredefinidos as { color, patron, nombre }}
 							<button
-								class="color-muestra"
+								class="color-muestra {patron}"
 								class:seleccionado={colorActual === color}
 								style="background-color: {color}"
 								onclick={() => seleccionarColor(color)}
-								aria-label="Color {color}"
-
+								use:clickSound
+								aria-label="Color {nombre}"
 								role="radio"
 								aria-checked={colorActual === color}
-								title="Seleccionar color {color}"
+								title="Seleccionar color {nombre}"
 							></button>
 						{/each}
 					</div>
@@ -404,6 +413,7 @@
 							class="boton-grosor"
 							class:seleccionado={grosorActual === 5}
 							onclick={() => { grosorActual = 5; dispatch('cambiarGrosor', { grosor: 5 }); }}
+							use:clickSound
 							aria-label="Grosor pequeño"
 							role="radio"
 							aria-checked={grosorActual === 5}
@@ -416,6 +426,7 @@
 							class="boton-grosor"
 							class:seleccionado={grosorActual === 15}
 							onclick={() => { grosorActual = 15; dispatch('cambiarGrosor', { grosor: 15 }); }}
+							use:clickSound
 							aria-label="Grosor mediano"
 							role="radio"
 							aria-checked={grosorActual === 15}
@@ -428,6 +439,7 @@
 							class="boton-grosor"
 							class:seleccionado={grosorActual === 30}
 							onclick={() => { grosorActual = 30; dispatch('cambiarGrosor', { grosor: 30 }); }}
+							use:clickSound
 							aria-label="Grosor grande"
 							role="radio"
 							aria-checked={grosorActual === 30}
@@ -449,6 +461,7 @@
 							class="boton-grosor"
 							class:seleccionado={grosorActual === 15}
 							onclick={() => { grosorActual = 15; dispatch('cambiarGrosor', { grosor: 15 }); }}
+							use:clickSound
 							aria-label="Grosor pequeño"
 							role="radio"
 							aria-checked={grosorActual === 15}
@@ -461,6 +474,7 @@
 							class="boton-grosor"
 							class:seleccionado={grosorActual === 40}
 							onclick={() => { grosorActual = 40; dispatch('cambiarGrosor', { grosor: 40 }); }}
+							use:clickSound
 							aria-label="Grosor mediano"
 							role="radio"
 							aria-checked={grosorActual === 40}
@@ -473,6 +487,7 @@
 							class="boton-grosor"
 							class:seleccionado={grosorActual === 70}
 							onclick={() => { grosorActual = 70; dispatch('cambiarGrosor', { grosor: 70 }); }}
+							use:clickSound
 							aria-label="Grosor grande"
 							role="radio"
 							aria-checked={grosorActual === 70}
@@ -499,6 +514,7 @@
 							abrirPanelStickers();
 						}
 					}}
+					use:clickSound
 					aria-label="Abrir panel de stickers"
 					aria-expanded={mostrarPanelStickers}
 				>
@@ -516,6 +532,7 @@
 								class="boton-tamano"
 								class:seleccionado={tamanoStickerActual === tamano.escala}
 								onclick={() => seleccionarTamanoSticker(tamano.escala)}
+								use:clickSound
 								aria-label={tamano.descripcion}
 								role="radio"
 								aria-checked={tamanoStickerActual === tamano.escala}
@@ -537,6 +554,7 @@
 						<button
 							class="boton-cerrar-panel"
 							onclick={() => mostrarPanelStickers = false}
+							use:clickSound
 							aria-label="Cerrar panel de stickers"
 						>
 							✕
@@ -550,6 +568,7 @@
 								class="tab-categoria"
 								class:activa={categoriaActual.id === categoria.id}
 								onclick={() => seleccionarCategoria(categoria)}
+								use:clickSound
 								role="tab"
 								aria-selected={categoriaActual.id === categoria.id}
 								aria-label={categoria.nombre}
@@ -568,6 +587,7 @@
 								class="tab-subcategoria"
 								class:activa={subcategoriaActual.id === subcategoria.id}
 								onclick={() => subcategoriaActual = subcategoria}
+								use:clickSound
 								role="tab"
 								aria-selected={subcategoriaActual.id === subcategoria.id}
 								aria-label={subcategoria.nombre}
@@ -585,6 +605,7 @@
 								class="boton-sticker"
 								class:seleccionado={stickerSeleccionado?.id === sticker.id}
 								onclick={() => seleccionarStickerItem(sticker)}
+								use:clickSound
 								role="option"
 								aria-selected={stickerSeleccionado?.id === sticker.id}
 								aria-label={sticker.nombre}

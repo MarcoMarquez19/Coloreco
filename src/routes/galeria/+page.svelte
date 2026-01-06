@@ -75,6 +75,7 @@
 	 */
 	function irAnterior(): void {
 		if (puedeRetroceder) {
+			audioStore.playSound('click');
 			indiceActual--;
 		}
 	}
@@ -84,6 +85,7 @@
 	 */
 	function irSiguiente(): void {
 		if (puedeAvanzar) {
+			audioStore.playSound('click');
 			indiceActual++;
 		}
 	}
@@ -93,6 +95,7 @@
 	 */
 	function abrirModalEliminar(): void {
 		if (!obraActual) return;
+		audioStore.playSound('warning');
 		modalEliminarAbierto = true;
 	}
 
@@ -124,6 +127,7 @@
 				}
 
 				// Mostrar modal de éxito
+				audioStore.playSound('success');
 				modalEliminadoExitoso = true;
 			} else {
 				alert('Error al eliminar la obra. Inténtalo nuevamente.');
@@ -428,10 +432,10 @@
 	{#snippet children()}
 		<div style="text-align: center; padding: calc(var(--spacing-base, 1rem) * 1) 0;">
 			<div style="font-size: calc(var(--font-size-base, 1rem) * 5); margin-bottom: calc(var(--spacing-base, 1rem) * 1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">🗑️</div>
-			<p style="margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0; font-size: calc(var(--font-size-base, 1rem) * 1.1); line-height: 1.5; color: var(--fg);">
+			<p style="margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0; font-size: calc(var(--font-size-base, 1rem) * 1.1); line-height: 1.5; color: var(--color-texto, #333);">
 				¿Estás seguro que deseas eliminar la obra <strong>"{obraActual?.titulo}"</strong>?
 			</p>
-			<p style="margin: 0; color: #d32f2f; font-weight: 600; font-size: calc(var(--font-size-base, 1rem) * 1);">
+			<p style="margin: 0; color: var(--color-texto, #333); font-weight: 700; font-size: calc(var(--font-size-base, 1rem) * 1.2); background: rgba(244, 67, 54, 0.15); padding: 0.5rem 1rem; border-radius: 8px; border: 2px solid #f44336;">
 				⚠️ Esta acción no se puede deshacer.
 			</p>
 		</div>
@@ -442,6 +446,7 @@
 			class="modal-boton modal-boton-cancelar"
 			onclick={() => modalEliminarAbierto = false}
 			type="button"
+			use:clickSound
 		>
 			Cancelar
 		</button>
@@ -464,10 +469,10 @@
 	{#snippet children()}
 		<div style="text-align: center; padding: calc(var(--spacing-base, 1rem) * 1.5) 0;">
 			<div style="font-size: calc(var(--font-size-base, 1rem) * 4); margin-bottom: calc(var(--spacing-base, 1rem) * 1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">✅</div>
-			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.1); margin-bottom: calc(var(--spacing-base, 1rem) * 0.5); font-weight: 600; color: var(--fg);">
+			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.1); margin-bottom: calc(var(--spacing-base, 1rem) * 0.5); font-weight: 600; color: var(--color-texto, #333);">
 				¡La obra ha sido eliminada exitosamente!
 			</p>
-			<p style="color: var(--text-secondary, #666); font-size: calc(var(--font-size-base, 1rem) * 0.9);">
+			<p style="color: var(--color-texto, #666); font-size: calc(var(--font-size-base, 1rem) * 0.9);">
 				La obra ha sido removida de tu galería.
 			</p>
 		</div>
@@ -478,6 +483,7 @@
 			class="modal-boton modal-boton-aceptar"
 			onclick={() => modalEliminadoExitoso = false}
 			type="button"
+			use:clickSound
 			style="background: #4caf50;"
 		>
 			Aceptar
@@ -679,11 +685,11 @@
 	.dato {
 		font-size: calc(var(--font-size-base, 1rem) * 1);
 		margin: 0;
-		color: var(--text-secondary, #666);
+		color: var(--color-texto, #666);
 	}
 
 	.dato strong {
-		color: var(--fg, #111);
+		color: var(--color-texto, #111);
 		font-weight: 700;
 	}
 
@@ -737,7 +743,7 @@
 	.boton-descargar {
 		background: #4caf50;
 		border-color: #388e3c;
-		color: white;
+		color: black;
 	}
 
 	.boton-descargar:hover {
@@ -754,7 +760,7 @@
 	.boton-eliminar {
 		background: #f44336;
 		border-color: #d32f2f;
-		color: white;
+		color: black;
 	}
 
 	.boton-eliminar:hover {
@@ -799,7 +805,7 @@
 
 	:global(.modal-boton-confirmar) {
 		background: #f44336;
-		color: white;
+		color: black;
 	}
 
 	:global(.modal-boton-confirmar:hover) {
@@ -815,7 +821,7 @@
 
 	:global(.modal-boton-aceptar) {
 		background: #4caf50;
-		color: white;
+		color: black;
 	}
 
 	:global(.modal-boton-aceptar:hover) {
