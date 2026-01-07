@@ -238,8 +238,12 @@
 			root.removeAttribute('data-rhyme');
 		}
 		
-		// Modo pictograma
-		if ($configuraciones.pictogramMode) {
+		// Modo pictograma (verificar si estamos en una ruta excluida)
+		const currentPath = $page.url.pathname;
+		const pictogramExcludedPaths = ['/juegos/dibujo', '/juegos/cuerpo-humano'];
+		const shouldExcludePictogram = pictogramExcludedPaths.some(path => currentPath.startsWith(path));
+		
+		if ($configuraciones.pictogramMode && !shouldExcludePictogram) {
 			root.setAttribute('data-pictogram', 'true');
 		} else {
 			root.removeAttribute('data-pictogram');
@@ -386,6 +390,11 @@ function darkenColorSimple(hex: string, amount: number): string {
 		isProcessing = true;
 		
 		try {
+			// Verificar si estamos en una página donde NO debe aplicarse el modo pictográfico
+			const currentPath = $page.url.pathname;
+			const pictogramExcludedPaths = ['/juegos/dibujo', '/juegos/cuerpo-humano'];
+			const shouldExcludePictogram = pictogramExcludedPaths.some(path => currentPath.startsWith(path));
+			
 			// Procesar tanto el main como los modales montados (los modales se mueven al <body>)
 			const modalRoots = Array.from(document.querySelectorAll('.modal')) as Element[];
 			if (!mainEl && modalRoots.length === 0) {
@@ -454,18 +463,21 @@ function darkenColorSimple(hex: string, amount: number): string {
 				const hasRhyme = !!element.querySelector('.rhyme-highlight');
 				const hasPictogram = !!element.querySelector('.pictogram-wrapper');
 				
+				// Determinar si aplicar el modo pictográfico en esta página
+				const applyPictogramMode = $configuraciones.pictogramMode && !shouldExcludePictogram;
+				
 				// Si el modo pictográfico está activo y ya tiene pictogramas, saltar
-				if ($configuraciones.pictogramMode && hasPictogram) return;
+				if (applyPictogramMode && hasPictogram) return;
 				
 				// Si solo modos biónico/rima están activos y ya los tiene, saltar
-				if (!$configuraciones.pictogramMode && ($configuraciones.bionicMode || $configuraciones.rhymeMode)) {
+				if (!applyPictogramMode && ($configuraciones.bionicMode || $configuraciones.rhymeMode)) {
 					const bionicOk = $configuraciones.bionicMode ? hasBionic : !hasBionic;
 					const rhymeOk = $configuraciones.rhymeMode ? hasRhyme : !hasRhyme;
 					if (bionicOk && rhymeOk) return;
 				}
 				
 				// Si ningún modo está activo y no tiene highlights, saltar
-				if (!$configuraciones.bionicMode && !$configuraciones.rhymeMode && !$configuraciones.pictogramMode && !hasBionic && !hasRhyme && !hasPictogram) return;
+				if (!$configuraciones.bionicMode && !$configuraciones.rhymeMode && !applyPictogramMode && !hasBionic && !hasRhyme && !hasPictogram) return;
 				
 				// Si llegamos aquí, el elemento no coincide con el estado deseado
 				// Primero, asegurarnos de que tenemos el HTML original guardado
@@ -703,7 +715,7 @@ let text = element.textContent?.trim();
 					
 					// Limpiar la palabra de puntuación para buscar el pictograma
 					const cleanWord = word.replace(/[.,;:!?¿¡()"""']/g, '');
-					const pictogram = $configuraciones.pictogramMode ? findPictogramSync(cleanWord) : null;
+					const pictogram = applyPictogramMode ? findPictogramSync(cleanWord) : null;
 					
 					// Si hay pictograma, envolver la palabra
 					if (pictogram) {

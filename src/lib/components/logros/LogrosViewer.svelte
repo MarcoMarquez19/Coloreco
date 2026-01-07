@@ -6,6 +6,9 @@
     import { obtenerArtistaActivo } from '$lib/db/artistas.service';
     import { obtenerLogrosArtista, obtenerDefinicionesLogrosJSON } from '$lib/db/logros.service';
     import { estadisticasLogros, cargarLogrosArtista } from '$lib/stores/logros';
+    import { audioStore } from '$lib/stores/audio';
+    import { ttsService } from '$lib/audio/tts.service';
+
 
     // Props
     interface Props {
@@ -40,6 +43,25 @@
     const CAROUSEL_ANIM_DURATION = 700; // ms, velocidad moderada
     let animTimer: ReturnType<typeof setTimeout> | null = null;
 
+    // Función para leer el logro actual completo
+    function leerLogroActual() {
+        if (logrosDisplay.length === 0) return;
+        const logro = logrosDisplay[logroActualIndex];
+        if (!logro) return;
+        
+        const estado = logro.desbloqueado ? 'Desbloqueado' : 'Bloqueado';
+        const textoCompleto = `${logro.titulo}. ${logro.descripcion}. Estado: ${estado}`;
+        console.log('🗣️ Leyendo logro:', textoCompleto);
+        
+        // Detener cualquier narración anterior antes de comenzar una nueva
+        ttsService.stop();
+        
+        // Pequeño delay para asegurar que la narración anterior se detuvo
+        setTimeout(() => {
+            ttsService.speak(textoCompleto);
+        }, 50);
+    }
+
     function logroAnterior() {
         if (logrosDisplay.length === 0) return;
         const prevIndex = (logrosDisplay.length === 0) ? 0 : (logroActualIndex - 1 + logrosDisplay.length) % logrosDisplay.length;
@@ -49,6 +71,8 @@
         animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
         // Solicitar a layout que reprograme la reaplicación de modos
         window.dispatchEvent(new CustomEvent('content-updated', { detail: { animationDuration: CAROUSEL_ANIM_DURATION } }));
+        // Leer el logro automáticamente después de la animación
+        setTimeout(() => leerLogroActual(), CAROUSEL_ANIM_DURATION + 100);
     }
 
     function logroSiguiente() {
@@ -60,6 +84,8 @@
         animTimer = setTimeout(() => { animClass = ''; animTimer = null; }, CAROUSEL_ANIM_DURATION);
         // Solicitar a layout que reprograme la reaplicación de modos
         window.dispatchEvent(new CustomEvent('content-updated', { detail: { animationDuration: CAROUSEL_ANIM_DURATION } }));
+        // Leer el logro automáticamente después de la animación
+        setTimeout(() => leerLogroActual(), CAROUSEL_ANIM_DURATION + 100);
     }
 
     // Cargar logros del artista
@@ -198,7 +224,7 @@
             <div class="trofeo-wrapper" data-tipo-trofeo={rangoTrofeo}>
                 <Trofeo/>
             </div>
-            <p class="texto-trofeo" data-tipo-trofeo={rangoTrofeo} aria-label="Tu rango actual es {textoRango}">{textoRango}</p>
+            <p class="texto-trofeo" data-tipo-trofeo={rangoTrofeo} aria-label="Tu rango actual es {textoRango}" tabindex="0">{textoRango}</p>
         </div>
     </div>
 
@@ -239,6 +265,11 @@
             class:desbloqueado={logrosDisplay[logroActualIndex]?.desbloqueado}
             aria-label="{logrosDisplay[logroActualIndex]?.titulo || 'Cargando'}. {logrosDisplay[logroActualIndex]?.descripcion || 'Espera un momento'}. Estado: {logrosDisplay[logroActualIndex]?.desbloqueado ? 'Desbloqueado' : 'Bloqueado'}"
             in:fly={{ x: animClass === 'slide-right' ? 300 : animClass === 'slide-left' ? -300 : 0, duration: CAROUSEL_ANIM_DURATION }}
+            tabindex="0"
+            role="button"
+            onfocus={() => leerLogroActual()}
+            onclick={() => leerLogroActual()}
+            onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); leerLogroActual(); } }}
         >
 
             <div class="icono-logro" aria-hidden="true">{logrosDisplay[logroActualIndex]?.icono || '🏆'}</div>
@@ -485,8 +516,16 @@
         gap: calc(var(--spacing-base, 1rem) * 0.5); /* reducir gap para menor altura */
         border: 2px solid var(--icono-color-borde, #000000);
         min-height: calc(var(--font-size-base, 1rem) * 8); /* menos altura */
+        cursor: pointer;
     }
     .tarjeta-logro:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .tarjeta-logro:focus {
+        outline: 4px solid #0066cc;
+        outline-offset: 4px;
         transform: translateY(-4px);
         box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
     }
