@@ -23,6 +23,7 @@
 	import type { LogroDefinicion } from '$lib/db/schemas';
 	import type { EscenaConfig } from '$lib/juegos/modos/cuerpo-humano/types/cuerpo-humano.types';
 	import { obtenerConfiguracionEscena } from '$lib/juegos/modos/cuerpo-humano/configuraciones-escenas';
+	import { audioStore } from '$lib/stores/audio';
 
 	// Referencias a los componentes
 	let canvasRef: DibujoCanvas;
@@ -69,7 +70,7 @@
 	let escenaConfig = $state<EscenaConfig | null>(null);
 
 	// Cargar la configuración de la escena
-	onMount(async () => {
+	onMount(async () => {		
 		const sceneId = $page.params.sceneId || 'default';
 		
 		// Cargar configuración desde el archivo de configuraciones
@@ -224,6 +225,9 @@
 			partesColocadas = new Set([...partesColocadas, parte.id]);
 			// Guardar parte con su zona para mostrar etiqueta
 			partesColocadasConZona = [...partesColocadasConZona, { parteId: parte.id, parteNombre: parte.nombre, zona }];
+			
+			// Reproducir sonido de éxito
+			audioStore.playSound('success');
 			mostrarMensajeFeedback('¡Correcto!', 'success');
 			
 			console.log('[CuerpoHumano] Parte colocada:', parte.nombre, 'Total:', partesColocadas.size);
@@ -262,6 +266,8 @@
 		} else {
 			// ❌ Incorrecto
 			erroresEnEscenaActual++;
+			// Reproducir sonido de error
+			audioStore.playSound('error');
 			mostrarMensajeFeedback('Intenta de nuevo', 'error');
 			
 			// Incrementar errores en DB
@@ -293,6 +299,9 @@
 		try {
 			// Llamar al método de guardado del canvas
 			await canvasRef.guardarDibujo();
+			
+			// Reproducir sonido de guardado exitoso
+			audioStore.playSound('save');
 			
 			// Mostrar modal de éxito
 			modalGuardadoExitoso = true;
@@ -435,6 +444,9 @@
 		if (timeoutMensaje) {
 			clearTimeout(timeoutMensaje);
 		}
+
+		// Nota: Los sonidos ya se reproducen en manejarColocarParte
+		// No los duplicamos aquí
 
 		// Mostrar mensaje
 		mensajeTexto = texto;
@@ -591,17 +603,17 @@
 	>
 		<div style="padding: calc(var(--spacing-base, 1rem) * 1.5) 0; text-align: center;">
 			<div style="font-size: calc(var(--font-size-base, 1rem) * 4); margin-bottom: calc(var(--spacing-base, 1rem) * 1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">💾</div>
-			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.2); margin-bottom: calc(var(--spacing-base, 1rem) * 1); font-weight: 600; color: var(--fg, #333);">
+			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.2); margin-bottom: calc(var(--spacing-base, 1rem) * 1); font-weight: 600; color: var(--color-texto, #333);">
 				¿Deseas guardar tu obra en la galería?
 			</p>
-			<p style="color: var(--text-secondary, #666); font-size: calc(var(--font-size-base, 1rem) * 1); line-height: 1.5;">
+			<p style="color: var(--color-texto, #666); font-size: calc(var(--font-size-base, 1rem) * 1); line-height: 1.5;">
 				Tu dibujo se guardará y podrás verlo más tarde en la galería de obras.
 			</p>
 		</div>
 
 		{#snippet acciones()}
 			<button
-				class="boton-modal boton-secundario"
+				class="boton-modal boton-secundario pattern-black"
 				onclick={cancelarGuardarObra}
 				disabled={guardandoObra}
 				type="button"
@@ -609,7 +621,7 @@
 				Cancelar
 			</button>
 			<button
-				class="boton-modal boton-primario"
+				class="boton-modal boton-primario pattern-green"
 				onclick={confirmarGuardarObra}
 				disabled={guardandoObra}
 				type="button"
@@ -631,24 +643,24 @@
 	>
 		<div style="padding: calc(var(--spacing-base, 1rem) * 1.5) 0; text-align: center;">
 			<div style="font-size: calc(var(--font-size-base, 1rem) * 4); margin-bottom: calc(var(--spacing-base, 1rem) * 1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">💾</div>
-			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.2); margin-bottom: calc(var(--spacing-base, 1rem) * 1); font-weight: 600; color: var(--fg, #333);">
+			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.2); margin-bottom: calc(var(--spacing-base, 1rem) * 1); font-weight: 600; color: var(--color-texto, #333);">
 				¿Deseas guardar tu obra antes de terminar?
 			</p>
-			<p style="color: var(--text-secondary, #666); font-size: calc(var(--font-size-base, 1rem) * 1); line-height: 1.5;">
+			<p style="color: var(--color-texto, #666); font-size: calc(var(--font-size-base, 1rem) * 1); line-height: 1.5;">
 				Tu dibujo se guardará en la galería y podrás verlo más tarde.
 			</p>
 		</div>
 
 		{#snippet acciones()}
 			<button
-				class="boton-modal boton-secundario"
+				class="boton-modal boton-secundario pattern-black"
 				onclick={noGuardarYTerminar}
 				type="button"
 			>
 				No guardar
 			</button>
 			<button
-				class="boton-modal boton-primario"
+				class="boton-modal boton-primario pattern-green"
 				onclick={confirmarGuardarAntesDeTerminar}
 				type="button"
 			>
@@ -665,17 +677,17 @@
 	>
 		<div style="padding: calc(var(--spacing-base, 1rem) * 1.5) 0; text-align: center;">
 			<div style="font-size: calc(var(--font-size-base, 1rem) * 4); margin-bottom: calc(var(--spacing-base, 1rem) * 1);">🎨</div>
-			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.1); margin-bottom: calc(var(--spacing-base, 1rem) * 0.5); font-weight: 600; color: var(--fg, #333);">
+			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.1); margin-bottom: calc(var(--spacing-base, 1rem) * 0.5); font-weight: 600; color: var(--color-texto, #333);">
 				¡Tu obra ha sido guardada exitosamente!
 			</p>
-			<p style="color: var(--text-secondary, #666); font-size: calc(var(--font-size-base, 1rem) * 0.9);">
+			<p style="color: var(--color-texto, #666); font-size: calc(var(--font-size-base, 1rem) * 0.9);">
 				Puedes verla en la galería cuando quieras.
 			</p>
 		</div>
 
 		{#snippet acciones()}
 			<button
-				class="boton-modal boton-primario"
+				class="boton-modal boton-primario pattern-green"
 				onclick={cerrarModalExito}
 				type="button"
 			>
@@ -800,7 +812,7 @@
 
 	:global(.boton-modal.boton-primario) {
 		background: var(--color-primario, #4CAF50);
-		color: white;
+		color: black;
 		border-color: var(--color-primario, #4CAF50);
 	}
 

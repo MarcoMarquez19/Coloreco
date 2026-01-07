@@ -9,7 +9,6 @@
     import { audioStore } from '$lib/stores/audio';
     import { ttsService } from '$lib/audio/tts.service';
 
-
     // Props
     interface Props {
         categoria: 'historias' | 'dibujo' | 'cuerpoHumano';
@@ -64,6 +63,7 @@
 
     function logroAnterior() {
         if (logrosDisplay.length === 0) return;
+        audioStore.playSound('click');
         const prevIndex = (logrosDisplay.length === 0) ? 0 : (logroActualIndex - 1 + logrosDisplay.length) % logrosDisplay.length;
         animClass = 'slide-left';
         if (animTimer) { clearTimeout(animTimer); animTimer = null; }
@@ -77,6 +77,7 @@
 
     function logroSiguiente() {
         if (logrosDisplay.length === 0) return;
+        audioStore.playSound('click');
         const nextIndex = (logrosDisplay.length === 0) ? 0 : (logroActualIndex + 1) % logrosDisplay.length;
         animClass = 'slide-right';
         if (animTimer) { clearTimeout(animTimer); animTimer = null; }
@@ -142,8 +143,10 @@
     // Navegación con teclado
     function manejarTecla(event: KeyboardEvent) {
         if (event.key === 'ArrowLeft') {
+            audioStore.playSound('click');
             logroAnterior();
         } else if (event.key === 'ArrowRight') {
+            audioStore.playSound('click');
             logroSiguiente();
         }
     }
@@ -241,7 +244,7 @@
     {:else}
     <div class="navegacion-logros carrusel-contenedor">
         <button 
-            class="boton-flecha boton-izquierda" 
+            class="boton-flecha boton-izquierda pattern-yellow" 
             onclick={logroAnterior}
             aria-label="Logro anterior"
             title="Ver logro anterior (←)"
@@ -261,7 +264,7 @@
 
         {#key logroActualIndex}
         <article 
-            class={"tarjeta-logro " + animClass} 
+            class={"tarjeta-logro pattern-black " + animClass} 
             class:desbloqueado={logrosDisplay[logroActualIndex]?.desbloqueado}
             aria-label="{logrosDisplay[logroActualIndex]?.titulo || 'Cargando'}. {logrosDisplay[logroActualIndex]?.descripcion || 'Espera un momento'}. Estado: {logrosDisplay[logroActualIndex]?.desbloqueado ? 'Desbloqueado' : 'Bloqueado'}"
             in:fly={{ x: animClass === 'slide-right' ? 300 : animClass === 'slide-left' ? -300 : 0, duration: CAROUSEL_ANIM_DURATION }}
@@ -278,9 +281,9 @@
             <div class="estado-logro" aria-hidden="true">
                 <p>
                 {#if logrosDisplay[logroActualIndex]?.desbloqueado}
-                    <span class="badge desbloqueado"><span class="icono">✓</span> Desbloqueado</span>
+                    <span class="badge desbloqueado pattern-green"><span class="icono">✓</span> Desbloqueado</span>
                 {:else}
-                    <span class="badge bloqueado"><span class="icono">🔒</span> Bloqueado</span>
+                    <span class="badge bloqueado pattern-black"><span class="icono">🔒</span> Bloqueado</span>
                 {/if}
                 </p>
             </div>
@@ -288,7 +291,7 @@
         {/key}
 
         <button 
-            class="boton-flecha boton-derecha" 
+            class="boton-flecha boton-derecha pattern-yellow" 
             onclick={logroSiguiente}
             aria-label="Logro siguiente"
             title="Ver siguiente logro (→)"
@@ -638,12 +641,12 @@
 
     .badge.desbloqueado {
         background: #4caf50;
-        color: white;
+        color: #000;
     }
 
     .badge.bloqueado {
         background: #9e9e9e;
-        color: white;
+        color: #000;
     }
 
     .tarjeta-logro:not(.desbloqueado) {

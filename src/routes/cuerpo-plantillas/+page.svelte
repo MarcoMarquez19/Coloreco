@@ -4,7 +4,8 @@
 	import { goto } from '$app/navigation';
 	import { escenasStore, escenasFiltradas, cargando, error } from '$lib/stores/escenas';
 	import type { EscenaCatalogo } from '$lib/db/schemas';
-	import Instrucciones from '$lib/components/modales/Instrucciones.svelte';
+	import InstruccionesCuerpo from '$lib/components/modales/InstruccionesCuerpo.svelte';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 	
 	let mostrarInstrucciones = $state<boolean>(false);
 	let escenasIniciales: Omit<EscenaCatalogo, 'id'>[] = [];
@@ -64,6 +65,7 @@
 
 	function navegarAnterior() {
 		if ($escenasFiltradas.length === 0) return;
+		audioStore.playSound('click');
 		// calcular índice previo y aplicar clase de entrada desde la izquierda
 		const prevIndex = ($escenasFiltradas.length === 0) ? 0 : (indiceActual - 1 + $escenasFiltradas.length) % $escenasFiltradas.length;
 		animClass = 'slide-left';
@@ -76,6 +78,7 @@
 
 	function navegarSiguiente() {
 		if ($escenasFiltradas.length === 0) return;
+		audioStore.playSound('click');
 		// calcular siguiente índice y aplicar clase de entrada desde la derecha
 		const nextIndex = ($escenasFiltradas.length === 0) ? 0 : (indiceActual + 1) % $escenasFiltradas.length;
 		animClass = 'slide-right';
@@ -151,8 +154,9 @@
 		<div class="carrusel-contenedor">
 			<!-- Botón flecha izquierda -->
 			<button 
-				class="boton-flecha boton-izquierda"
+				class="boton-flecha boton-izquierda pattern-yellow"
 				onclick={navegarAnterior}
+				use:clickSound
 				aria-label="Escena anterior"
 				title="Navegar a la escena anterior (← tecla izquierda)"
 			> 
@@ -190,8 +194,9 @@
 
 			<!-- Botón flecha derecha -->
 			<button 
-				class="boton-flecha boton-derecha"
+				class="boton-flecha boton-derecha pattern-yellow"
 				onclick={navegarSiguiente}
+				use:clickSound
 				aria-label="Escena siguiente"
 				title="Navegar a la escena siguiente (→ tecla derecha)"
 			> 
@@ -210,10 +215,11 @@
 		</div>
 	{/if}
 
-    <button class="boton-selección"
+    <button class="boton-selección pattern-yellow"
 		aria-label="Selecciona la escena a utilizar en el taller de dibujo" 
 		title="Usar la escena seleccionada"
 		onclick={verDescripcionEscena}
+		use:clickSound
 	>
 		Usar esta escena
 	</button>
@@ -221,7 +227,7 @@
 
 <!-- Modal de Instrucciones -->
 {#if mostrarInstrucciones}
-	<Instrucciones on:close={() => mostrarInstrucciones = false} />
+	<InstruccionesCuerpo on:close={() => mostrarInstrucciones = false} />
 {/if}
 
 

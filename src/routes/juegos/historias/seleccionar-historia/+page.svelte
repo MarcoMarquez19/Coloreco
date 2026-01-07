@@ -7,6 +7,7 @@
 	import { obtenerArtistaActivo } from '$lib/db/artistas.service';
 	import * as logicaHistorias from '$lib/stores/historias';
 	import type { HistoriaConProgreso } from '$lib/stores/historias';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 
 	let historias = $state<HistoriaConProgreso[]>([]);
 	let cargando = $state<boolean>(true);
@@ -80,6 +81,7 @@
 
 	function navegarAnterior() {
 		if (historias.length === 0) return;
+		audioStore.playSound('click');
 		// aplicar clase de entrada desde la izquierda
 		animClass = 'slide-left';
 		if (animTimer) { clearTimeout(animTimer); animTimer = null; }
@@ -96,6 +98,7 @@
 
 	function navegarSiguiente() {
 		if (historias.length === 0) return;
+		audioStore.playSound('click');
 		// aplicar clase de entrada desde la derecha
 		animClass = 'slide-right';
 		if (animTimer) { clearTimeout(animTimer); animTimer = null; }
@@ -186,8 +189,9 @@
 		<div class="carrusel-contenedor" data-magnificable>
 			<!-- Botón flecha izquierda -->
 			<button 
-				class="boton-flecha boton-izquierda"
+				class="boton-flecha boton-izquierda pattern-yellow"
 				onclick={navegarAnterior}
+				use:clickSound
 				aria-label="Historia anterior"
 				title="Navegar a la historia anterior (← tecla izquierda)"
 				data-magnificable
@@ -208,7 +212,7 @@
 			<!-- Historia actual -->
 			{#if historiaActual}
 			{#key indiceActual}
-			<article class={"tarjeta-historia-carrusel " + animClass} aria-label={`Historia ${historiaActual.titulo}, Progreso ${logicaHistorias.calcularCapitulosCompletados(historiaActual)} de ${historiaActual.totalCapitulos} capítulos`} data-magnificable in:fly={{ x: animClass === 'slide-right' ? 300 : animClass === 'slide-left' ? -300 : 0, duration: CAROUSEL_ANIM_DURATION }}>
+			<article class={"tarjeta-historia-carrusel pattern-black " + animClass} aria-label={`Historia ${historiaActual.titulo}, Progreso ${logicaHistorias.calcularCapitulosCompletados(historiaActual)} de ${historiaActual.totalCapitulos} capítulos`} data-magnificable in:fly={{ x: animClass === 'slide-right' ? 300 : animClass === 'slide-left' ? -300 : 0, duration: CAROUSEL_ANIM_DURATION }}>
 				<div class="contenedor-historia-carrusel" role="group" aria-labelledby={"titulo-historia-" + indiceActual} aria-describedby={"progreso-historia-" + indiceActual} data-magnificable>
 					<div class="preview" data-magnificable>
 						<div class="placeholder-preview">
@@ -218,10 +222,11 @@
 					<h2 id={"titulo-historia-" + indiceActual} class="nombre-historia" tabindex="-1" data-magnificable data-readable>{historiaActual.titulo}</h2>
 					<p id={"progreso-historia-" + indiceActual} class="progreso-historia" data-magnificable data-readable>Progreso: {logicaHistorias.calcularCapitulosCompletados(historiaActual)}/{historiaActual.totalCapitulos}</p>
 					
-					<button class="boton-selección"
+					<button class="boton-selección pattern-yellow"
 						aria-label={`Jugar la historia ${historiaActual.titulo}`}
 						title="Jugar la historia seleccionada"
 						onclick={verHistoria}
+						use:clickSound
 						data-magnificable
 						data-readable
 					>
@@ -234,8 +239,9 @@
 
 			<!-- Botón flecha derecha -->
 			<button 
-				class="boton-flecha boton-derecha"
+				class="boton-flecha boton-derecha pattern-yellow"
 				onclick={navegarSiguiente}
+				use:clickSound
 				aria-label="Historia siguiente"
 				title="Navegar a la historia siguiente (→ tecla derecha)"
 				data-magnificable

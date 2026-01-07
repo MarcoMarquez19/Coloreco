@@ -76,7 +76,7 @@ export const CONFIGURACIONES_ESCENAS: Record<string, EscenaConfig> = {
 			{ id: 'indice', nombre: 'Índice', zonaValidaId: 'zona-indice' },
             { id: 'pulgar', nombre: 'Pulgar', zonaValidaId: 'zona-pulgar' },
             { id: 'menique', nombre: 'Meñique', zonaValidaId: 'zona-menique' },
-			{ id: 'medio', nombre: 'Medio', zonaValidaId: 'zona-medio' },
+			{ id: 'medio', nombre: 'Medio y anular', zonaValidaId: 'zona-medio' },
 			{ id: 'palma', nombre: 'Palma', zonaValidaId: 'zona-palma' }
 		],
 		zonasValidas: [

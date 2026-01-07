@@ -7,7 +7,7 @@
 
 <div class="contenedor-fondo" style={style}>
 	<!-- Cerebro arriba izquierda -->
-	<div class="icono noroeste cerebro pattern-yellow">
+	<div class="icono noroeste cerebro pattern-orange">
 		<Cerebro clase="icono noroeste"/>
 	</div>
 
@@ -64,7 +64,7 @@
 	:global(.icono.pattern-magenta),
 	:global(.icono.pattern-green),
 	:global(.icono.pattern-blue),
-	:global(.icono.pattern-yellow) {
+	:global(.icono.pattern-orange) {
 		position: absolute !important;
 	}
 
@@ -72,7 +72,7 @@
 	:global(.icono.pattern-magenta::after),
 	:global(.icono.pattern-green::after),
 	:global(.icono.pattern-blue::after),
-	:global(.icono.pattern-yellow::after) {
+	:global(.icono.pattern-orange::after) {
 		border-radius: 50%; /* Hace que la textura sea redonda */
 		transform: scale(0.9); /* La encoge un poco para asegurar que quede dentro */
 		opacity: 0.6; /* Hacemos la textura un poco más sutil en el fondo */

@@ -92,6 +92,7 @@
 	}
 	function volver() {
 		if (estaEnInicio) return;
+		audioStore.playSound('click');
 		if (window.history.length > 1) {
 			window.history.back();
 		} else {
@@ -144,14 +145,12 @@
 		const path = $page.url.pathname;
 		
 		// Determinar qué música reproducir según la ruta
-		if (path === '/' || path === '/seleccionar-estudio') {
-			audioStore.playMusic('menu');
-		} else if (path.startsWith('/estudio')) {
-			audioStore.playMusic('estudio');
-		} else if (path.startsWith('/galeria')) {
-			audioStore.playMusic('galeria');
-		} else if (path === '/ajustes') {
-			// En ajustes mantener la música actual
+		if (path.startsWith('/taller-escenas') || path.startsWith('/juegos/dibujo')) {
+			audioStore.playMusic('modoDibujo');
+		} else if (path.startsWith('/cuerpo-plantillas') || path.startsWith('/juegos/cuerpo-humano')) {
+			audioStore.playMusic('modoCuerpo');
+		} else if (path.startsWith('/juegos/historias')) {
+			audioStore.playMusic('modoHistorias');
 		} else {
 			audioStore.playMusic('default');
 		}

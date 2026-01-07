@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from 'svelte';
   import { configuraciones } from '$lib/stores/settings';
+  import { audioStore } from '$lib/stores/audio';
 
   interface Props {
     correct?: boolean;
@@ -15,6 +16,7 @@
   let backdropRef = $state<HTMLElement | null>(null);
 
   function handleClose() {
+    audioStore.playSound('click');
     dispatch('close');
   }
 
@@ -180,7 +182,7 @@
 
 <div class="modal-backdrop" bind:this={backdropRef} onclick={handleBackdropClick} role="presentation">
   <div 
-    class="modal" 
+    class="modal pattern-black" 
     bind:this={modalRef}
     onclick={handleModalClick}
     onkeydown={handleGlobalKeydown}
@@ -192,9 +194,9 @@
     <button class="close-btn no-pictogram" onclick={handleClose} aria-label="Cerrar modal" aria-hidden="true" type="button">×</button>
     <div class="icon-container">
       {#if correct}
-        <div class="icon success" aria-hidden="true">✔</div>
+        <div class="icon success pattern-green" aria-hidden="true">✔</div>
       {:else}
-        <div class="icon error" aria-hidden="true">✖</div>
+        <div class="icon error pattern-red" aria-hidden="true">✖</div>
       {/if}
     </div>
     <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -208,7 +210,7 @@
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <p class="detalle" data-readable tabindex="0">Pista: {pista}</p>
     {/if}
-    <button class="action-btn" onclick={handleClose} data-readable>
+    <button class="action-btn pattern-green" onclick={handleClose} data-readable>
       {correct ? 'Continuar' : 'Reintentar'}
     </button>
   </div>
@@ -305,7 +307,7 @@
   
   .action-btn {
     background: #2eaf6a;
-    color: #fff;
+    color: #000;
     border: none;
     border-radius: 8px;
     padding: calc(var(--spacing-base, 1rem) * 0.7) calc(var(--spacing-base, 1rem) * 2.5);

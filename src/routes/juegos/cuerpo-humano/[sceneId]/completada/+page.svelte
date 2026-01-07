@@ -8,6 +8,7 @@
 	import { obtenerConfiguracionEscena } from '$lib/juegos/modos/cuerpo-humano/configuraciones-escenas';
 	import type { EscenaConfig } from '$lib/juegos/modos/cuerpo-humano/types/cuerpo-humano.types';
 	import ConfetiImagen from '$lib/components/iconos/Confeti.png';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 
 	let escenaConfig = $state<EscenaConfig | null>(null);
 	let cargando = $state<boolean>(true);
@@ -36,6 +37,8 @@
 	};
 
 	onMount(async () => {
+		audioStore.playSound('finished');
+		
 		try {
 			const sceneId = $page.params.sceneId || 'default';
 			
@@ -227,7 +230,7 @@
 		</div>
 
 		<!-- Contenido principal -->
-		<div class="marco-externo" data-magnificable>
+		<div class="marco-externo pattern-black" data-magnificable>
 			<div class="mensaje-contenedor" data-magnificable>
 				<!-- Título principal -->
 				<h1 data-magnificable data-readable>
@@ -246,9 +249,9 @@
 
 				<!-- Estadísticas de partes -->
 				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-				<div class="estadisticas" data-magnificable data-readable tabindex="0">
+				<div class="estadisticas pattern-black" data-magnificable data-readable tabindex="0">
 					<div class="stat-item" data-readable>
-						<div class="stat-numero" style="color: #2eaf6a;" data-readable>{partesCorrectas}</div>
+						<div class="stat-numero" data-readable>{partesCorrectas}</div>
 						<div class="stat-label" data-readable>Partes correctas</div>
 					</div>
 					<div class="stat-divider" aria-hidden="true">/</div>
@@ -261,7 +264,7 @@
 				<!-- Mensaje especial si es perfecto -->
 				{#if tienePerfecto}
 					<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-					<p class="mensaje-perfecto" data-magnificable data-readable tabindex="0">
+					<p class="mensaje-perfecto pattern-yellow" data-magnificable data-readable tabindex="0">
 						🏆 ¡Colocaste todas las partes correctamente sin errores!
 					</p>
 				{/if}
@@ -299,7 +302,7 @@
 									</span>
 								{/if}
 							</div>
-							<div class="barra-progreso" role="progressbar" aria-valuenow="{Math.round(porcentajeProgreso)}" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso hacia el siguiente rango">
+							<div class="barra-progreso pattern-black" role="progressbar" aria-valuenow="{Math.round(porcentajeProgreso)}" aria-valuemin="0" aria-valuemax="100" aria-label="Progreso hacia el siguiente rango">
 								<div 
 									class="barra-relleno" 
 									style="width: {porcentajeProgreso}%; background: {obtenerColorRango(rangoActual)};"
@@ -316,13 +319,13 @@
 
 				<!-- Botones de acción -->
 				<div class="botones-contenedor" data-magnificable>
-					<button class="boton-accion boton-menu" onclick={volverAlMenu} data-magnificable data-readable>
+					<button class="boton-accion boton-menu pattern-yellow" onclick={volverAlMenu} use:clickSound data-magnificable data-readable>
 						Regresar al menú
 					</button>
-					<button class="boton-accion boton-galeria" onclick={irAGaleria} data-magnificable data-readable>
+					<button class="boton-accion boton-galeria pattern-yellow" onclick={irAGaleria} use:clickSound data-magnificable data-readable>
 						Ir a la galería
 					</button>
-					<button class="boton-accion boton-logros" onclick={verLogros} data-magnificable data-readable>
+					<button class="boton-accion boton-logros pattern-yellow" onclick={verLogros} use:clickSound data-magnificable data-readable>
 						Ver logros
 					</button>
 				</div>
@@ -356,7 +359,7 @@
 		margin-top: calc(var(--spacing-base, 1rem) * 0.5);
 		padding: 0;
 		font-weight: 700;
-		color: var(--fg, #333);
+		color: var(--color-texto, #333);
 	}
 
 	h2 {
@@ -364,7 +367,7 @@
 		margin: 0 0 calc(var(--spacing-base, 1rem) * 1) 0;
 		padding: 0;
 		font-weight: 600;
-		color: var(--fg, #333);
+		color: var(--color-texto, #333);
 	}
 
 	.marco-externo {
@@ -417,11 +420,11 @@
 	.plantilla-nombre {
 		font-size: calc(var(--font-size-base, 1rem) * 1.3);
 		margin: 0;
-		color: var(--text-secondary, #555);
+		color: var(--color-texto, #333);
 	}
 
 	.plantilla-nombre strong {
-		color: var(--fg, #333);
+		color: var(--color-texto, #333);
 		font-weight: 700;
 	}
 
@@ -447,20 +450,20 @@
 	.stat-numero {
 		font-size: calc(var(--font-size-base, 1rem) * 3);
 		font-weight: 700;
-		color: var(--fg, #333);
+		color: var(--color-texto, #333);
 		line-height: 1;
 	}
 
 	.stat-label {
 		font-size: calc(var(--font-size-base, 1rem) * 1);
-		color: var(--text-secondary, #666);
+		color: var(--color-texto, #333);
 		font-weight: 600;
 	}
 
 	.stat-divider {
 		font-size: calc(var(--font-size-base, 1rem) * 3);
 		font-weight: 300;
-		color: var(--text-secondary, #999);
+		color: var(--color-texto, #333);
 	}
 
 	.mensaje-perfecto {
@@ -506,11 +509,11 @@
 	}
 
 	.rango-nombre {
-		color: var(--fg, #333);
+		color: var(--color-texto, #333);
 	}
 
 	.sin-rango {
-		color: var(--text-secondary, #666);
+		color: var(--color-texto, #333);
 		font-style: italic;
 		margin-bottom: calc(var(--spacing-base, 1rem) * 1);
 	}
@@ -526,12 +529,12 @@
 		align-items: center;
 		margin-bottom: calc(var(--spacing-base, 1rem) * 0.75);
 		font-size: calc(var(--font-size-base, 1rem) * 1);
-		color: var(--fg, #555);
+		color: var(--color-texto, #333);
 		font-weight: 600;
 	}
 
 	.siguiente-rango {
-		color: var(--text-secondary, #666);
+		color: var(--color-texto, #333);
 		font-size: calc(var(--font-size-base, 1rem) * 0.95);
 	}
 
@@ -617,7 +620,7 @@
 	}
 
 	.cargando {
-		color: var(--text-secondary, #666);
+		color: var(--color-texto, #333);
 		font-style: italic;
 	}
 

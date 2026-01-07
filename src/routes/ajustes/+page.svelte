@@ -93,7 +93,7 @@
 						<select
 							id="select-colorblindness"
 							value={$configuraciones.colorBlindness as any}
-							onchange={(e) => configuraciones.setColorBlindness(e.currentTarget.value as ColorBlindnessMode)}
+						onchange={(e) => { audioStore.playSound('click'); configuraciones.setColorBlindness(e.currentTarget.value as ColorBlindnessMode); }}
 							class="select-input"
 							aria-label="Seleccionar modo de simulación de daltonismo"
 						>
@@ -117,7 +117,7 @@
 							max="1"
 							step="0.1"
 							value={$configuraciones.intensity}
-							oninput={(e) => configuraciones.setIntensity(parseFloat(e.currentTarget.value))}
+						oninput={(e) => { audioStore.playSound('hover'); configuraciones.setIntensity(parseFloat(e.currentTarget.value)); }}
 							disabled={$configuraciones.colorBlindness === 'none'}
 							class="slider"
 							aria-label="Ajustar la intensidad del filtro de color"
@@ -133,7 +133,7 @@
 							<input
 								type="checkbox"
 								checked={$configuraciones.textures}
-								onchange={(e) => configuraciones.setTextures(e.currentTarget.checked)}
+							onchange={(e) => { audioStore.playSound('click'); configuraciones.setTextures(e.currentTarget.checked); }}
 								aria-label="Activar texturas de ayuda para diferenciar colores"
 								aria-checked={$configuraciones.textures}
 							/>
@@ -144,7 +144,7 @@
 							<input
 								type="checkbox"
 								checked={$configuraciones.contrast === 'high'}
-								onchange={(e) => configuraciones.setContrast(e.currentTarget.checked ? 'high' : 'normal')}
+							onchange={(e) => { audioStore.playSound('click'); configuraciones.setContrast(e.currentTarget.checked ? 'high' : 'normal'); }}
 								aria-label="Activar modo de alto contraste inteligente"
 								aria-checked={$configuraciones.contrast === 'high'}
 							/>
@@ -193,7 +193,7 @@
 							class="switch-toggle"
 							class:active={$configuraciones.lupaActivada}
 							class:pattern-blue={$configuraciones.lupaActivada}
-							onclick={() => configuraciones.toggleMagnifier()}
+						onclick={() => { audioStore.playSound('click'); configuraciones.toggleMagnifier(); }}
 							aria-label={$configuraciones.lupaActivada ? 'Desactivar lupa mágica' : 'Activar lupa mágica'}
 						>
 							<span class="switch-knob"></span>
@@ -221,7 +221,7 @@
 							class="switch-toggle"
 							class:active={$configuraciones.multiplicadorTamanioFuente >= 1.2}
 							class:pattern-blue={$configuraciones.multiplicadorTamanioFuente >= 1.2}
-							onclick={() => configuraciones.setFontSize($configuraciones.multiplicadorTamanioFuente >= 1.2 ? 1 : 1.5) }
+						onclick={() => { audioStore.playSound('click'); configuraciones.setFontSize($configuraciones.multiplicadorTamanioFuente >= 1.2 ? 1 : 1.5); }}
 							aria-label={$configuraciones.multiplicadorTamanioFuente >= 1.2 ? 'Desactivar tamaño de fuente duplicado' : 'Activar tamaño de fuente duplicado'}
 						>
 							<span class="switch-knob"></span>
@@ -249,7 +249,7 @@
 							class="switch-toggle"
 							class:active={$configuraciones.multiplicadorEspaciado >= 1.2}
 							class:pattern-blue={$configuraciones.multiplicadorEspaciado >= 1.2}
-							onclick={() => configuraciones.setSpacing($configuraciones.multiplicadorEspaciado >= 1.2 ? 1 : 1.5) }
+						onclick={() => { audioStore.playSound('click'); configuraciones.setSpacing($configuraciones.multiplicadorEspaciado >= 1.2 ? 1 : 1.5); }}
 							aria-label={$configuraciones.multiplicadorEspaciado >= 1.2 ? 'Desactivar espaciado duplicado' : 'Activar espaciado duplicado'}
 						>
 							<span class="switch-knob"></span>
@@ -276,7 +276,7 @@
 							class="switch-toggle"
 							class:active={$configuraciones.modoNoche}
 							class:pattern-blue={$configuraciones.modoNoche}
-							onclick={() => configuraciones.toggleModoNoche()}
+						onclick={() => { audioStore.playSound('click'); configuraciones.toggleModoNoche(); }}
 							aria-label={$configuraciones.modoNoche ? 'Desactivar Modo Noche' : 'Activar Modo Noche'}
 						>
 							<span class="switch-knob"></span>
@@ -299,7 +299,7 @@
 								class="switch-toggle"
 								class:active={$configuraciones.modoInverso}
 								class:pattern-blue={$configuraciones.modoInverso}
-								onclick={() => configuraciones.toggleModoInverso()}
+							onclick={() => { audioStore.playSound('click'); configuraciones.toggleModoInverso(); }}
 								aria-label={$configuraciones.modoInverso ? 'Desactivar Modo Inverso' : 'Activar Modo Inverso'}
 							>
 								<span class="switch-knob"></span>
@@ -326,8 +326,7 @@
 							aria-checked={$configuraciones.bionicMode}
 							aria-describedby="toggle-bionic-desc"
 							class="switch-toggle"
-							class:active={$configuraciones.bionicMode}
-							onclick={() => configuraciones.toggleBionicMode()}
+						class:active={$configuraciones.bionicMode}						class:pattern-blue={$configuraciones.bionicMode}						onclick={() => { audioStore.playSound('click'); configuraciones.toggleBionicMode(); }}
 							aria-label={$configuraciones.bionicMode ? 'Desactivar modo biónico' : 'Activar modo biónico'}
 						>
 							<span class="switch-knob"></span>
@@ -347,8 +346,7 @@
 							aria-checked={$configuraciones.rhymeMode}
 							aria-describedby="toggle-rhyme-desc"
 							class="switch-toggle"
-							class:active={$configuraciones.rhymeMode}
-							onclick={() => configuraciones.toggleRhymeMode()}
+						class:active={$configuraciones.rhymeMode}						class:pattern-blue={$configuraciones.rhymeMode}						onclick={() => { audioStore.playSound('click'); configuraciones.toggleRhymeMode(); }}
 							aria-label={$configuraciones.rhymeMode ? 'Desactivar modo rima' : 'Activar modo rima'}
 						>
 							<span class="switch-knob"></span>
@@ -368,8 +366,7 @@
 							aria-checked={$configuraciones.pictogramMode}
 							aria-describedby="toggle-pictogram-desc"
 							class="switch-toggle"
-							class:active={$configuraciones.pictogramMode}
-							onclick={() => configuraciones.togglePictogramMode()}
+						class:active={$configuraciones.pictogramMode}						class:pattern-blue={$configuraciones.pictogramMode}						onclick={() => { audioStore.playSound('click'); configuraciones.togglePictogramMode(); }}
 							aria-label={$configuraciones.pictogramMode ? 'Desactivar modo pictográfico' : 'Activar modo pictográfico'}
 						>
 							<span class="switch-knob"></span>
@@ -394,8 +391,7 @@
 							aria-checked={$configuraciones.narrationEnabled}
 							aria-describedby="toggle-narration-desc"
 							class="switch-toggle"
-							class:active={$configuraciones.narrationEnabled}
-							onclick={() => configuraciones.toggleNarration()}
+						class:active={$configuraciones.narrationEnabled}						class:pattern-blue={$configuraciones.narrationEnabled}						onclick={() => { audioStore.playSound('click'); configuraciones.toggleNarration(); }}
 							aria-label={$configuraciones.narrationEnabled ? 'Desactivar narración' : 'Activar narración'}
 						>
 							<span class="switch-knob"></span>
@@ -418,6 +414,7 @@
 						step="0.25"
 						bind:value={speedDisplay}
 						oninput={(e) => {
+							audioStore.playSound('hover');
 							const val = (e.target as HTMLInputElement).value;
 							speedDisplay = parseFloat(val).toFixed(2);
 							configuraciones.setTTSSpeed(parseFloat(val));
@@ -462,8 +459,8 @@
 								aria-describedby="toggle-music-desc"
 								class="switch-toggle"
 								class:active={$audioStore.musicEnabled}
-								class:pattern-green={$audioStore.musicEnabled}
-								onclick={() => audioStore.toggleMusic()}
+							class:pattern-blue={$audioStore.musicEnabled}
+							onclick={() => { audioStore.playSound('click'); audioStore.toggleMusic(); }}
 								aria-label={$audioStore.musicEnabled ? 'Desactivar música de fondo' : 'Activar música de fondo'}
 							>
 								<span class="switch-knob"></span>
@@ -486,7 +483,7 @@
 									max="1"
 									step="0.1"
 									value={$audioStore.musicVolume}
-									oninput={(e) => audioStore.setMusicVolume(parseFloat(e.currentTarget.value))}
+								oninput={(e) => { audioStore.playSound('hover'); audioStore.setMusicVolume(parseFloat(e.currentTarget.value)); }}
 									class="slider"
 									aria-label="Ajustar volumen de la música de fondo"
 									aria-valuemin="0"
@@ -510,8 +507,8 @@
 								aria-describedby="toggle-sound-desc"
 								class="switch-toggle"
 								class:active={$audioStore.soundEnabled}
-								class:pattern-yellow={$audioStore.soundEnabled}
-								onclick={() => audioStore.toggleSound()}
+							class:pattern-blue={$audioStore.soundEnabled}
+							onclick={() => { audioStore.playSound('click'); audioStore.toggleSound(); }}
 								aria-label={$audioStore.soundEnabled ? 'Desactivar efectos de sonido' : 'Activar efectos de sonido'}
 							>
 								<span class="switch-knob"></span>
@@ -534,7 +531,7 @@
 									max="1"
 									step="0.1"
 									value={$audioStore.soundVolume}
-									oninput={(e) => audioStore.setSoundVolume(parseFloat(e.currentTarget.value))}
+								oninput={(e) => { audioStore.playSound('hover'); audioStore.setSoundVolume(parseFloat(e.currentTarget.value)); }}
 									class="slider"
 									aria-label="Ajustar volumen de los efectos de sonido"
 									aria-valuemin="0"
@@ -650,7 +647,7 @@
 
 	.control-valor {
 		font-weight: 700;
-		color: #0b6efd;
+		color: var(--color-texto, #333);
 		font-size: calc(var(--font-size-base, 1rem) * 1.1);
 	}
 

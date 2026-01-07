@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import LibroHistorias from '$lib/components/iconos/LibroAbierto.png';
 	import ConfetiImagen from '$lib/components/iconos/Confeti.png';
+	import { audioStore } from '$lib/stores/audio';
 
 	interface Historia {
 		historiaId: string;
@@ -20,6 +21,8 @@
 	let tamañoImagen = '20rem';
 
 	onMount(async () => {
+		audioStore.playSound('finished');
+		
 		try {
 			const historiaId = $page.params.historiaId;
 			
@@ -258,7 +261,7 @@
 
 	.capitulos-info {
 		font-size: calc(var(--font-size-base, 1rem) * 1.2);
-		color: var(--color-texto-secundario, #666);
+		color: var(--color-texto, #333);
 		margin: 0;
 	}
 

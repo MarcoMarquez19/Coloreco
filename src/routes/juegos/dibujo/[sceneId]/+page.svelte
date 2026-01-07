@@ -21,6 +21,7 @@
 	import * as logrosStore from '$lib/stores/logros';
 	import LogroDesbloqueado from '$lib/components/modales/LogroDesbloqueado.svelte';
 	import type { LogroDefinicion } from '$lib/db/schemas';
+	import { audioStore } from '$lib/stores/audio';
 
 	// Referencias a los componentes
 	let canvasRef: DibujoCanvas;
@@ -149,6 +150,9 @@
 			// Llamar al método de guardado del canvas
 			await canvasRef.guardarDibujo();
 			
+			// Reproducir sonido de guardado exitoso
+			audioStore.playSound('save');
+			
 			// Procesar logro de porcentaje pintado si hay artista activo y escena
 			if (artistaId && escenaIdActual) {
 				await logrosStore.procesarLogroPorcentajePintado(
@@ -251,6 +255,13 @@
 		// Limpiar timeout anterior si existe
 		if (timeoutMensaje) {
 			clearTimeout(timeoutMensaje);
+		}
+
+		// Reproducir sonido correspondiente
+		if (tipo === 'success') {
+			audioStore.playSound('success');
+		} else {
+			audioStore.playSound('error');
 		}
 
 		// Mostrar mensaje
@@ -647,7 +658,7 @@
 
 			<!-- Panel de información de navegación - posicionado absolutamente -->
 			{#if labelZonaEnfocada && modoNavegacionActivo && mostrarPanelNavegacion}
-				<div class="panel-informacion-navegacion" role="status" aria-live="polite">
+				<div class="panel-informacion-navegacion pattern-black" role="status" aria-live="polite">
 					<div class="zona-info">
 						<span class="icono-zona">📍</span>
 						<span class="texto-zona">{labelZonaEnfocada}</span>
@@ -666,7 +677,7 @@
 		<section class="seccion-lienzo" aria-label="Lienzo de dibujo">
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div 
-				class="contenedor-lienzo"
+				class="contenedor-lienzo pattern-black"
 				bind:this={contenedorLienzoRef}
 				onmousedown={iniciarDrag}
 				onmousemove={procesarDrag}
@@ -727,14 +738,14 @@
 			<p style="font-size: 1.2rem; margin-bottom: 1rem; font-weight: 600; color: var(--color-texto, #333);">
 				¿Deseas guardar tu obra en la galería?
 			</p>
-			<p style="color: var(--color-texto-secundario, #666); font-size: 1rem; line-height: 1.5;">
+			<p style="color: var(--color-texto, #666); font-size: 1rem; line-height: 1.5;">
 				Tu dibujo se guardará y podrás verlo más tarde en la galería de obras.
 			</p>
 		</div>
 
 		{#snippet acciones()}
 			<button
-				class="boton-modal boton-secundario"
+				class="boton-modal boton-secundario pattern-black"
 				onclick={cancelarGuardarObra}
 				disabled={guardandoObra}
 				type="button"
@@ -742,7 +753,7 @@
 				Cancelar
 			</button>
 			<button
-				class="boton-modal boton-primario"
+				class="boton-modal boton-primario pattern-green"
 				onclick={confirmarGuardarObra}
 				disabled={guardandoObra}
 				type="button"
@@ -764,17 +775,17 @@
 	>
 		<div style="padding: 1.5rem 0; text-align: center;">
 			<div style="font-size: 4rem; margin-bottom: 1rem;">🎨</div>
-			<p style="font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 600;">
+			<p style="font-size: 1.1rem; margin-bottom: 0.5rem; font-weight: 600; color: var(--color-texto, #333);">
 				¡Tu obra ha sido guardada exitosamente!
 			</p>
-			<p style="color: var(--color-texto-secundario, #666); font-size: 0.9rem;">
+			<p style="color: var(--color-texto, #666); font-size: 0.9rem;">
 				Puedes verla en la galería cuando quieras.
 			</p>
 		</div>
 
 		{#snippet acciones()}
 			<button
-				class="boton-modal boton-primario"
+				class="boton-modal boton-primario pattern-green"
 				onclick={cerrarModalExito}
 				type="button"
 			>
@@ -791,24 +802,24 @@
 	>
 		<div style="padding: calc(var(--spacing-base, 1rem) * 1.5) 0; text-align: center;">
 			<div style="font-size: calc(var(--font-size-base, 1rem) * 4); margin-bottom: calc(var(--spacing-base, 1rem) * 1); filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));">💾</div>
-			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.2); margin-bottom: calc(var(--spacing-base, 1rem) * 1); font-weight: 600; color: var(--fg, #333);">
+			<p style="font-size: calc(var(--font-size-base, 1rem) * 1.2); margin-bottom: calc(var(--spacing-base, 1rem) * 1); font-weight: 600; color: var(--color-texto, #333);">
 				¿Deseas guardar tu obra antes de terminar?
 			</p>
-			<p style="color: var(--text-secondary, #666); font-size: calc(var(--font-size-base, 1rem) * 1); line-height: 1.5;">
+			<p style="color: var(--color-texto, #666); font-size: calc(var(--font-size-base, 1rem) * 1); line-height: 1.5;">
 				Tu dibujo se guardará en la galería y podrás verlo más tarde.
 			</p>
 		</div>
 
 		{#snippet acciones()}
 			<button
-				class="boton-modal boton-secundario"
+				class="boton-modal boton-secundario pattern-black"
 				onclick={noGuardarYTerminar}
 				type="button"
 			>
 				No guardar
 			</button>
 			<button
-				class="boton-modal boton-primario"
+				class="boton-modal boton-primario pattern-green"
 				onclick={confirmarGuardarAntesDeTerminar}
 				type="button"
 			>
@@ -979,7 +990,7 @@
 
 	:global(.boton-modal.boton-primario) {
 		background: var(--color-primario, #4CAF50);
-		color: white;
+		color: black;
 		border-color: var(--color-primario, #4CAF50);
 	}
 

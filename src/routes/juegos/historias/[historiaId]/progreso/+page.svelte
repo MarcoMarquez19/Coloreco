@@ -6,6 +6,7 @@
 	import { obtenerArtistaActivo } from '$lib/db/artistas.service';
 	import * as logicaHistorias from '$lib/stores/historias';
 	import type { CapituloConProgreso } from '$lib/stores/historias';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 
 	let historiaId = $state<string>('');
 	let tituloHistoria = $state<string>('');
@@ -168,13 +169,13 @@
 		</div>
 	{:else}
 		<!-- Título de la historia -->
-		<div class="titulo-historia-contenedor" data-magnificable>
+		<div class="titulo-historia-contenedor pattern-black" data-magnificable>
 			<h1 tabindex="0" data-magnificable data-readable data-narration-text="Historia: {tituloHistoria}">{tituloHistoria}</h1>
 		</div>
 
 		<!-- Contenedor de capítulos -->
 		{#if capitulos.length > 0}
-			<div class="marco-externo" data-magnificable>
+			<div class="marco-externo pattern-black" data-magnificable>
 				<div class="capitulos-contenedor" data-magnificable>
                     <!-- Personaje decorativo -->
                     <div class="personaje-decorativo" data-magnificable>
@@ -194,8 +195,10 @@
 							class="capitulo-boton capitulo-imagen"
 								class:desbloqueado={capitulo.desbloqueado}
 								class:bloqueado={!capitulo.desbloqueado}
-								class:seleccionado={index === capituloSeleccionadoIndex}
-								onclick={() => seleccionarCapitulo(capitulo)}
+							class:seleccionado={index === capituloSeleccionadoIndex}
+							class:pattern-green={capitulo.desbloqueado}
+							class:pattern-black={!capitulo.desbloqueado}
+							onclick={() => seleccionarCapitulo(capitulo)}
 								onfocus={() => { if (capitulo.desbloqueado) capituloSeleccionadoIndex = index; }}
 								disabled={!capitulo.desbloqueado}
 								title={capitulo.desbloqueado ? `Jugar ${capitulo.nombre}` : `Completa el capítulo anterior para desbloquear`}
