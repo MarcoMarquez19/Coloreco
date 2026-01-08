@@ -306,18 +306,35 @@
   }
   
   .action-btn {
-    background: #2eaf6a;
-    color: #000;
+    background: var(--fondo-botones, #ffca00);
+    color: var(--icono-color-relleno, black);
     border: none;
     border-radius: 8px;
     padding: calc(var(--spacing-base, 1rem) * 0.7) calc(var(--spacing-base, 1rem) * 2.5);
     font-size: calc(var(--font-size-base, 1rem) * 1.1);
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 120ms ease, box-shadow 120ms ease;
+    box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
+  }
+
+  .action-btn :global(.bionic-highlight),
+  .action-btn :global(.bionic-word) {
+    color: var(--icono-color-relleno, black) !important;
   }
   
   .action-btn:hover {
-    background: #249a5a;
+    background: var(--fondo-botones-hover, #d1a700);
+    transform: translateY(-2px);
+  }
+
+  .action-btn:active {
+    transform: translateY(0);
+  }
+
+  .action-btn:focus {
+    outline: var(--borde-botones, 4px solid #000000);
+    background: var(--fondo-botones-hover, #d1a700);
+    outline-offset: 7px;
   }
 </style>

@@ -238,7 +238,14 @@
 							aria-checked={$configuraciones.modoNoche}
 							class="text-button"
 							class:active={$configuraciones.modoNoche}
-							onclick={() => { audioStore.playSound('click'); configuraciones.toggleModoNoche(); }}
+							onclick={() => { 
+								audioStore.playSound('click'); 
+								configuraciones.toggleModoNoche(); 
+								// Forzar actualización del contenido para que se apliquen los colores correctamente
+								setTimeout(() => {
+									window.dispatchEvent(new CustomEvent('content-updated', { detail: { animationDuration: 0 } }));
+								}, 100);
+							}}
 							aria-label={$configuraciones.modoNoche ? 'Desactivar Modo Noche' : 'Activar Modo Noche'}
 						>
 							Modo Noche (Alto Contraste)
@@ -256,7 +263,14 @@
 								aria-checked={$configuraciones.modoInverso}
 								class="text-button"
 								class:active={$configuraciones.modoInverso}
-								onclick={() => { audioStore.playSound('click'); configuraciones.toggleModoInverso(); }}
+								onclick={() => { 
+									audioStore.playSound('click'); 
+									configuraciones.toggleModoInverso(); 
+									// Forzar actualización del contenido para que se apliquen los colores correctamente
+									setTimeout(() => {
+										window.dispatchEvent(new CustomEvent('content-updated', { detail: { animationDuration: 0 } }));
+									}, 100);
+								}}
 								aria-label={$configuraciones.modoInverso ? 'Desactivar Modo Inverso' : 'Activar Modo Inverso'}
 							>
 								Modo Inverso
@@ -606,6 +620,11 @@
 		box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
 	}
 
+	.boton-reset :global(.bionic-highlight),
+	.boton-reset :global(.bionic-word) {
+		color: var(--icono-color-relleno, black) !important;
+	}
+
 	.boton-reset:hover {
         background: var(--fondo-botones-hover, #d1a700);
 		transform: translateY(-2px);
@@ -646,6 +665,11 @@
 		color: var(--icono-color-relleno, black);
 	}
 
+	.text-button:hover :global(.bionic-highlight),
+	.text-button:hover :global(.bionic-word) {
+		color: var(--icono-color-relleno, black) !important;
+	}
+
 	.text-button.active {
 		background: var(--fondo-botones, #ffca00);
 		color: var(--icono-color-relleno, black);
@@ -653,13 +677,28 @@
 		box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
 	}
 
+	.text-button.active :global(.bionic-highlight),
+	.text-button.active :global(.bionic-word) {
+		color: var(--icono-color-relleno, black) !important;
+	}
+
 	.text-button.active:hover {
 		background: var(--fondo-botones-hover, #d1a700);
+	}
+
+	.text-button.active:hover :global(.bionic-highlight),
+	.text-button.active:hover :global(.bionic-word) {
+		color: var(--icono-color-relleno, black) !important;
 	}
 
 	.text-button:focus {
 		outline: var(--borde-botones, 4px solid #000000);
 		outline-offset: 2px;
+	}
+
+	.text-button:focus :global(.bionic-highlight),
+	.text-button:focus :global(.bionic-word) {
+		color: var(--icono-color-relleno, black) !important;
 	}
 
 	/* === TUS ESTILOS NUEVOS (Agregados para tus controles) === */
