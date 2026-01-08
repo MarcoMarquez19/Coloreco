@@ -31,6 +31,7 @@
 	// Control de procesamiento de accesibilidad
 	let isProcessing = false;
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+	let requestId = 0; // Para cancelar requests antiguos
 
 	// 1. Matriz de color reactiva
 	let matrixValues = $derived(interpolateMatrix($configuraciones.colorBlindness, $configuraciones.intensity));
@@ -356,39 +357,56 @@ function darkenColorSimple(hex: string, amount: number): string {
 		}, 200);
 	});
 
-	// Escuchar cambios en los modos de accesibilidad con debounce
+	// Escuchar cambios en los modos de accesibilidad con debounce mejorado
 	$effect(() => {
 		// Observar cambios en bionicMode, rhymeMode y pictogramMode
 		const bionicActive = $configuraciones.bionicMode;
 		const rhymeActive = $configuraciones.rhymeMode;
 		const pictogramActive = $configuraciones.pictogramMode;
 		
+		// Incrementar requestId para invalidar requests anteriores
+		requestId++;
+		const currentRequestId = requestId;
+		
 		// Limpiar timeout anterior si existe
 		if (debounceTimer) {
 			clearTimeout(debounceTimer);
 		}
 		
-		// Aplicar con debounce de 150ms para evitar múltiples llamadas rápidas
+		// Aplicar con debounce de 200ms para evitar múltiples llamadas rápidas
 		debounceTimer = setTimeout(() => {
+			// Verificar si este request sigue siendo válido
+			if (currentRequestId !== requestId) {
+				return; // Request cancelado, hay uno más nuevo
+			}
+			
 			if (bionicActive || rhymeActive || pictogramActive) {
 				applyAccessibilityModes();
 			} else {
 				// Si todos están desactivados, restaurar el texto original
 				restoreOriginalText();
 			}
-		}, 150);
+		}, 200);
 	});
 
 	// Función para aplicar todos los modos activos de forma combinada
 	async function applyAccessibilityModes() {
 		// Evitar procesamiento concurrente
 		if (isProcessing) {
+			console.log('[Layout] Procesamiento ya en curso, esperando...');
 			return;
 		}
 		
 		isProcessing = true;
+		const currentRequest = requestId; // Capturar el ID actual
 		
 		try {
+			// Verificar si este request fue cancelado antes de continuar
+			if (currentRequest !== requestId) {
+				console.log('[Layout] Request cancelado');
+				isProcessing = false;
+				return;
+			}
 			// Verificar si estamos en una página donde NO debe aplicarse el modo pictográfico
 			const currentPath = $page.url.pathname;
 			const pictogramExcludedPaths = ['/juegos/dibujo', '/juegos/cuerpo-humano'];
@@ -421,7 +439,8 @@ function darkenColorSimple(hex: string, amount: number): string {
 		}
 
 		// Selector de elementos a procesar dentro de cada raíz
-		const selector = 'h1, h2, h3, h4, h5, h6, .seccion-titulo, p, button:not(.control-button):not(.boton-volver):not(.boton-configuracion):not(.boton-instrucciones):not(.switch-toggle):not(.pictogram-word), label:not(.switch-knob), .switch-label, span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-highlight):not(.pictogram-wrapper):not(.pictogram-icon):not(.pictogram-popover):not(.switch-knob):not(.control-valor):not(.icono), small, div.control-ayuda, .control-label span';
+		// Excluir explícitamente elementos con data-no-adapt
+		const selector = 'h1:not([data-no-adapt]), h2:not([data-no-adapt]), h3:not([data-no-adapt]), h4:not([data-no-adapt]), h5:not([data-no-adapt]), h6:not([data-no-adapt]), .seccion-titulo:not([data-no-adapt]), p:not([data-no-adapt]), button:not(.control-button):not(.boton-volver):not(.boton-configuracion):not(.boton-instrucciones):not(.switch-toggle):not(.pictogram-word):not([data-no-adapt]), label:not(.switch-knob):not([data-no-adapt]), .switch-label:not([data-no-adapt]), span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-highlight):not(.pictogram-wrapper):not(.pictogram-icon):not(.pictogram-popover):not(.switch-knob):not(.control-valor):not(.icono):not([data-no-adapt]), small:not([data-no-adapt]), div.control-ayuda:not([data-no-adapt]), .control-label span:not([data-no-adapt])';
 
 		// Si el modo rima está activo, primero recolectar TODO el texto visible de la página PRINCIPAL (sin modales)
 		let globalRhymePatterns: any[] = [];
@@ -452,10 +471,31 @@ function darkenColorSimple(hex: string, amount: number): string {
 			globalRhymePatterns = cachedRhymePatterns;
 		}
 
-		roots.forEach((root) => {
+		roots.forEach((root, rootIndex) => {
+			// Verificar cancelación entre cada root
+			if (currentRequest !== requestId) {
+				console.log('[Layout] Request cancelado durante procesamiento');
+				return;
+			}
+			
 			const elements = root.querySelectorAll(selector);
 
-			elements.forEach((element) => {
+			elements.forEach((element, elementIndex) => {
+				// Verificar cancelación cada 50 elementos para evitar procesamiento pesado
+				if (elementIndex % 50 === 0 && currentRequest !== requestId) {
+					console.log('[Layout] Request cancelado durante procesamiento de elementos');
+					return;
+				}
+				
+				// Doble verificación: asegurarse que el elemento no tenga data-no-adapt
+				if (element.hasAttribute('data-no-adapt')) {
+					return;
+				}
+				
+				// Verificar que el elemento no esté dentro de un contenedor con data-no-adapt
+				if (element.closest('[data-no-adapt]')) {
+					return;
+				}
 
 				// Verificar qué modos están activos y qué highlights ya existen
 				const hasBionic = !!element.querySelector('.bionic-highlight');
@@ -667,9 +707,10 @@ let text = element.textContent?.trim();
 					const txt = node.textContent || '';
 					if (!txt.trim()) return;
 					
-					// Verificar si el nodo de texto está dentro de un elemento .icono
+					// Verificar si el nodo de texto está dentro de un elemento con data-no-adapt
 					let parent = node.parentElement;
 					while (parent && parent !== element) {
+						if (parent.hasAttribute('data-no-adapt')) return;
 						if (parent.classList.contains('icono')) return;
 						parent = parent.parentElement;
 					}
@@ -1069,6 +1110,11 @@ let text = element.textContent?.trim();
 		// Restaurar en todo el documento (incluye modales que puedan tener data-original-html)
 		const elements = document.querySelectorAll('[data-original-html]');
 		elements.forEach((element) => {
+			// Saltar elementos con data-no-adapt
+			if (element.hasAttribute('data-no-adapt') || element.closest('[data-no-adapt]')) {
+				return;
+			}
+			
 			const originalHtml = element.getAttribute('data-original-html');
 			if (originalHtml === null) return;
 			const el = element as HTMLElement;
