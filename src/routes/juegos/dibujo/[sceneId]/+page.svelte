@@ -198,6 +198,8 @@
 	 * Guarda el progreso actual y navega a la página de completada
 	 */
 	async function guardarProgresoYTerminar() {
+		// Reproducir sonido de advertencia
+		audioStore.playSound('warning');
 		// Abrir modal preguntando si quiere guardar antes de terminar
 		modalGuardarAntesDeTerminar = true;
 	}
@@ -328,6 +330,8 @@
 				break;
 			
 			case 'accionGuardar':
+				// Reproducir sonido de advertencia
+				audioStore.playSound('warning');
 				// Abrir modal de confirmación
 				modalConfirmarGuardado = true;
 				break;
