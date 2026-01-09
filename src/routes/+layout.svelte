@@ -195,20 +195,27 @@
 
 		const handleContentUpdated = (e: Event) => {
 			const detail = (e as CustomEvent)?.detail || {};
-			// Pequeña espera para que Svelte remonte el DOM
+			// Primera aplicación - rápida para cambios inmediatos
 			setTimeout(() => {
 				if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
 					applyAccessibilityModes();
 				}
-			}, 80);
+			}, 100);
 
-			// Programar una segunda reaplicación tras la animación si se especifica, o usar un fallback
+			// Segunda aplicación tras la animación si se especifica, o usar un fallback
 			const animationDuration = typeof detail.animationDuration === 'number' ? detail.animationDuration : 500;
 			setTimeout(() => {
 				if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
 					applyAccessibilityModes();
 				}
-			}, animationDuration + 60);
+			}, animationDuration + 100);
+			
+			// Tercera aplicación - para producción donde el renderizado puede ser más lento
+			setTimeout(() => {
+				if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
+					applyAccessibilityModes();
+				}
+			}, animationDuration + 400);
 		};
 		
 		window.addEventListener('modal-mounted', handleModalMounted);
@@ -349,12 +356,20 @@ function darkenColorSimple(hex: string, amount: number): string {
 		// Escuchar cambios en la ruta
 		const currentPath = $page.url.pathname;
 		
-		// Reaplicar modos después de que el DOM se actualice
+		// Primera aplicación - rápida para desarrollo local
 		setTimeout(() => {
 			if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
 				applyAccessibilityModes();
 			}
 		}, 200);
+		
+		// Segunda aplicación - para asegurar que funcione en producción (Vercel)
+		// donde el contenido puede tardar más en renderizarse
+		setTimeout(() => {
+			if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
+				applyAccessibilityModes();
+			}
+		}, 500);
 	});
 
 	// Escuchar cambios en los modos de accesibilidad con debounce mejorado

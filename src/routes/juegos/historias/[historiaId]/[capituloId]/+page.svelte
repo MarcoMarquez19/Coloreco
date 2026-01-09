@@ -86,6 +86,11 @@
 			}
 			
 			cargando = false;
+			
+			// Disparar evento para aplicar modos de lectura después de que el contenido se haya renderizado
+			setTimeout(() => {
+				window.dispatchEvent(new CustomEvent('content-updated', { detail: { animationDuration: 0 } }));
+			}, 150);
 		} catch (err) {
 			console.error('Error al cargar capítulo:', err);
 			error = err instanceof Error ? err.message : 'Error desconocido';
@@ -194,11 +199,11 @@
 			feedbackMostrado = '';
 			opcionSeleccionadaIndex = -1;
 			
-			// Forzar actualización del modo biónico después de un pequeño delay
-			// para que el DOM se actualice correctamente
+			// Forzar actualización del modo biónico después de un delay suficiente
+			// para que el DOM se actualice correctamente (aumentado para producción)
 			setTimeout(() => {
 				window.dispatchEvent(new CustomEvent('content-updated', { detail: { animationDuration: 0 } }));
-			}, 100);
+			}, 200);
 		}
 	}
 
