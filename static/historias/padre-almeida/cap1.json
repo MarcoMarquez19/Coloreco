@@ -3,21 +3,21 @@
   "historiaId": "padre-almeida",
   "titulo": "El Padre Almeida",
   "imagenPrincipal": "/historias/padre-almeida/padre-almeida-cap1.jpg",
-  "texto": "El Padre Almeida vivía en un convento muy grande. Era un fraile joven y divertido. ¡Pero tenía un secreto! Cada noche escapaba por la ventana para ir a fiestas. Antes de saltar decía: 'Cristo, ¿puedo salir?' Un día, ¡la imagen del Cristo le habló! Una voz profunda preguntó algo importante.",
+  "texto": "El Padre Almeida vivía en un convento muy grande. Era un fraile joven y divertido. ¡Pero tenía un secreto! Cada noche escapaba por la ventana para ir a fiestas. Antes de saltar decía: 'Cristo, ¿puedo salir?' Un día, ¡la imagen del Cristo en el crucifijo le habló! Una voz profunda preguntó algo importante.",
   "pregunta": {
     "texto": "¿Qué crees que le dijo el Cristo de la Agonía al Padre Almeida?",
     "opciones": [
       {
         "id": "opcion1",
-        "texto": "¿Hasta cuándo, Padre Almeida?",
-        "esCorrecta": true,
-        "feedback": "¡Correcto! El Cristo le preguntó cuándo dejaría esa vida."
-      },
-      {
-        "id": "opcion2",
         "texto": "Vuelve a tu celda y reza.",
         "esCorrecta": false,
         "feedback": "No exactamente. El Cristo tenía una pregunta para él."
+      },
+      {
+        "id": "opcion2",
+        "texto": "¿Hasta cuándo, Padre Almeida?",
+        "esCorrecta": true,
+        "feedback": "¡Correcto! El Cristo le preguntó cuándo dejaría esa vida."
       },
       {
         "id": "opcion3",
@@ -29,8 +29,8 @@
   },
   "personajes": [
     {
-      "nombre": "Claustro",
-      "imagen": "/historias/padre-almeida/claustro.jpg"
+      "nombre": "Convento",
+      "imagen": "/historias/padre-almeida/convento.jpg"
     },
     {
       "nombre": "Cristo",

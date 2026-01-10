@@ -9,23 +9,36 @@
     "opciones": [
       {
         "id": "opcion1",
-        "texto": "Miedo pero siguió adelante",
-        "esCorrecta": true,
-        "feedback": "¡Correcto! Sintió miedo pero su deseo era más fuerte."
-      },
-      {
-        "id": "opcion2",
         "texto": "Decidió quedarse a rezar",
         "esCorrecta": false,
         "feedback": "No, su deseo de fiesta era muy fuerte."
       },
       {
-        "id": "opcion3",
+        "id": "opcion2",
         "texto": "No le importó para nada",
         "esCorrecta": false,
         "feedback": "Sí le afectó, pero no lo suficiente."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Miedo pero siguió adelante",
+        "esCorrecta": true,
+        "feedback": "¡Correcto! Sintió miedo pero su deseo era más fuerte."
       }
     ]
   },
-  "personajes": []
+  "personajes": [    
+    {
+      "nombre": "Corazón",
+      "imagen": "/historias/padre-almeida/corazon.jpg"
+    },  
+    {
+      "nombre": "Música",
+      "imagen": "/historias/padre-almeida/musica.jpg"
+    },
+    {
+      "nombre": "Fiesta",
+      "imagen": "/historias/padre-almeida/fiesta.jpg"
+    }
+  ]
 }

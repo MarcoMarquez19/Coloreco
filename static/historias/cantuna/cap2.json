@@ -9,15 +9,15 @@
     "opciones": [
       {
         "id": "opcion1",
-        "texto": "Esconder una piedra para que faltara",
-        "esCorrecta": true,
-        "feedback": "¡Exacto! Así el diablo no cumpliría su parte del trato."
-      },
-      {
-        "id": "opcion2",
         "texto": "Rezar toda la noche",
         "esCorrecta": false,
         "feedback": "Necesitaba algo más concreto."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Esconder una piedra para que faltara",
+        "esCorrecta": true,
+        "feedback": "¡Exacto! Así el diablo no cumpliría su parte del trato."
       },
       {
         "id": "opcion3",
@@ -27,5 +27,9 @@
       }
     ]
   },
-  "personajes": []
+  "personajes": [
+    { "nombre": "Pacto", "imagen": "/historias/cantuna/pacto.jpg" },
+    { "nombre": "Demonios", "imagen": "/historias/cantuna/demonios.jpg" },
+    { "nombre": "Secreto", "imagen": "/historias/cantuna/secreto.jpg" }
+  ]
 }

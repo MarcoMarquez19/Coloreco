@@ -9,23 +9,27 @@
     "opciones": [
       {
         "id": "opcion1",
-        "texto": "Hizo un pacto con el diablo",
-        "esCorrecta": true,
-        "feedback": "¡Correcto! Hizo un trato muy arriesgado para salvar su vida."
-      },
-      {
-        "id": "opcion2",
         "texto": "Contrató a más trabajadores",
         "esCorrecta": false,
         "feedback": "No tenía recursos para eso."
       },
       {
-        "id": "opcion3",
+        "id": "opcion2",
         "texto": "Abandonó el proyecto",
         "esCorrecta": false,
         "feedback": "No, él era más valiente que eso."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Hizo un pacto con el diablo",
+        "esCorrecta": true,
+        "feedback": "¡Correcto! Hizo un trato muy arriesgado para salvar su vida."
       }
     ]
   },
-  "personajes": []
+  "personajes": [
+    { "nombre": "Constructor", "imagen": "/historias/cantuna/constructor.jpg" },
+    { "nombre": "Imposible", "imagen": "/historias/cantuna/imposible.jpg" },
+    { "nombre": "Terrible", "imagen": "/historias/cantuna/terrible.jpg" }
+  ]
 }

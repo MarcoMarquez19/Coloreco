@@ -8,6 +8,7 @@
     import { estadisticasLogros, cargarLogrosArtista } from '$lib/stores/logros';
     import { audioStore } from '$lib/stores/audio';
     import { ttsService } from '$lib/audio/tts.service';
+    import { configuraciones } from '$lib/stores/settings';
 
     // Props
     interface Props {
@@ -47,18 +48,18 @@
         if (logrosDisplay.length === 0) return;
         const logro = logrosDisplay[logroActualIndex];
         if (!logro) return;
-        
         const estado = logro.desbloqueado ? 'Desbloqueado' : 'Bloqueado';
         const textoCompleto = `${logro.titulo}. ${logro.descripcion}. Estado: ${estado}`;
         console.log('🗣️ Leyendo logro:', textoCompleto);
-        
-        // Detener cualquier narración anterior antes de comenzar una nueva
         ttsService.stop();
-        
-        // Pequeño delay para asegurar que la narración anterior se detuvo
-        setTimeout(() => {
-            ttsService.speak(textoCompleto);
-        }, 50);
+        // Solo leer si la narración está activada
+        let narracionActiva = false;
+        configuraciones.subscribe(config => { narracionActiva = config.narrationEnabled; })();
+        if (narracionActiva) {
+            setTimeout(() => {
+                ttsService.speak(textoCompleto);
+            }, 50);
+        }
     }
 
     function logroAnterior() {

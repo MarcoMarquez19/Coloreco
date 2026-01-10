@@ -9,23 +9,27 @@
     "opciones": [
       {
         "id": "opcion1",
-        "texto": "Se volteó y se descubrió el rostro",
-        "esCorrecta": true,
-        "feedback": "¡Sí! Y lo que vio lo aterró para siempre."
-      },
-      {
-        "id": "opcion2",
         "texto": "Salió corriendo asustada",
         "esCorrecta": false,
         "feedback": "No, ella no era quien debía temer."
       },
       {
-        "id": "opcion3",
+        "id": "opcion2",
         "texto": "Siguió caminando sin responder",
         "esCorrecta": false,
         "feedback": "No, esta vez sí respondió a su petición."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Se volteó y se descubrió el rostro",
+        "esCorrecta": true,
+        "feedback": "¡Sí! Y lo que vio lo aterró para siempre."
       }
     ]
   },
-  "personajes": []
+  "personajes": [
+    { "nombre": "Valiente", "imagen": "/historias/la-dama-tapada/valiente.jpg" },
+    { "nombre": "Latía", "imagen": "/historias/la-dama-tapada/latia.jpg" },
+    { "nombre": "Silencio", "imagen": "/historias/la-dama-tapada/silencio.jpg" }
+  ]
 }

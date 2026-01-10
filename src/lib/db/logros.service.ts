@@ -332,6 +332,97 @@ export async function tieneLogroDesbloqueado(artistaId: number, codigoLogro: str
 	}
 }
 
+/**
+ * Obtiene los logros desbloqueados recientemente para un artista
+ * 
+ * @param artistaId - ID del artista
+ * @param limite - Número máximo de logros a devolver (por defecto 5)
+ * @returns Array de definiciones de logros desbloqueados recientemente
+ */
+export async function obtenerLogrosDesbloqueadosRecientes(
+	artistaId: number,
+	limite: number = 5
+): Promise<LogroDefinicion[]> {
+	const db = getDB();
+	if (!db) return [];
+
+	try {
+		// Obtener logros desbloqueados del artista ordenados por fecha
+		const logrosDesbloqueados = await db.logrosArtista
+			.where('artistaId')
+			.equals(artistaId)
+			.filter(estado => estado.desbloqueado && estado.fechaDesbloqueo != null)
+			.sortBy('fechaDesbloqueo');
+
+		// Ordenar por fecha descendente (más recientes primero)
+		logrosDesbloqueados.reverse();
+
+		// Limitar cantidad
+		const logrosLimitados = logrosDesbloqueados.slice(0, limite);
+
+		// Obtener definiciones de los logros
+		const definiciones: LogroDefinicion[] = [];
+		for (const estado of logrosLimitados) {
+			const definicion = await db.logrosDefinicion.get(estado.logroId);
+			if (definicion) {
+				definiciones.push(definicion);
+			}
+		}
+
+		return definiciones;
+	} catch (error) {
+		console.error('[LogrosService] Error obteniendo logros recientes:', error);
+		return [];
+	}
+}
+
+/**
+ * Obtiene los logros desbloqueados en los últimos minutos
+ * 
+ * @param artistaId - ID del artista
+ * @param minutos - Número de minutos hacia atrás (por defecto 5)
+ * @returns Array de definiciones de logros desbloqueados en ese período
+ */
+export async function obtenerLogrosDesbloqueadosEnUltimosPeriodo(
+	artistaId: number,
+	minutos: number = 5
+): Promise<LogroDefinicion[]> {
+	const db = getDB();
+	if (!db) return [];
+
+	try {
+		const ahora = new Date();
+		const tiempoLimite = new Date(ahora.getTime() - minutos * 60 * 1000);
+
+		// Obtener logros desbloqueados del artista en el período
+		const logrosDesbloqueados = await db.logrosArtista
+			.where('artistaId')
+			.equals(artistaId)
+			.filter(estado => {
+				if (!estado.desbloqueado || !estado.fechaDesbloqueo) return false;
+				return estado.fechaDesbloqueo >= tiempoLimite;
+			})
+			.sortBy('fechaDesbloqueo');
+
+		// Ordenar por fecha descendente (más recientes primero)
+		logrosDesbloqueados.reverse();
+
+		// Obtener definiciones de los logros
+		const definiciones: LogroDefinicion[] = [];
+		for (const estado of logrosDesbloqueados) {
+			const definicion = await db.logrosDefinicion.get(estado.logroId);
+			if (definicion) {
+				definiciones.push(definicion);
+			}
+		}
+
+		return definiciones;
+	} catch (error) {
+		console.error('[LogrosService] Error obteniendo logros del período:', error);
+		return [];
+	}
+}
+
 // ============================================================================
 // DESBLOQUEO DE LOGROS
 // ============================================================================

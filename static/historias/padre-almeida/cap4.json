@@ -9,23 +9,36 @@
     "opciones": [
       {
         "id": "opcion1",
-        "texto": "El valor del arrepentimiento y la fe",
-        "esCorrecta": true,
-        "feedback": "¡Correcto! Comprendió el amor y el perdón divino."
-      },
-      {
-        "id": "opcion2",
         "texto": "Que nunca debió ser fraile",
         "esCorrecta": false,
         "feedback": "Al contrario, encontró su verdadera vocación."
       },
       {
-        "id": "opcion3",
+        "id": "opcion2",
         "texto": "A tener más cuidado al salir",
         "esCorrecta": false,
         "feedback": "No, aprendió algo mucho más profundo."
+      },
+      {
+        "id": "opcion3",
+        "texto": "El valor del arrepentimiento y la fe",
+        "esCorrecta": true,
+        "feedback": "¡Correcto! Comprendió el amor y el perdón divino."
       }
     ]
   },
-  "personajes": []
+  "personajes": [
+    {
+      "nombre": "Ocupar",
+      "imagen": "/historias/padre-almeida/ocupar.jpg"
+    },
+    {
+      "nombre": "Perdón",
+      "imagen": "/historias/padre-almeida/perdon.jpg"
+    },
+    {
+      "nombre": "Ayudante",
+      "imagen": "/historias/padre-almeida/ayudante.jpg"
+    }
+  ]
 }

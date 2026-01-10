@@ -9,23 +9,27 @@
     "opciones": [
       {
         "id": "opcion1",
-        "texto": "Se fue furioso sin llevarse el alma",
-        "esCorrecta": true,
-        "feedback": "¡Sí! El pacto se rompió y Cantuña se salvó."
-      },
-      {
-        "id": "opcion2",
         "texto": "Colocó rápidamente la piedra",
         "esCorrecta": false,
         "feedback": "Ya era de día, su tiempo había acabado."
       },
       {
-        "id": "opcion3",
+        "id": "opcion2",
         "texto": "Se llevó el alma de todas formas",
         "esCorrecta": false,
         "feedback": "No, el pacto era muy específico."
+      },
+      {
+        "id": "opcion3",
+        "texto": "Se fue furioso sin llevarse el alma",
+        "esCorrecta": true,
+        "feedback": "¡Sí! El pacto se rompió y Cantuña se salvó."
       }
     ]
   },
-  "personajes": []
+  "personajes": [
+    { "nombre": "Sorpresa", "imagen": "/historias/cantuna/sorpresa.jpg" },
+    { "nombre": "Trato", "imagen": "/historias/cantuna/trato.jpg" },
+    { "nombre": "Quiquiriquí", "imagen": "/historias/cantuna/quiquiriqui.jpg" }
+  ]
 }
