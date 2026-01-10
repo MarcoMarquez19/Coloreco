@@ -31,6 +31,7 @@
 	// Control de procesamiento de accesibilidad
 	let isProcessing = false;
 	let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+	let requestId = 0; // Para cancelar requests antiguos
 
 	// 1. Matriz de color reactiva
 	let matrixValues = $derived(interpolateMatrix($configuraciones.colorBlindness, $configuraciones.intensity));
@@ -194,20 +195,27 @@
 
 		const handleContentUpdated = (e: Event) => {
 			const detail = (e as CustomEvent)?.detail || {};
-			// Pequeña espera para que Svelte remonte el DOM
+			// Primera aplicación - rápida para cambios inmediatos
 			setTimeout(() => {
 				if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
 					applyAccessibilityModes();
 				}
-			}, 80);
+			}, 100);
 
-			// Programar una segunda reaplicación tras la animación si se especifica, o usar un fallback
+			// Segunda aplicación tras la animación si se especifica, o usar un fallback
 			const animationDuration = typeof detail.animationDuration === 'number' ? detail.animationDuration : 500;
 			setTimeout(() => {
 				if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
 					applyAccessibilityModes();
 				}
-			}, animationDuration + 60);
+			}, animationDuration + 100);
+			
+			// Tercera aplicación - para producción donde el renderizado puede ser más lento
+			setTimeout(() => {
+				if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
+					applyAccessibilityModes();
+				}
+			}, animationDuration + 400);
 		};
 		
 		window.addEventListener('modal-mounted', handleModalMounted);
@@ -237,8 +245,12 @@
 			root.removeAttribute('data-rhyme');
 		}
 		
-		// Modo pictograma
-		if ($configuraciones.pictogramMode) {
+		// Modo pictograma (verificar si estamos en una ruta excluida)
+		const currentPath = $page.url.pathname;
+		const pictogramExcludedPaths = ['/juegos/dibujo', '/juegos/cuerpo-humano'];
+		const shouldExcludePictogram = pictogramExcludedPaths.some(path => currentPath.startsWith(path));
+		
+		if ($configuraciones.pictogramMode && !shouldExcludePictogram) {
 			root.setAttribute('data-pictogram', 'true');
 		} else {
 			root.removeAttribute('data-pictogram');
@@ -344,47 +356,77 @@ function darkenColorSimple(hex: string, amount: number): string {
 		// Escuchar cambios en la ruta
 		const currentPath = $page.url.pathname;
 		
-		// Reaplicar modos después de que el DOM se actualice
+		// Primera aplicación - rápida para desarrollo local
 		setTimeout(() => {
 			if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
 				applyAccessibilityModes();
 			}
 		}, 200);
+		
+		// Segunda aplicación - para asegurar que funcione en producción (Vercel)
+		// donde el contenido puede tardar más en renderizarse
+		setTimeout(() => {
+			if ($configuraciones.bionicMode || $configuraciones.rhymeMode || $configuraciones.pictogramMode) {
+				applyAccessibilityModes();
+			}
+		}, 500);
 	});
 
-	// Escuchar cambios en los modos de accesibilidad con debounce
+	// Escuchar cambios en los modos de accesibilidad con debounce mejorado
 	$effect(() => {
 		// Observar cambios en bionicMode, rhymeMode y pictogramMode
 		const bionicActive = $configuraciones.bionicMode;
 		const rhymeActive = $configuraciones.rhymeMode;
 		const pictogramActive = $configuraciones.pictogramMode;
 		
+		// Incrementar requestId para invalidar requests anteriores
+		requestId++;
+		const currentRequestId = requestId;
+		
 		// Limpiar timeout anterior si existe
 		if (debounceTimer) {
 			clearTimeout(debounceTimer);
 		}
 		
-		// Aplicar con debounce de 150ms para evitar múltiples llamadas rápidas
+		// Aplicar con debounce de 200ms para evitar múltiples llamadas rápidas
 		debounceTimer = setTimeout(() => {
+			// Verificar si este request sigue siendo válido
+			if (currentRequestId !== requestId) {
+				return; // Request cancelado, hay uno más nuevo
+			}
+			
 			if (bionicActive || rhymeActive || pictogramActive) {
 				applyAccessibilityModes();
 			} else {
 				// Si todos están desactivados, restaurar el texto original
 				restoreOriginalText();
 			}
-		}, 150);
+		}, 200);
 	});
 
 	// Función para aplicar todos los modos activos de forma combinada
 	async function applyAccessibilityModes() {
 		// Evitar procesamiento concurrente
 		if (isProcessing) {
+			console.log('[Layout] Procesamiento ya en curso, esperando...');
 			return;
 		}
 		
 		isProcessing = true;
+		const currentRequest = requestId; // Capturar el ID actual
 		
 		try {
+			// Verificar si este request fue cancelado antes de continuar
+			if (currentRequest !== requestId) {
+				console.log('[Layout] Request cancelado');
+				isProcessing = false;
+				return;
+			}
+			// Verificar si estamos en una página donde NO debe aplicarse el modo pictográfico
+			const currentPath = $page.url.pathname;
+			const pictogramExcludedPaths = ['/juegos/dibujo', '/juegos/cuerpo-humano'];
+			const shouldExcludePictogram = pictogramExcludedPaths.some(path => currentPath.startsWith(path));
+			
 			// Procesar tanto el main como los modales montados (los modales se mueven al <body>)
 			const modalRoots = Array.from(document.querySelectorAll('.modal')) as Element[];
 			if (!mainEl && modalRoots.length === 0) {
@@ -412,7 +454,8 @@ function darkenColorSimple(hex: string, amount: number): string {
 		}
 
 		// Selector de elementos a procesar dentro de cada raíz
-		const selector = 'h1, h2, h3, h4, h5, h6, .seccion-titulo, p, button:not(.control-button):not(.boton-volver):not(.boton-configuracion):not(.boton-instrucciones):not(.switch-toggle):not(.pictogram-word), label:not(.switch-knob), .switch-label, span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-highlight):not(.pictogram-wrapper):not(.pictogram-icon):not(.pictogram-popover):not(.switch-knob):not(.control-valor):not(.icono), small, div.control-ayuda, .control-label span';
+		// Excluir explícitamente elementos con data-no-adapt
+		const selector = 'h1:not([data-no-adapt]), h2:not([data-no-adapt]), h3:not([data-no-adapt]), h4:not([data-no-adapt]), h5:not([data-no-adapt]), h6:not([data-no-adapt]), .seccion-titulo:not([data-no-adapt]), p:not([data-no-adapt]), button:not(.control-button):not(.boton-volver):not(.boton-configuracion):not(.boton-instrucciones):not(.switch-toggle):not(.pictogram-word):not([data-no-adapt]), label:not(.switch-knob):not([data-no-adapt]), .switch-label:not([data-no-adapt]), span:not(.bionic-highlight):not(.bionic-rest):not(.rhyme-highlight):not(.pictogram-wrapper):not(.pictogram-icon):not(.pictogram-popover):not(.switch-knob):not(.control-valor):not(.icono):not([data-no-adapt]), small:not([data-no-adapt]), div.control-ayuda:not([data-no-adapt]), .control-label span:not([data-no-adapt])';
 
 		// Si el modo rima está activo, primero recolectar TODO el texto visible de la página PRINCIPAL (sin modales)
 		let globalRhymePatterns: any[] = [];
@@ -443,28 +486,52 @@ function darkenColorSimple(hex: string, amount: number): string {
 			globalRhymePatterns = cachedRhymePatterns;
 		}
 
-		roots.forEach((root) => {
+		roots.forEach((root, rootIndex) => {
+			// Verificar cancelación entre cada root
+			if (currentRequest !== requestId) {
+				console.log('[Layout] Request cancelado durante procesamiento');
+				return;
+			}
+			
 			const elements = root.querySelectorAll(selector);
 
-			elements.forEach((element) => {
+			elements.forEach((element, elementIndex) => {
+				// Verificar cancelación cada 50 elementos para evitar procesamiento pesado
+				if (elementIndex % 50 === 0 && currentRequest !== requestId) {
+					console.log('[Layout] Request cancelado durante procesamiento de elementos');
+					return;
+				}
+				
+				// Doble verificación: asegurarse que el elemento no tenga data-no-adapt
+				if (element.hasAttribute('data-no-adapt')) {
+					return;
+				}
+				
+				// Verificar que el elemento no esté dentro de un contenedor con data-no-adapt
+				if (element.closest('[data-no-adapt]')) {
+					return;
+				}
 
 				// Verificar qué modos están activos y qué highlights ya existen
 				const hasBionic = !!element.querySelector('.bionic-highlight');
 				const hasRhyme = !!element.querySelector('.rhyme-highlight');
 				const hasPictogram = !!element.querySelector('.pictogram-wrapper');
 				
+				// Determinar si aplicar el modo pictográfico en esta página
+				const applyPictogramMode = $configuraciones.pictogramMode && !shouldExcludePictogram;
+				
 				// Si el modo pictográfico está activo y ya tiene pictogramas, saltar
-				if ($configuraciones.pictogramMode && hasPictogram) return;
+				if (applyPictogramMode && hasPictogram) return;
 				
 				// Si solo modos biónico/rima están activos y ya los tiene, saltar
-				if (!$configuraciones.pictogramMode && ($configuraciones.bionicMode || $configuraciones.rhymeMode)) {
+				if (!applyPictogramMode && ($configuraciones.bionicMode || $configuraciones.rhymeMode)) {
 					const bionicOk = $configuraciones.bionicMode ? hasBionic : !hasBionic;
 					const rhymeOk = $configuraciones.rhymeMode ? hasRhyme : !hasRhyme;
 					if (bionicOk && rhymeOk) return;
 				}
 				
 				// Si ningún modo está activo y no tiene highlights, saltar
-				if (!$configuraciones.bionicMode && !$configuraciones.rhymeMode && !$configuraciones.pictogramMode && !hasBionic && !hasRhyme && !hasPictogram) return;
+				if (!$configuraciones.bionicMode && !$configuraciones.rhymeMode && !applyPictogramMode && !hasBionic && !hasRhyme && !hasPictogram) return;
 				
 				// Si llegamos aquí, el elemento no coincide con el estado deseado
 				// Primero, asegurarnos de que tenemos el HTML original guardado
@@ -655,9 +722,10 @@ let text = element.textContent?.trim();
 					const txt = node.textContent || '';
 					if (!txt.trim()) return;
 					
-					// Verificar si el nodo de texto está dentro de un elemento .icono
+					// Verificar si el nodo de texto está dentro de un elemento con data-no-adapt
 					let parent = node.parentElement;
 					while (parent && parent !== element) {
+						if (parent.hasAttribute('data-no-adapt')) return;
 						if (parent.classList.contains('icono')) return;
 						parent = parent.parentElement;
 					}
@@ -702,7 +770,7 @@ let text = element.textContent?.trim();
 					
 					// Limpiar la palabra de puntuación para buscar el pictograma
 					const cleanWord = word.replace(/[.,;:!?¿¡()"""']/g, '');
-					const pictogram = $configuraciones.pictogramMode ? findPictogramSync(cleanWord) : null;
+					const pictogram = applyPictogramMode ? findPictogramSync(cleanWord) : null;
 					
 					// Si hay pictograma, envolver la palabra
 					if (pictogram) {
@@ -1057,6 +1125,11 @@ let text = element.textContent?.trim();
 		// Restaurar en todo el documento (incluye modales que puedan tener data-original-html)
 		const elements = document.querySelectorAll('[data-original-html]');
 		elements.forEach((element) => {
+			// Saltar elementos con data-no-adapt
+			if (element.hasAttribute('data-no-adapt') || element.closest('[data-no-adapt]')) {
+				return;
+			}
+			
 			const originalHtml = element.getAttribute('data-original-html');
 			if (originalHtml === null) return;
 			const el = element as HTMLElement;
@@ -1119,6 +1192,14 @@ let text = element.textContent?.trim();
 	<title>Coloreco - Tu estudio de pinturas e historias</title>
 	<link rel="icon" href={logoColoreco} />
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
+
+	<script type="text/javascript">
+		(function(c,l,a,r,i,t,y){
+			c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+			t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+			y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+		})(window, document, "clarity", "script", "uytoxvwwbe");
+	</script>
 </svelte:head>
 
 <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true">

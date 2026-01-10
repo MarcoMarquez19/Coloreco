@@ -86,6 +86,11 @@
 			}
 			
 			cargando = false;
+			
+			// Disparar evento para aplicar modos de lectura después de que el contenido se haya renderizado
+			setTimeout(() => {
+				window.dispatchEvent(new CustomEvent('content-updated', { detail: { animationDuration: 0 } }));
+			}, 150);
 		} catch (err) {
 			console.error('Error al cargar capítulo:', err);
 			error = err instanceof Error ? err.message : 'Error desconocido';
@@ -193,6 +198,12 @@
 			opcionCorrecta = false;
 			feedbackMostrado = '';
 			opcionSeleccionadaIndex = -1;
+			
+			// Forzar actualización del modo biónico después de un delay suficiente
+			// para que el DOM se actualice correctamente (aumentado para producción)
+			setTimeout(() => {
+				window.dispatchEvent(new CustomEvent('content-updated', { detail: { animationDuration: 0 } }));
+			}, 200);
 		}
 	}
 
@@ -496,10 +507,22 @@
 		line-height: 1.4;
 	}
 
+	.opcion-boton:not(.seleccionada):not(.correcta):not(.incorrecta) :global(.bionic-highlight),
+	.opcion-boton:not(.seleccionada):not(.correcta):not(.incorrecta) :global(.bionic-word) {
+		color: var(--bionic-highlight-color, #003366);
+	}
+
 	.opcion-boton:hover:not(.deshabilitada) {
-		background: var(--fondo-botones-hover, #f0f0f0);
+		background: var(--fondo-botones, #ffca00);
+		border-color: var(--icono-color-borde, #000000);
+		color: var(--icono-color-relleno, black);
 		transform: translateY(-2px);
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	}
+
+	.opcion-boton:hover:not(.deshabilitada) :global(.bionic-highlight),
+	.opcion-boton:hover:not(.deshabilitada) :global(.bionic-word) {
+		color: var(--icono-color-relleno, black) !important;
 	}
 
 	.opcion-boton:focus {
@@ -509,11 +532,21 @@
 		color: var(--icono-color-relleno, black);
 	}
 
+	.opcion-boton:focus :global(.bionic-highlight),
+	.opcion-boton:focus :global(.bionic-word) {
+		color: var(--icono-color-relleno, black) !important;
+	}
+
 	.opcion-boton.seleccionada {
 		background: var(--fondo-botones, #e3f2fd);
 		border-color: var(--icono-color-borde, #1976d2);
 		color: var(--icono-color-relleno, black);
 		transform: scale(1.02);
+	}
+
+	.opcion-boton.seleccionada :global(.bionic-highlight),
+	.opcion-boton.seleccionada :global(.bionic-word) {
+		color: var(--icono-color-relleno, black) !important;
 	}
 
 	.opcion-boton.correcta {
@@ -522,15 +555,36 @@
 		border-color: #2e7d32;
 	}
 
+	.opcion-boton.correcta :global(.bionic-highlight),
+	.opcion-boton.correcta :global(.bionic-word) {
+		color: white !important;
+	}
+
 	.opcion-boton.incorrecta {
 		background: #f44336;
 		color: white;
 		border-color: #c62828;
 	}
 
+	.opcion-boton.incorrecta :global(.bionic-highlight),
+	.opcion-boton.incorrecta :global(.bionic-word) {
+		color: white !important;
+	}
+
 	.opcion-boton.deshabilitada {
 		cursor: not-allowed;
 		opacity: 0.7;
+	}
+
+	.opcion-boton.deshabilitada:hover {
+		background: var(--bg, white);
+		transform: none;
+		box-shadow: none;
+	}
+
+	.opcion-boton.deshabilitada:hover :global(.bionic-highlight),
+	.opcion-boton.deshabilitada:hover :global(.bionic-word) {
+		color: var(--bionic-highlight-color, #003366);
 	}
 
 	.boton-continuar {
