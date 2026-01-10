@@ -12,6 +12,7 @@
 	import type { EscenaCatalogo } from '$lib/db/schemas';
 	import { guardarObra } from '$lib/db/obras.service';
 	import { obtenerSesionActual } from '$lib/db/artistas.service';
+	import { audioStore } from '$lib/stores/audio';
 
 	// Props para zoom y pan
 	interface Props {
@@ -162,6 +163,13 @@
 		estaDibujando = true;
 		contextoDibujo.beginPath();
 		contextoDibujo.moveTo(x, y);
+
+		// Reproducir sonido en loop según la herramienta
+		if (herramientaActual === 'pincel') {
+			audioStore.playLoopSound('pencil');
+		} else if (herramientaActual === 'borrador') {
+			audioStore.playLoopSound('eraser');
+		}
 	}
 
 	/**
@@ -183,6 +191,9 @@
 		if (!estaDibujando) return;
 		estaDibujando = false;
 		contextoDibujo.beginPath();
+		
+		// Detener el sonido en loop
+		audioStore.stopLoopSound();
 		
 		// Guardar estado después de dibujar
 		guardarEstadoEnHistorial();
@@ -233,6 +244,9 @@
 	 */
 	export function colocarSticker(emoji: string, x: number, y: number, escala: number = 1.0) {
 		if (!contextoDibujo) return;
+		
+		// Reproducir sonido de colocar sticker
+		audioStore.playSound('stickerPlace');
 		
 		// Tamaño base del sticker
 		const tamanoBase = 18;

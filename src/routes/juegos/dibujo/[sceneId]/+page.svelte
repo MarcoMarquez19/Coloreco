@@ -22,7 +22,7 @@
 	import LogroDesbloqueado from '$lib/components/modales/LogroDesbloqueado.svelte';
 	import InstruccionesDibujo from '$lib/components/modales/InstruccionesDibujo.svelte';
 	import type { LogroDefinicion } from '$lib/db/schemas';
-	import { audioStore } from '$lib/stores/audio';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 
 	// Referencias a los componentes
 	let canvasRef: DibujoCanvas;
@@ -83,7 +83,7 @@
 	let escenaIdActual = $state<string | null>(null);
 
 	// Estado del modal de instrucciones
-	let mostrarInstrucciones = $state<boolean>(true);
+	let mostrarInstrucciones = $state<boolean>(false);
 	
 	// Contadores de stickers por tipo de criterio (categoria_valor o subcategoria_valor)
 	// Ejemplo: "categoria_natural" -> 3, "subcategoria_fauna" -> 2
@@ -686,7 +686,8 @@
 		<!-- Botón de instrucciones flotante -->
 		<button 
 			class="boton-instrucciones pattern-green"
-			onclick={() => mostrarInstrucciones = true}
+			onclick={() => mostrarInstrucciones = true}   
+			use:clickSound
 			aria-label="Abrir instrucciones"
 			type="button"
 			title="Instrucciones del modo dibujo"
@@ -860,7 +861,7 @@
 
 	<!-- Modal de Instrucciones del Modo Dibujo -->
 	{#if mostrarInstrucciones}
-		<InstruccionesDibujo on:close={() => mostrarInstrucciones = false} />
+		<InstruccionesDibujo on:close={() => mostrarInstrucciones = false}/>
 	{/if}
 </div>
 
@@ -1045,34 +1046,36 @@
 	.boton-instrucciones {
 		position: fixed;
 		left: 1rem;
-		top: 50%;
-		transform: translateY(-50%);
-		background: var(--color-primario, #4CAF50);
-		color: var(--color-texto-boton, #000);
-		border: 3px solid var(--color-primario, #4CAF50);
-		border-radius: 12px;
-		padding: 1rem 1.25rem;
+		top: 22%;
+		background: var(--fondo-botones, #ffca00);
+		border: none;
+		box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
+		color: var(--icono-color-relleno, #000);
+		border-radius: 8px;
+		padding: 0.5rem 0.75rem;
 		font-size: calc(var(--font-size-base, 1rem) * 1.1);
 		font-weight: 700;
 		cursor: pointer;
 		transition: all 0.3s ease;
-		box-shadow: 0 4px 16px rgba(76, 175, 80, 0.3);
 		z-index: 300;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		gap: 0.5rem;
-		writing-mode: horizontal-tb;
 	}
 
 	.boton-instrucciones:hover {
-		background: var(--color-primario-hover, #45a049);
-		transform: translateY(-50%) scale(1.05);
-		box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+		background: var(--fondo-botones-hover, #d1a700);
 	}
 
 	.boton-instrucciones:active {
-		transform: translateY(-50%) scale(0.98);
+		transform: translateY(0);
+	}
+
+	.boton-instrucciones:focus {
+		outline: var(--borde-botones, 4px solid #000000);
+		background: var(--fondo-botones-hover, #d1a700);
+		outline-offset: 7px;
 	}
 
 	.icono-instrucciones {
