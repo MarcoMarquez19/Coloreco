@@ -15,23 +15,23 @@
   const gifsInstrucciones = [
     {
       src: '/src/lib/assets/gifts/Herramienta_lapiz_borrador.gif',
-      descripcion: 'TEXTO_DESCRIPTIVO_1' // TODO: Añadir descripción
+      descripcion: 'Con las herramientas "pincel" y "borrador", puedes dibujar y borrar partes del dibujo' 
     },
     {
       src: '/src/lib/assets/gifts/Herramienta_stickers.gif',
-      descripcion: 'TEXTO_DESCRIPTIVO_2' // TODO: Añadir descripción
+      descripcion: 'Con la herramienta "stickers", puedes colocar pegatinas en el dibujo' 
     },
     {
       src: '/src/lib/assets/gifts/Modo_navegacion.gif',
-      descripcion: 'TEXTO_DESCRIPTIVO_3' // TODO: Añadir descripción
+      descripcion: 'Presiona "SHIFT + D" para activar el modo de navegación y "ENTER" para escoger una zona. El mismo te permite identificar zonas específicas del dibujo.'
     },
     {
       src: '/src/lib/assets/gifts/Opcion_deshacer.gif',
-      descripcion: 'TEXTO_DESCRIPTIVO_4' // TODO: Añadir descripción
+      descripcion: 'Presiona la opción "Deshacer" para revertir el último cambio en el dibujo' 
     },
     {
       src: '/src/lib/assets/gifts/Opcion_zoom.gif',
-      descripcion: 'TEXTO_DESCRIPTIVO_5' // TODO: Añadir descripción
+      descripcion: 'Presiona la opción "Zoom" para acercar o alejar el dibujo, solamente podras desplazar el dibujo en esta opción. Puedes seguir dibujando con cualquiera de las herramientas disponibles'
     }
   ];
 
