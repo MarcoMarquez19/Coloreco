@@ -23,7 +23,23 @@
       ]
     },
     {
-      "source": "/(.*\\.(png|jpg|jpeg|gif|webp|svg|ico))",
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ],
+      "has": [
+        {
+          "type": "header",
+          "key": "Content-Type",
+          "value": "image/.*"
+        }
+      ]
+    },
+    {
+      "source": "/audio/:path*",
       "headers": [
         {
           "key": "Cache-Control",
@@ -32,7 +48,7 @@
       ]
     },
     {
-      "source": "/(.*\\.(mp3|wav|ogg|m4a))",
+      "source": "/escenas/:path*",
       "headers": [
         {
           "key": "Cache-Control",
@@ -41,7 +57,7 @@
       ]
     },
     {
-      "source": "/(.*\\.(woff|woff2|ttf|eot))",
+      "source": "/historias/:path*",
       "headers": [
         {
           "key": "Cache-Control",
@@ -50,11 +66,20 @@
       ]
     },
     {
-      "source": "/(.*\\.json)",
+      "source": "/logros/:path*",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=3600, must-revalidate"
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/pictograms/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
       ]
     }
