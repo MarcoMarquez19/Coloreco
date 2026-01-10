@@ -12,6 +12,8 @@
 	import { browser } from '$app/environment';
 	import { obtenerSesionActual } from '$lib/db/artistas.service';
 	import { inicializarCatalogoLogros } from '$lib/db/logros.service';
+	import { swManager } from '$lib/utils/sw-manager';
+	import UpdateNotification from '$lib/components/ui/UpdateNotification.svelte';
 	import '../lib/styles/themes.css';
 	import DyslexiaModes from '$lib/styles/DyslexiaModes.svelte';
 	import IconoVolver from '$lib/components/iconos/IconoVolver.svelte';
@@ -161,6 +163,15 @@
 	onMount(async () => {
 		if (!browser) return;
 		try {
+			// Registrar Service Worker y precargar assets
+			await swManager.register();
+			// Precargar assets después de un pequeño delay para no bloquear la carga inicial
+			setTimeout(() => {
+				swManager.precacheAllStaticAssets().catch(err => {
+					console.warn('Error al precargar assets:', err);
+				});
+			}, 2000);
+			
 			// Precargar diccionario de pictogramas
 			await preloadPictograms();
 			
@@ -1317,6 +1328,9 @@ let text = element.textContent?.trim();
 			<span class="texto-tecla">Ctrl + A</span>
 		</div>
 	{/if}
+
+	<!-- Notificación de actualización del Service Worker -->
+	<UpdateNotification />
 </div>
 
 <style>
