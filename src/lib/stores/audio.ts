@@ -44,7 +44,11 @@ export const SOUND_EFFECTS = {
 	save: '/audio/effects/save.mp3',
 	warning: '/audio/effects/warning.mp3',
 	achievement: '/audio/effects/achievement.mp3',
-	finished: '/audio/effects/finished.mp3'
+	finished: '/audio/effects/finished.mp3',
+	// Herramientas de dibujo
+	pencil: '/audio/effects/pencil.mp3', // Sonido de lápiz para pincel
+	eraser: '/audio/effects/eraser.mp3', // Sonido de borrador
+	stickerPlace: '/audio/effects/sticker.mp3' // Sonido al colocar sticker
 } as const;
 
 // ============================================================================
@@ -69,6 +73,7 @@ function createAudioStore() {
 	// Audio elements (solo en el navegador)
 	let musicPlayer: HTMLAudioElement | null = null;
 	let soundPlayers: Map<string, HTMLAudioElement> = new Map();
+	let loopPlayer: HTMLAudioElement | null = null; // Reproductor para efectos en loop
 
 	// Inicializar reproductores en el navegador
 	if (browser) {
@@ -150,6 +155,43 @@ function createAudioStore() {
 				audio.play().catch(err => {
 					console.log('No se pudo reproducir sonido:', err);
 				});
+			}
+		},
+
+		/**
+		 * Reproducir efecto de sonido en loop (para herramientas de dibujo)
+		 */
+		playLoopSound: (effect: keyof typeof SOUND_EFFECTS) => {
+			if (!browser) return;
+
+			const state = get({ subscribe });
+			if (!state.soundEnabled) return;
+
+			// Detener loop anterior si existe
+			if (loopPlayer && !loopPlayer.paused) {
+				loopPlayer.pause();
+				loopPlayer.currentTime = 0;
+			}
+
+			// Crear nuevo reproductor de loop
+			const soundPath = SOUND_EFFECTS[effect];
+			loopPlayer = new Audio(soundPath);
+			loopPlayer.loop = true;
+			loopPlayer.volume = state.soundVolume;
+			loopPlayer.play().catch(err => {
+				console.log('No se pudo reproducir sonido en loop:', err);
+			});
+		},
+
+		/**
+		 * Detener el efecto de sonido en loop
+		 */
+		stopLoopSound: () => {
+			if (!browser || !loopPlayer) return;
+
+			if (!loopPlayer.paused) {
+				loopPlayer.pause();
+				loopPlayer.currentTime = 0;
 			}
 		},
 

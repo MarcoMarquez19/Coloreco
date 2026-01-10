@@ -20,8 +20,9 @@
 	import { obtenerArtistaActivo } from '$lib/db/artistas.service';
 	import * as logrosStore from '$lib/stores/logros';
 	import LogroDesbloqueado from '$lib/components/modales/LogroDesbloqueado.svelte';
+	import InstruccionesDibujo from '$lib/components/modales/InstruccionesDibujo.svelte';
 	import type { LogroDefinicion } from '$lib/db/schemas';
-	import { audioStore } from '$lib/stores/audio';
+	import { audioStore, clickSound } from '$lib/stores/audio';
 
 	// Referencias a los componentes
 	let canvasRef: DibujoCanvas;
@@ -80,6 +81,9 @@
 	let logroDesbloqueadoActual = $state<LogroDefinicion | null>(null);
 	let mostrarModalLogro = $state<boolean>(false);
 	let escenaIdActual = $state<string | null>(null);
+
+	// Estado del modal de instrucciones
+	let mostrarInstrucciones = $state<boolean>(false);
 	
 	// Contadores de stickers por tipo de criterio (categoria_valor o subcategoria_valor)
 	// Ejemplo: "categoria_natural" -> 3, "subcategoria_fauna" -> 2
@@ -432,6 +436,8 @@
 		logrosStore.limpiarNotificaciones();
 	}
 
+	
+
 	/**
 	 * Maneja cuando el canvas coloca un sticker (callback desde DibujoCanvas)
 	 */
@@ -677,6 +683,19 @@
 			{/if}
 		</section>
 
+		<!-- Botón de instrucciones flotante -->
+		<button 
+			class="boton-instrucciones pattern-green"
+			onclick={() => mostrarInstrucciones = true}   
+			use:clickSound
+			aria-label="Abrir instrucciones"
+			type="button"
+			title="Instrucciones del modo dibujo"
+		>
+			<span class="icono-instrucciones">❓</span>
+			<span class="texto-instrucciones">Instrucciones</span>
+		</button>
+
 		<!-- Área del lienzo -->
 		<section class="seccion-lienzo" aria-label="Lienzo de dibujo">
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -838,6 +857,11 @@
 			logro={logroDesbloqueadoActual}
 			on:close={cerrarModalLogro}
 		/>
+	{/if}
+
+	<!-- Modal de Instrucciones del Modo Dibujo -->
+	{#if mostrarInstrucciones}
+		<InstruccionesDibujo on:close={() => mostrarInstrucciones = false}/>
 	{/if}
 </div>
 
@@ -1013,6 +1037,56 @@
 	:global(.boton-modal.boton-secundario:hover:not(:disabled)) {
 		background: var(--color-fondo-hover, #f5f5f5);
 		border-color: var(--color-borde-hover, #999);
+	}
+
+	/* ============================================================================
+	   BOTÓN DE INSTRUCCIONES FLOTANTE
+	   ============================================================================ */
+
+	.boton-instrucciones {
+		position: fixed;
+		left: 1rem;
+		top: 22%;
+		background: var(--fondo-botones, #ffca00);
+		border: none;
+		box-shadow: var(--sombra-botones, 0 6px 18px rgba(0, 0, 0, 0.3));
+		color: var(--icono-color-relleno, #000);
+		border-radius: 8px;
+		padding: 0.5rem 0.75rem;
+		font-size: calc(var(--font-size-base, 1rem) * 1.1);
+		font-weight: 700;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		z-index: 300;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.boton-instrucciones:hover {
+		background: var(--fondo-botones-hover, #d1a700);
+	}
+
+	.boton-instrucciones:active {
+		transform: translateY(0);
+	}
+
+	.boton-instrucciones:focus {
+		outline: var(--borde-botones, 4px solid #000000);
+		background: var(--fondo-botones-hover, #d1a700);
+		outline-offset: 7px;
+	}
+
+	.icono-instrucciones {
+		font-size: calc(var(--font-size-base, 1rem) * 2);
+		line-height: 1;
+	}
+
+	.texto-instrucciones {
+		font-size: calc(var(--font-size-base, 1rem) * 0.9);
+		text-align: center;
+		white-space: nowrap;
 	}
 
 </style>
