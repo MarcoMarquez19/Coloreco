@@ -9,15 +9,15 @@
     "opciones": [
       {
         "id": "opcion1",
-        "texto": "Que la inteligencia vence al mal",
-        "esCorrecta": true,
-        "feedback": "¡Correcto! La astucia puede salvarte del peligro."
-      },
-      {
-        "id": "opcion2",
         "texto": "Que se puede engañar sin consecuencias",
         "esCorrecta": false,
         "feedback": "No, usó su ingenio para el bien."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Que la inteligencia vence al mal",
+        "esCorrecta": true,
+        "feedback": "¡Correcto! La astucia puede salvarte del peligro."
       },
       {
         "id": "opcion3",
@@ -27,5 +27,9 @@
       }
     ]
   },
-  "personajes": []
+  "personajes": [
+    { "nombre": "Furioso", "imagen": "/historias/cantuna/furioso.jpg" },
+    { "nombre": "Inteligencia", "imagen": "/historias/cantuna/inteligencia.jpg" },
+    { "nombre": "Maravilla", "imagen": "/historias/cantuna/maravilla.jpg" }
+  ]
 }

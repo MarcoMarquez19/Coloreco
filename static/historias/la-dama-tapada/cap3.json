@@ -9,15 +9,15 @@
     "opciones": [
       {
         "id": "opcion1",
-        "texto": "No juzgar por las apariencias",
-        "esCorrecta": true,
-        "feedback": "¡Exacto! Las apariencias pueden engañar."
-      },
-      {
-        "id": "opcion2",
         "texto": "Nunca salir de noche",
         "esCorrecta": false,
         "feedback": "Es más profundo que eso."
+      },
+      {
+        "id": "opcion2",
+        "texto": "No juzgar por las apariencias",
+        "esCorrecta": true,
+        "feedback": "¡Exacto! Las apariencias pueden engañar."
       },
       {
         "id": "opcion3",
@@ -27,5 +27,9 @@
       }
     ]
   },
-  "personajes": []
+  "personajes": [
+    { "nombre": "Calavera", "imagen": "/historias/la-dama-tapada/calavera.jpg" },
+    { "nombre": "Velo", "imagen": "/historias/la-dama-tapada/velo.jpg" },
+    { "nombre": "Apariencias", "imagen": "/historias/la-dama-tapada/apariencias.jpg" }
+  ]
 }

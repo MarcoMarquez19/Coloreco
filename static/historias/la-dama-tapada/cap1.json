@@ -9,15 +9,15 @@
     "opciones": [
       {
         "id": "opcion1",
-        "texto": "Por curiosidad y atracción",
-        "esCorrecta": true,
-        "feedback": "¡Correcto! Su misterio los atraía irresistiblemente."
-      },
-      {
-        "id": "opcion2",
         "texto": "Para protegerla del peligro",
         "esCorrecta": false,
         "feedback": "No, tenían otras intenciones."
+      },
+      {
+        "id": "opcion2",
+        "texto": "Por curiosidad y atracción",
+        "esCorrecta": true,
+        "feedback": "¡Correcto! Su misterio los atraía irresistiblemente."
       },
       {
         "id": "opcion3",
@@ -27,5 +27,9 @@
       }
     ]
   },
-  "personajes": []
+  "personajes": [
+    { "nombre": "Velo", "imagen": "/historias/la-dama-tapada/velo.jpg" },
+    { "nombre": "Colonial", "imagen": "/historias/la-dama-tapada/colonial.jpg" },
+    { "nombre": "Misteriosa", "imagen": "/historias/la-dama-tapada/misteriosa.jpg" }
+  ]
 }

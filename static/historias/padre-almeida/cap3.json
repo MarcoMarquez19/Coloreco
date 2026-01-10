@@ -9,15 +9,15 @@
     "opciones": [
       {
         "id": "opcion1",
-        "texto": "El Cristo bajó de la cruz",
-        "esCorrecta": true,
-        "feedback": "¡Exacto! Esa fue la noche del gran milagro."
-      },
-      {
-        "id": "opcion2",
         "texto": "Lo descubrieron sus hermanos",
         "esCorrecta": false,
         "feedback": "No, fue algo mucho más extraordinario."
+      },
+      {
+        "id": "opcion2",
+        "texto": "El Cristo bajó de la cruz",
+        "esCorrecta": true,
+        "feedback": "¡Exacto! Esa fue la noche del gran milagro."
       },
       {
         "id": "opcion3",
@@ -27,5 +27,18 @@
       }
     ]
   },
-  "personajes": []
+  "personajes": [
+    {
+      "nombre": "Escapar",
+      "imagen": "/historias/padre-almeida/escapar.jpg"
+    },
+    {
+      "nombre": "Cristo",
+      "imagen": "/historias/padre-almeida/cristo.jpg"
+    },
+    {
+      "nombre": "Increíble",
+      "imagen": "/historias/padre-almeida/increible.jpg"
+    }
+  ]
 }
