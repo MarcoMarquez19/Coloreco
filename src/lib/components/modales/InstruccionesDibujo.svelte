@@ -2,6 +2,13 @@
   import { createEventDispatcher, onMount } from 'svelte';
   import { configuraciones } from '$lib/stores/settings';
   import { audioStore } from '$lib/stores/audio';
+  import zoomGif from '$lib/assets/gifts/Opcion_zoom.gif';
+  import deshacerGif from '$lib/assets/gifts/Opcion_deshacer.gif';
+  import navegacionGif from '$lib/assets/gifts/Modo_navegacion.gif';
+  import stickersGif from '$lib/assets/gifts/Herramienta_stickers.gif';
+  import lapizGif from '$lib/assets/gifts/Herramienta_lapiz_borrador.gif';
+
+
 
   const dispatch = createEventDispatcher();
   let modalRef = $state<HTMLElement | null>(null);
@@ -14,23 +21,23 @@
   // Configuración de GIFs de instrucciones
   const gifsInstrucciones = [
     {
-      src: '/src/lib/assets/gifts/Herramienta_lapiz_borrador.gif',
+      src: lapizGif,
       descripcion: 'Con las herramientas "pincel" y "borrador", puedes dibujar y borrar partes del dibujo' 
     },
     {
-      src: '/src/lib/assets/gifts/Herramienta_stickers.gif',
+      src: stickersGif,
       descripcion: 'Con la herramienta "stickers", puedes colocar pegatinas en el dibujo' 
     },
     {
-      src: '/src/lib/assets/gifts/Modo_navegacion.gif',
+      src: navegacionGif,
       descripcion: 'Presiona "SHIFT + D" para activar el modo de navegación y "ENTER" para escoger una zona. El mismo te permite identificar zonas específicas del dibujo.'
     },
     {
-      src: '/src/lib/assets/gifts/Opcion_deshacer.gif',
+      src: deshacerGif,
       descripcion: 'Presiona la opción "Deshacer" para revertir el último cambio en el dibujo' 
     },
     {
-      src: '/src/lib/assets/gifts/Opcion_zoom.gif',
+      src: zoomGif,
       descripcion: 'Presiona la opción "Zoom" para acercar o alejar el dibujo, solamente podras desplazar el dibujo en esta opción. Puedes seguir dibujando con cualquiera de las herramientas disponibles'
     }
   ];
