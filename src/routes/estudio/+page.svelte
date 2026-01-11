@@ -8,6 +8,19 @@
     import FondoHabitacion from '$lib/components/fondos/FondoHabitacion.svelte';
     import { clickSound } from '$lib/stores/audio';
     import { goto } from '$app/navigation';
+    import { onMount } from 'svelte';
+
+    onMount(() => {
+        const handlePopState = (event: PopStateEvent) => {
+			event.preventDefault();
+			goto('/seleccionar-estudio');
+		};
+		window.addEventListener('popstate', handlePopState);
+		
+		return () => {
+			window.removeEventListener('popstate', handlePopState);
+		};
+    });
 
     // Funciones para manejar las interacciones de cada elemento
     function manejarSalida() {

@@ -10,6 +10,18 @@
     import { calcularRangoArtista } from '$lib/db/logros.service';
     import { audioStore, clickSound } from '$lib/stores/audio';
 
+    onMount(() => {
+        const handlePopState = (event: PopStateEvent) => {
+			event.preventDefault();
+			goto('/estudio');
+		};
+		window.addEventListener('popstate', handlePopState);
+		
+		return () => {
+			window.removeEventListener('popstate', handlePopState);
+		};
+    });
+
     // Props para controlar el trofeo dinámicamente
     let rangoTrofeo = $state<'oro' | 'plata' | 'bronce' | null>(null);
     let textoRango = $state('...');

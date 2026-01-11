@@ -97,7 +97,7 @@
 		// Interceptar el botón de volver del navegador
 		const handlePopState = (event: PopStateEvent) => {
 			event.preventDefault();
-			goto('/taller-escenas');
+			goto('/cuerpo-plantillas');
 		};
 		
 		window.addEventListener('popstate', handlePopState);

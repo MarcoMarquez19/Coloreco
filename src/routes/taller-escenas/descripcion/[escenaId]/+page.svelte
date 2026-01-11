@@ -90,6 +90,17 @@
         goto(`/juegos/dibujo/${escenaId}`);
     }
 
+	onMount(() => {
+        const handlePopState = (event: PopStateEvent) => {
+			event.preventDefault();
+			goto('/taller-escenas');
+		};
+		window.addEventListener('popstate', handlePopState);
+		
+		return () => {
+			window.removeEventListener('popstate', handlePopState);
+		};
+    });
 
 	onMount(() => {
 		void cargarEscena();

@@ -2,6 +2,21 @@
 	// Página de Créditos de COLORECO
 	import { configuraciones } from '$lib/stores/settings';
 	import { clickSound } from '$lib/stores/audio';
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+
+	onMount(() => {
+		const handlePopState = (event: PopStateEvent) => {
+			event.preventDefault();
+			goto('/');
+		};
+		window.addEventListener('popstate', handlePopState);
+		
+		return () => {
+			window.removeEventListener('popstate', handlePopState);
+		};
+	});
+
 </script>
 
 <!-- Contenedor directo sin tarjeta -->

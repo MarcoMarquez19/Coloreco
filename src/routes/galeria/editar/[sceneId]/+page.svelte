@@ -23,6 +23,17 @@
 	import LogroDesbloqueado from '$lib/components/modales/LogroDesbloqueado.svelte';
 	import type { LogroDefinicion } from '$lib/db/schemas';
 
+    onMount(() => {
+        const handlePopState = (event: PopStateEvent) => {
+			event.preventDefault();
+			goto('/galeria');
+		};
+		window.addEventListener('popstate', handlePopState);
+		
+		return () => {
+			window.removeEventListener('popstate', handlePopState);
+		};
+    });
 	// Referencias a los componentes
 	let canvasRef: DibujoCanvas;
 	let overlayRef: DibujoOverlay;

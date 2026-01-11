@@ -22,6 +22,18 @@
         await cargarArtistas();
     });
 
+    onMount(() => {
+        const handlePopState = (event: PopStateEvent) => {
+			event.preventDefault();
+			goto('/');
+		};
+		window.addEventListener('popstate', handlePopState);
+		
+		return () => {
+			window.removeEventListener('popstate', handlePopState);
+		};
+    });
+
     // Navegar al estudio de un artista concreto
     async function irAlEstudio(artistaId: number) {
         // Asegurarse de cambiar el artista y cargar sus ajustes antes de navegar

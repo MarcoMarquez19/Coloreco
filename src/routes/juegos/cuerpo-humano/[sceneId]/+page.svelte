@@ -69,6 +69,18 @@
 	// Configuración de la escena (cargar según sceneId)
 	let escenaConfig = $state<EscenaConfig | null>(null);
 
+    onMount(() => {
+        const handlePopState = (event: PopStateEvent) => {
+			event.preventDefault();
+			goto('/cuerpo-plantillas');
+		};
+		window.addEventListener('popstate', handlePopState);
+		
+		return () => {
+			window.removeEventListener('popstate', handlePopState);
+		};
+    });
+
 	// Cargar la configuración de la escena
 	onMount(async () => {		
 		const sceneId = $page.params.sceneId || 'default';

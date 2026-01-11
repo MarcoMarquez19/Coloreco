@@ -1,6 +1,20 @@
 <script lang="ts">
     import LibroHistorias from '$lib/components/iconos/LibroAbierto.png';
     import LogrosViewer from '$lib/components/logros/LogrosViewer.svelte';
+    import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
+
+    onMount(() => {
+        const handlePopState = (event: PopStateEvent) => {
+			event.preventDefault();
+			goto('/logros');
+		};
+		window.addEventListener('popstate', handlePopState);
+		
+		return () => {
+			window.removeEventListener('popstate', handlePopState);
+		};
+    });
 
     // Tamaño de la imagen decorativa (ajustable)
     let tamañoImagen = '20rem'; // Puedes cambiar este valor: '8rem', '12rem', etc.

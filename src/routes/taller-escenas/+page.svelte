@@ -44,6 +44,18 @@
 		};
 	});
 
+	onMount(() => {
+        const handlePopState = (event: PopStateEvent) => {
+			event.preventDefault();
+			goto('/menu-juegos');
+		};
+		window.addEventListener('popstate', handlePopState);
+		
+		return () => {
+			window.removeEventListener('popstate', handlePopState);
+		};
+    });
+
 	let escenaActual = $state<EscenaCatalogo | null>(null);
 
 	// Animación de carrusel: clase temporal y duración accesible

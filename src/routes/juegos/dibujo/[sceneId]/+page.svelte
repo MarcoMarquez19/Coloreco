@@ -123,6 +123,18 @@
 		void cargarArtista();
     });
 
+    onMount(() => {
+        const handlePopState = (event: PopStateEvent) => {
+			event.preventDefault();
+			goto('/taller-escenas');
+		};
+		window.addEventListener('popstate', handlePopState);
+		
+		return () => {
+			window.removeEventListener('popstate', handlePopState);
+		};
+    });
+
 	/**
 	 * Carga el artista activo para tracking de logros
 	 */

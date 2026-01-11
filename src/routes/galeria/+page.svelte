@@ -7,6 +7,17 @@
 	import { obtenerObras, eliminarObra, liberarURLsImagenes, type ObraCompleta } from '$lib/db/obras.service';
 	import Modal from '$lib/components/modales/Modal.svelte';
 
+	onMount(() => {
+        const handlePopState = (event: PopStateEvent) => {
+			event.preventDefault();
+			goto('/estudio');
+		};
+		window.addEventListener('popstate', handlePopState);
+		
+		return () => {
+			window.removeEventListener('popstate', handlePopState);
+		};
+    });
 	// ============================================================================
 	// ESTADO REACTIVO (Svelte 5 Runes)
 	// ============================================================================
