@@ -23,6 +23,7 @@
 	import FondoLogrosGeneral from '$lib/components/fondos/FondoLogrosGeneral.svelte';
 	import FondoCuerpoHumano from '$lib/components/fondos/FondoCuerpoHumano.svelte';
 	import { adaptiveObserver, adaptiveEngine } from '$lib/a11y/adaptive-engine';
+	import IconoCreditos from '$lib/components/iconos/Creditos.svelte';
 
 	// Pequeño helper de accesibilidad: enfocar el contenido principal al navegar
 	let mainEl: HTMLElement | null = null;
@@ -74,6 +75,7 @@
 	let necesitaFondoManchas = $derived($page.url.pathname === '/' 
 	|| $page.url.pathname === '/seleccionar-estudio' 
 	|| $page.url.pathname === ('/galeria')
+	|| $page.url.pathname === '/creditos'
 	|| $page.url.pathname.startsWith('/menu-juegos')
 	|| $page.url.pathname.startsWith('/taller-escenas')
 	);
@@ -92,6 +94,9 @@
 	function abrirConfiguracion() {
 		if (estaEnConfiguracion) return;
 		goto('/ajustes');
+	}
+	function abrirCreditos() {
+		goto('/creditos');
 	}
 	function volver() {
 		if (estaEnInicio) return;
@@ -1270,6 +1275,24 @@ let text = element.textContent?.trim();
 		<NarrationControl />
 	</div>
 
+	<!-- Botón de créditos (solo en página inicial, fuera del contenido filtrado) -->
+	{#if estaEnInicio}
+		<div class="contenedor-flotante-creditos" style={filterStyle}>
+			<button 
+				class="boton-creditos pattern-yellow" 
+				aria-label="Ver créditos"
+				title="Créditos" 
+				type="button"
+				onclick={abrirCreditos}
+				use:clickSound
+			>
+				<span class="solo-lectores">Ver créditos de la aplicación</span>
+				<IconoCreditos />
+			</button>
+			<span class="texto-tecla">Créditos</span>
+		</div>
+	{/if}
+
 	<!-- Botón de instrucciones (solo en páginas de juegos de historias) -->
 	{#if necesitaBotonInstrucciones}
 		<div id="floating-instructions-button" class="contenedor-flotante-i-instrucciones" style={filterStyle}>
@@ -1385,7 +1408,8 @@ let text = element.textContent?.trim();
 	/* Contenedores flotantes: Ahora aceptan filtros y mantienen su posición */
 	.contenedor-flotante-i,
 	.contenedor-flotante-d,
-	.contenedor-flotante-i-instrucciones {
+	.contenedor-flotante-i-instrucciones,
+	.contenedor-flotante-creditos {
 		position: fixed;
 		bottom: var(--spacing-base, 1rem);
 		display: flex;
@@ -1398,6 +1422,7 @@ let text = element.textContent?.trim();
 
 	.contenedor-flotante-i { left: calc(var(--spacing-base, 1rem) * 2.5); }
 	.contenedor-flotante-d { right: calc(var(--spacing-base, 1rem) * 2.5); }
+	.contenedor-flotante-creditos { left: calc(var(--spacing-base, 1rem) * 2.5); }
 	.contenedor-flotante-i-instrucciones { 
 		left: calc(var(--spacing-base, 1rem) * 2.5);
 		top: var(--spacing-base, 1rem);
@@ -1427,7 +1452,7 @@ let text = element.textContent?.trim();
 		margin: -1px;
 	}
 	/*Botón volver esquina inferior izquierda y botón ajustes esquina inferior derecha*/
-	.boton-volver, .boton-configuracion, .boton-instrucciones {
+	.boton-volver, .boton-configuracion, .boton-instrucciones, .boton-creditos {
 		position: relative;
 		width: calc(8vw * var(--btn-scale, 1));
 		height: calc(15vh * var(--btn-scale, 1));
@@ -1442,14 +1467,14 @@ let text = element.textContent?.trim();
 		transition: transform 120ms ease, box-shadow 120ms ease;
 		z-index: 100;
 	}
-	.boton-volver:hover, .boton-configuracion:hover, .boton-instrucciones:hover {
+	.boton-volver:hover, .boton-configuracion:hover, .boton-instrucciones:hover, .boton-creditos:hover {
 		transform: translateY(-2px);
 		background: var(--fondo-botones-hover, #d1a700);
 	}
-	.boton-volver:active, .boton-configuracion:active, .boton-instrucciones:active {
+	.boton-volver:active, .boton-configuracion:active, .boton-instrucciones:active, .boton-creditos:active, .boton-creditos:active {
 		transform: translateY(0);
 	}
-	.boton-volver:focus, .boton-configuracion:focus, .boton-instrucciones:focus{
+	.boton-volver:focus, .boton-configuracion:focus, .boton-instrucciones:focus, .boton-creditos:focus{
 		outline: var(--borde-botones, 4px solid #000000);
 		background: var(--fondo-botones-hover, #d1a700);
 		outline-offset: 7px;
